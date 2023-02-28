@@ -74,7 +74,7 @@
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
 
   # Framebuffer
-  FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
+  FrameBufferBltLib|HtcLeoPkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
   SerialPortLib|HtcLeoPkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
   MemoryInitPeiLib|HtcLeoPkg/Library/MemoryInitPeiLib/PeiMemoryAllocationLib.inf
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf

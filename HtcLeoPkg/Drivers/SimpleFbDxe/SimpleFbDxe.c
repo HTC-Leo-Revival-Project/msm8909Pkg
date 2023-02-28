@@ -10,7 +10,7 @@
 #include <Library/DxeServicesTableLib.h>
 #include <Protocol/GraphicsOutput.h>
 #include <Library/BaseLib.h>
-#include <Library/FrameBufferBltLib.h>
+#include "Library/FrameBufferBltLib.h"
 #include <Library/CacheMaintenanceLib.h>
 
 /// Defines
@@ -38,33 +38,34 @@ enum video_log2_bpp {
 };
 
 typedef struct {
-	VENDOR_DEVICE_PATH DisplayDevicePath;
-	EFI_DEVICE_PATH EndDevicePath;
+  VENDOR_DEVICE_PATH DisplayDevicePath;
+  EFI_DEVICE_PATH EndDevicePath;
 } DISPLAY_DEVICE_PATH;
 
-DISPLAY_DEVICE_PATH mDisplayDevicePath = {
-	{
-		{
-			HARDWARE_DEVICE_PATH,
-			HW_VENDOR_DP,
-			{
-				(UINT8)(sizeof(VENDOR_DEVICE_PATH)),
-				(UINT8)((sizeof(VENDOR_DEVICE_PATH)) >> 8),
-			}
-		},
-		EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID
-	},
-	{
-		END_DEVICE_PATH_TYPE,
-		END_ENTIRE_DEVICE_PATH_SUBTYPE,
-		{
-			sizeof(EFI_DEVICE_PATH_PROTOCOL),
-			0
-		}
-	}
+DISPLAY_DEVICE_PATH mDisplayDevicePath =
+{
+    {
+      {
+        HARDWARE_DEVICE_PATH,
+        HW_VENDOR_DP,
+        {
+          (UINT8)(sizeof(VENDOR_DEVICE_PATH)),
+          (UINT8)((sizeof(VENDOR_DEVICE_PATH)) >> 8),
+        }
+      },
+      EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID
+    },
+    {
+      END_DEVICE_PATH_TYPE,
+      END_ENTIRE_DEVICE_PATH_SUBTYPE,
+      {
+        sizeof(EFI_DEVICE_PATH_PROTOCOL),
+        0
+      }
+    }
 };
 
-/// Declares
+/// DeclaresSimpleFbDxe/SimpleFbDxe.c
 
 STATIC FRAME_BUFFER_CONFIGURE        *mFrameBufferBltLibConfigure;
 STATIC UINTN                         mFrameBufferBltLibConfigureSize;
@@ -107,10 +108,10 @@ DisplayBlt
 );
 
 STATIC EFI_GRAPHICS_OUTPUT_PROTOCOL mDisplay = {
-	DisplayQueryMode,
-	DisplaySetMode,
-	DisplayBlt,
-	NULL
+  DisplayQueryMode,
+  DisplaySetMode,
+  DisplayBlt,
+  NULL
 };
 
 STATIC
@@ -122,23 +123,24 @@ DisplayQueryMode
     IN  UINT32                                ModeNumber,
     OUT UINTN                                 *SizeOfInfo,
     OUT EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  **Info
-) {
-	EFI_STATUS Status;
-	Status = gBS->AllocatePool(
-	             EfiBootServicesData,
-	             sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION),
-	             (VOID **) Info);
+)
+{
+    EFI_STATUS Status;
+    Status = gBS->AllocatePool(
+        EfiBootServicesData,
+        sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION),
+        (VOID **) Info);
 
-	ASSERT_EFI_ERROR(Status);
+    ASSERT_EFI_ERROR(Status);
 
-	*SizeOfInfo = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
-	(*Info)->Version = This->Mode->Info->Version;
-	(*Info)->HorizontalResolution = This->Mode->Info->HorizontalResolution;
-	(*Info)->VerticalResolution = This->Mode->Info->VerticalResolution;
-	(*Info)->PixelFormat = This->Mode->Info->PixelFormat;
-	(*Info)->PixelsPerScanLine = This->Mode->Info->PixelsPerScanLine;
+    *SizeOfInfo = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
+    (*Info)->Version = This->Mode->Info->Version;
+    (*Info)->HorizontalResolution = This->Mode->Info->HorizontalResolution;
+    (*Info)->VerticalResolution = This->Mode->Info->VerticalResolution;
+    (*Info)->PixelFormat = This->Mode->Info->PixelFormat;
+    (*Info)->PixelsPerScanLine = This->Mode->Info->PixelsPerScanLine;
 
-	return EFI_SUCCESS;
+    return EFI_SUCCESS;
 }
 
 STATIC
@@ -148,8 +150,9 @@ DisplaySetMode
 (
     IN  EFI_GRAPHICS_OUTPUT_PROTOCOL *This,
     IN  UINT32                       ModeNumber
-) {
-	return EFI_SUCCESS;
+)
+{
+  return EFI_SUCCESS;
 }
 
 STATIC
@@ -167,32 +170,33 @@ DisplayBlt
     IN  UINTN                             Width,
     IN  UINTN                             Height,
     IN  UINTN                             Delta         OPTIONAL
-) {
+)
+{
 
-	RETURN_STATUS                         Status;
-	EFI_TPL                               Tpl;
-	//
-	// We have to raise to TPL_NOTIFY, so we make an atomic write to the frame buffer.
-	// We would not want a timer based event (Cursor, ...) to come in while we are
-	// doing this operation.
-	//
-	Tpl = gBS->RaiseTPL (TPL_NOTIFY);
-	Status = FrameBufferBlt (
-	             mFrameBufferBltLibConfigure,
-	             BltBuffer,
-	             BltOperation,
-	             SourceX, SourceY,
-	             DestinationX, DestinationY, Width, Height,
-	             Delta
-	         );
-	gBS->RestoreTPL (Tpl);
+  RETURN_STATUS                         Status;
+  EFI_TPL                               Tpl;
+  //
+  // We have to raise to TPL_NOTIFY, so we make an atomic write to the frame buffer.
+  // We would not want a timer based event (Cursor, ...) to come in while we are
+  // doing this operation.
+  //
+  Tpl = gBS->RaiseTPL (TPL_NOTIFY);
+  Status = FrameBufferBlt (
+             mFrameBufferBltLibConfigure,
+             BltBuffer,
+             BltOperation,
+             SourceX, SourceY,
+             DestinationX, DestinationY, Width, Height,
+             Delta
+             );
+  gBS->RestoreTPL (Tpl);
 
-	// zhuowei: hack: flush the cache manually since my memory maps are still broken
-	WriteBackInvalidateDataCacheRange((void*)mDisplay.Mode->FrameBufferBase,
-	                                  mDisplay.Mode->FrameBufferSize);
-	// zhuowei: end hack
+  // zhuowei: hack: flush the cache manually since my memory maps are still broken
+  WriteBackInvalidateDataCacheRange((void*)mDisplay.Mode->FrameBufferBase, 
+    mDisplay.Mode->FrameBufferSize);
+  // zhuowei: end hack
 
-	return RETURN_ERROR (Status) ? EFI_INVALID_PARAMETER : EFI_SUCCESS;
+  return RETURN_ERROR (Status) ? EFI_INVALID_PARAMETER : EFI_SUCCESS;
 }
 
 EFI_STATUS
@@ -201,105 +205,113 @@ SimpleFbDxeInitialize
 (
     IN EFI_HANDLE         ImageHandle,
     IN EFI_SYSTEM_TABLE   *SystemTable
-) {
+)
+{
 
-	EFI_STATUS          Status                  = EFI_SUCCESS;
-	EFI_HANDLE          hUEFIDisplayHandle      = NULL;
+    EFI_STATUS          Status                  = EFI_SUCCESS;
+    EFI_HANDLE          hUEFIDisplayHandle      = NULL;
 
-	/* Retrieve simple frame buffer from pre-SEC bootloader */
-	DEBUG((EFI_D_ERROR, "SimpleFbDxe: Retrieve MIPI FrameBuffer parameters from PCD\n"));
-	UINT32              MipiFrameBufferAddr     = FixedPcdGet32(PcdMipiFrameBufferAddress);
-	UINT32              MipiFrameBufferWidth    = FixedPcdGet32(PcdMipiFrameBufferWidth);
-	UINT32              MipiFrameBufferHeight   = FixedPcdGet32(PcdMipiFrameBufferHeight);
+    /* Retrieve simple frame buffer from pre-SEC bootloader */
+    DEBUG((EFI_D_ERROR, "SimpleFbDxe: Retrieve MIPI FrameBuffer parameters from PCD\n"));
+    UINT32              MipiFrameBufferAddr     = FixedPcdGet32(PcdMipiFrameBufferAddress);
+    UINT32              MipiFrameBufferWidth    = FixedPcdGet32(PcdMipiFrameBufferWidth);
+    UINT32              MipiFrameBufferHeight   = FixedPcdGet32(PcdMipiFrameBufferHeight);
 
-	/* Sanity check */
-	if (MipiFrameBufferAddr == 0 || MipiFrameBufferWidth == 0 || MipiFrameBufferHeight == 0) {
-		DEBUG((EFI_D_ERROR, "SimpleFbDxe: Invalid FrameBuffer parameters\n"));
-		return EFI_DEVICE_ERROR;
-	}
+    /* Sanity check */
+    if (MipiFrameBufferAddr == 0 || MipiFrameBufferWidth == 0 || MipiFrameBufferHeight == 0)
+    {
+        DEBUG((EFI_D_ERROR, "SimpleFbDxe: Invalid FrameBuffer parameters\n"));
+        return EFI_DEVICE_ERROR;
+    }
 
-	/* Prepare struct */
-	if (mDisplay.Mode == NULL) {
-		Status = gBS->AllocatePool(
-		             EfiBootServicesData,
-		             sizeof(EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE),
-		             (VOID **) &mDisplay.Mode
-		         );
+    /* Prepare struct */
+    if (mDisplay.Mode == NULL)
+    {
+        Status = gBS->AllocatePool(
+            EfiBootServicesData,
+            sizeof(EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE),
+            (VOID **) &mDisplay.Mode
+        );
 
-		ASSERT_EFI_ERROR(Status);
-		if (EFI_ERROR(Status)) return Status;
+        ASSERT_EFI_ERROR(Status);
+        if (EFI_ERROR(Status)) return Status;
 
-		ZeroMem(mDisplay.Mode, sizeof(EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE));
-	}
+        ZeroMem(mDisplay.Mode, sizeof(EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE));
+    }
+    
+    if (mDisplay.Mode->Info == NULL)
+    {
+        Status = gBS->AllocatePool(
+            EfiBootServicesData,
+            sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION),
+            (VOID **) &mDisplay.Mode->Info
+        );
 
-	if (mDisplay.Mode->Info == NULL) {
-		Status = gBS->AllocatePool(
-		             EfiBootServicesData,
-		             sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION),
-		             (VOID **) &mDisplay.Mode->Info
-		         );
+        ASSERT_EFI_ERROR(Status);
+        if (EFI_ERROR(Status)) return Status;
 
-		ASSERT_EFI_ERROR(Status);
-		if (EFI_ERROR(Status)) return Status;
+        ZeroMem(mDisplay.Mode->Info, sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION));
+    }
 
-		ZeroMem(mDisplay.Mode->Info, sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION));
-	}
+    /* Set information */
+    mDisplay.Mode->MaxMode = 1;
+    mDisplay.Mode->Mode = 0;
+    mDisplay.Mode->Info->Version = 0;
 
-	/* Set information */
-	mDisplay.Mode->MaxMode = 1;
-	mDisplay.Mode->Mode = 0;
-	mDisplay.Mode->Info->Version = 0;
+    mDisplay.Mode->Info->HorizontalResolution = MipiFrameBufferWidth;
+    mDisplay.Mode->Info->VerticalResolution = MipiFrameBufferHeight;
 
-	mDisplay.Mode->Info->HorizontalResolution = MipiFrameBufferWidth;
-	mDisplay.Mode->Info->VerticalResolution = MipiFrameBufferHeight;
+    /* SimpleFB runs on a8r8g8b8 (VIDEO_BPP32) for DB410c */
+    UINT32 LineLength = MipiFrameBufferWidth * VNBYTES(VIDEO_BPP32);
+    UINT32 FrameBufferSize = LineLength * MipiFrameBufferHeight;
+    EFI_PHYSICAL_ADDRESS FrameBufferAddress = MipiFrameBufferAddr;
 
-	/* SimpleFB runs on a8r8g8b8 (VIDEO_BPP32) for DB410c */
-	UINT32 LineLength = MipiFrameBufferWidth * VNBYTES(VIDEO_BPP32);
-	UINT32 FrameBufferSize = LineLength * MipiFrameBufferHeight;
-	EFI_PHYSICAL_ADDRESS FrameBufferAddress = MipiFrameBufferAddr;
+    mDisplay.Mode->Info->PixelsPerScanLine = MipiFrameBufferWidth;
+    mDisplay.Mode->Info->PixelFormat = PixelBlueGreenRedReserved8BitPerColor;
+    mDisplay.Mode->SizeOfInfo = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
+    mDisplay.Mode->FrameBufferBase = FrameBufferAddress;
+    mDisplay.Mode->FrameBufferSize = FrameBufferSize;
 
-	mDisplay.Mode->Info->PixelsPerScanLine = MipiFrameBufferWidth;
-	mDisplay.Mode->Info->PixelFormat = PixelBlueGreenRedReserved8BitPerColor;
-	mDisplay.Mode->SizeOfInfo = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
-	mDisplay.Mode->FrameBufferBase = FrameBufferAddress;
-	mDisplay.Mode->FrameBufferSize = FrameBufferSize;
+    //
+    // Create the FrameBufferBltLib configuration.
+    //
+    Status = FrameBufferBltConfigure (
+                     (VOID *) (UINTN) mDisplay.Mode->FrameBufferBase,
+                     mDisplay.Mode->Info,
+                     mFrameBufferBltLibConfigure,
+                     &mFrameBufferBltLibConfigureSize
+                     );
+    if (Status == RETURN_BUFFER_TOO_SMALL) {
+      mFrameBufferBltLibConfigure = AllocatePool (mFrameBufferBltLibConfigureSize);
+      if (mFrameBufferBltLibConfigure != NULL) {
+        Status = FrameBufferBltConfigure (
+                         (VOID *) (UINTN) mDisplay.Mode->FrameBufferBase,
+                         mDisplay.Mode->Info,
+                         mFrameBufferBltLibConfigure,
+                         &mFrameBufferBltLibConfigureSize
+                         );
+      }
+    }
+    ASSERT_EFI_ERROR (Status);
 
-	//
-	// Create the FrameBufferBltLib configuration.
-	//
-	Status = FrameBufferBltConfigure (
-	             (VOID *) (UINTN) mDisplay.Mode->FrameBufferBase,
-	             mDisplay.Mode->Info,
-	             mFrameBufferBltLibConfigure,
-	             &mFrameBufferBltLibConfigureSize
-	         );
-	if (Status == RETURN_BUFFER_TOO_SMALL) {
-		mFrameBufferBltLibConfigure = AllocatePool (mFrameBufferBltLibConfigureSize);
-		if (mFrameBufferBltLibConfigure != NULL) {
-			Status = FrameBufferBltConfigure (
-			             (VOID *) (UINTN) mDisplay.Mode->FrameBufferBase,
-			             mDisplay.Mode->Info,
-			             mFrameBufferBltLibConfigure,
-			             &mFrameBufferBltLibConfigureSize
-			         );
-		}
-	}
-	ASSERT_EFI_ERROR (Status);
+    // zhuowei: clear the screen to black
+    // UEFI standard requires this, since text is white - see OvmfPkg/QemuVideoDxe/Gop.c
+    ZeroMem((void*)FrameBufferAddress, FrameBufferSize);
+    // hack: clear cache
+    WriteBackInvalidateDataCacheRange((void*)FrameBufferAddress, FrameBufferSize);
+    // zhuowei: end
+ 
+    /* Register handle */
+    Status = gBS->InstallMultipleProtocolInterfaces(
+        &hUEFIDisplayHandle,
+        &gEfiDevicePathProtocolGuid,
+        &mDisplayDevicePath,
+        &gEfiGraphicsOutputProtocolGuid,
+        &mDisplay,
+        NULL);
 
-	ZeroMem((void*)FrameBufferAddress, FrameBufferSize);
+    ASSERT_EFI_ERROR (Status);
 
-	WriteBackInvalidateDataCacheRange((void*)FrameBufferAddress, FrameBufferSize);
-
-	Status = gBS->InstallMultipleProtocolInterfaces(
-	             &hUEFIDisplayHandle,
-	             &gEfiDevicePathProtocolGuid,
-	             &mDisplayDevicePath,
-	             &gEfiGraphicsOutputProtocolGuid,
-	             &mDisplay,
-	             NULL);
-
-	ASSERT_EFI_ERROR (Status);
-
-	return Status;
+    return Status;
 
 }
