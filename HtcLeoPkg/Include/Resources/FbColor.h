@@ -1,14 +1,14 @@
 #ifndef _FB_COLOR_H_
 #define _FB_COLOR_H_
 
-#define FB_BGRA8888_BLACK 0xff000000
-#define FB_BGRA8888_WHITE 0xffffffff
-#define FB_BGRA8888_CYAN 0xff00ffff
-#define FB_BGRA8888_BLUE 0xff0000ff
-#define FB_BGRA8888_SILVER 0xffc0c0c0
-#define FB_BGRA8888_YELLOW 0xffffff00
-#define FB_BGRA8888_ORANGE 0xffffa500
-#define FB_BGRA8888_RED 0xffff0000
-#define FB_BGRA8888_GREEN 0xff00ff00
+#define FB_RGB565_BLACK		0x0000
+#define FB_RGB565_WHITE		0xffff
+#define FB_RGB565_CYAN		0x07ff
+#define FB_RGB565_BLUE		0x001f
+#define FB_RGB565_SILVER		0xc618
+#define FB_RGB565_YELLOW		0xffe0
+#define FB_RGB565_ORANGE		0xfd20
+#define FB_RGB565_RED		0xf800
+#define FB_RGB565_GREEN		0x3666
 
 #endif

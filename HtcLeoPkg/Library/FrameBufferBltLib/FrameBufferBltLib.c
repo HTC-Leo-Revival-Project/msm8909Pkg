@@ -38,7 +38,7 @@ CONST EFI_PIXEL_BITMASK mRgbPixelMasks = {
 };
 
 CONST EFI_PIXEL_BITMASK mBgrPixelMasks = {
-  0x0000ff, 0x00ff00, 0xff0000
+  0xff0000, 0x00ff00, 0x0000ff
 };
 
 /**

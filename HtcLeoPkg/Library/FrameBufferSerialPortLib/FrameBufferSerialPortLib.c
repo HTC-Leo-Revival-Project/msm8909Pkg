@@ -71,14 +71,14 @@ void ResetFb(void)
 {
 	// Clear current screen.
 	char* Pixels = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
-	UINTN BgColor = FB_BGRA8888_BLACK;
+	UINTN BgColor = FB_RGB565_BLACK;
 
 	// Set to black color.
 	for (UINTN i = 0; i < gWidth; i++)
 	{
 		for (UINTN j = 0; j < gHeight; j++)
 		{
-			BgColor = FB_BGRA8888_BLACK;
+			BgColor = FB_RGB565_BLACK;
 			// Set pixel bit
 			for (UINTN p = 0; p < (gBpp / 8); p++)
 			{
@@ -101,8 +101,8 @@ void FbConReset(void)
 	m_MaxPosition.y = (gHeight - 1) / FONT_HEIGHT;
 
 	// Reset color.
-	m_Color.Foreground = FB_BGRA8888_WHITE;
-	m_Color.Background = FB_BGRA8888_BLACK;
+	m_Color.Foreground = FB_RGB565_WHITE;
+	m_Color.Background = FB_RGB565_BLACK;
 }
 
 void FbConPutCharWithFactor
@@ -383,7 +383,7 @@ SerialPortWriteCritical
 	UINTN  InterruptState = ArmGetInterruptState();
 
 	ArmDisableInterrupts();
-	m_Color.Foreground = FB_BGRA8888_YELLOW;
+	m_Color.Foreground = FB_RGB565_YELLOW;
 
 	while (Buffer < Final)
 	{
