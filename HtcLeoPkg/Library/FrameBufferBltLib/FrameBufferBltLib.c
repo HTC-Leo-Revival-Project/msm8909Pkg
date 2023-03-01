@@ -34,11 +34,11 @@ struct FRAME_BUFFER_CONFIGURE {
 };
 
 CONST EFI_PIXEL_BITMASK mRgbPixelMasks = {
-  0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
+  0x0000ff, 0x00ff00, 0xff0000
 };
 
 CONST EFI_PIXEL_BITMASK mBgrPixelMasks = {
-  0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000
+  0x0000ff, 0x00ff00, 0xff0000
 };
 
 /**
@@ -83,7 +83,7 @@ FrameBufferBltLibConfigurePixelFormat (
   MergedMasks = (UINT32) (MergedMasks | Masks[3]);
 
   ASSERT (MergedMasks != 0);
-  *BytesPerPixel = (UINT32) ((HighBitSet32 (MergedMasks) + 7) / 8);
+  *BytesPerPixel = 2;
   DEBUG ((DEBUG_INFO, "Bytes per pixel: %d\n", *BytesPerPixel));
 }
 
@@ -165,12 +165,7 @@ FrameBufferBltConfigure (
   CopyMem (Configure->PixelShl,    PixelShl, sizeof (PixelShl));
   CopyMem (Configure->PixelShr,    PixelShr, sizeof (PixelShr));
 
-  if (FrameBufferInfo->HorizontalResolution < 1080) {
-   Configure->BytesPerPixel     = BytesPerPixel - (BytesPerPixel / 4); // Defaults to ex. 24bpp for 32bpp and 3bpp for 4bpp usecases
-  } else {
-   Configure->BytesPerPixel     = BytesPerPixel;
-  }
-
+  Configure->BytesPerPixel     = BytesPerPixel;
   Configure->PixelFormat       = FrameBufferInfo->PixelFormat;
   Configure->FrameBuffer       = (UINT8*) FrameBuffer;
   Configure->Width             = FrameBufferInfo->HorizontalResolution;
