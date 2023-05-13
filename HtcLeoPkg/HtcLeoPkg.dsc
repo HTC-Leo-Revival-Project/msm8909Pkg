@@ -154,7 +154,15 @@
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800
 
-  gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiExposedTableVersions|0x20
+[PcdsDynamicDefault.common]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoHorizontalResolution|480 # /8 = column
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoVerticalResolution|800 #/19 = row
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution|480
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution|800
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutRow|42
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutColumn|60
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutRow|42
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn|60
 
 ################################################################################
 #
