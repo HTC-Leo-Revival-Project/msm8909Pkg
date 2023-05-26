@@ -1,4 +1,6 @@
 BootShim/BootShim.bin
-ImageResources/bootpayload.bin
+ImageResources/lk.bin
 ImageResources/uefi.img
+ImageResources/os.nb
+ImageResources/LEOIMG.nbh
 workspace/Build/
