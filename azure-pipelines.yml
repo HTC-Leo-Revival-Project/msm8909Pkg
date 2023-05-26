@@ -45,7 +45,13 @@ steps:
       ./build.sh
 
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Htc Leo UEFI build'
+  displayName: 'Publish Htc Leo UEFI (android bootimage)'
   inputs: 
     pathtoPublish: /home/vsts/work/edk2stuff/HtcLeoPkg/ImageResources/uefi.img
-    artifactName: Htc Leo UEFI
+    artifactName: Htc Leo UEFI (img)
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Htc Leo UEFI (HSPL-bootable nbh)'
+  inputs: 
+    pathtoPublish: /home/vsts/work/edk2stuff/HtcLeoPkg/ImageResources/LEOIMG.nbh
+    artifactName: Htc Leo UEFI (nbh)
