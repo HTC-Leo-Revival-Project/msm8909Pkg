@@ -30,6 +30,7 @@
 .globl _start
 _start:
 	b	reset
+	b 	relocate
 	b	arm_undefined
 	b	arm_syscall
 	b	arm_prefetch_abort
@@ -122,9 +123,11 @@ load_address:
 
 	DSB
 	ISB
+.ltorg
 
 .code 32
 .text
+_relocate:
 	/* see if we need to relocate */
 	adr			r0, _Payload 	//Load the payload adress into r0
 
