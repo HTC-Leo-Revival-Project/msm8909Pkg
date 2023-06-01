@@ -1,0 +1,1 @@
+rm -r workspace/Build && rm ImageResources/LEOIMG.nbh ImageResources/os.nb ImageResources/uefi.img ImageResources/lk.bin && rm BootShim/BootShim.bin
