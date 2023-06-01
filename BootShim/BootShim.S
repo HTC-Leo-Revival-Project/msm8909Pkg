@@ -30,21 +30,12 @@
 .globl _start
 _start:
 	b	reset
-	b 	_PrepareBoot
 	b 	relocate
-	b	arm_undefined
-	b	arm_syscall
-	b	arm_prefetch_abort
-	b	arm_data_abort
-	b	arm_reserved
-	b	arm_irq
-	b	arm_fiq
 
 //if LK is loaded by wince spl add romhdr
 .org 0x40
 	.word 0x43454345
 	.word (romhdr-_start)+0x80000000		// virtual address of romhdr
-	//.word romhdr+0x96C00000		// virtual address of romhdr
 	.word romhdr-_start				// file address of romhdr
 
 .org 0x00000900
@@ -85,7 +76,6 @@ reset:
 	orr		r0, r0, #(1<<1)
 	mcr		p15, 0, r0, c1, c0, 0
 
-	
 	b		.Lstack_setup
 .ltorg
 
@@ -98,91 +88,8 @@ load_address:
 	mrs     r0, cpsr
 	bic     r0, r0, #0x1f
 
-	/* copy the initialized data segment out of rom if necessary */
-	ldr		r0, =__data_start_rom
-	ldr		r1, =__data_start
-	ldr		r2, =__data_end
-
-	cmp		r0, r1
-	beq		.L__do_bss
-
-.L__copy_loop:
-	cmp		r1, r2
-	ldrlt	r3, [r0], #4
-	strlt	r3, [r1], #4
-	blt		.L__copy_loop
-
-.L__do_bss:
-	/* clear out the bss */
-	ldr		r0, =__bss_start
-	ldr		r1, =_end
-	mov		r2, #0
-.L__bss_loop:
-	cmp		r0, r1
-	strlt	r2, [r0], #4
-	blt		.L__bss_loop
-
 	DSB
 	ISB
-.ltorg
-
-.global _PrepareBoot
-_PrepareBoot:
-		// save registers
-		MOV r9, r0
-
-		//cedesmith:
-		// cotulla's code so kernel will not crash. aux control register
-		// found more info here: http://www.spinics.net/lists/linux-arm-msm/msg00492.html
-		// it looks it is Martijn Stolk's code
-		MRC p15, 0, r0, c1, c0, 1
-		BIC r0, r0, #0x40					//; (1<<6)  IBE (0 = executes the CP15 Invalidate All and Invalidate by MVA instructions as a NOP instruction, reset value)
-		BIC r0, r0, #0x200000				//; (1<<21) undocumented bit
-		MCR p15, 0, r0, c1, c0, 1
-
-		//; Disable VFP
-		MOV R0, #0
-        //FMXR  FPEXC, r0
-
-		//; ICIALL to invalidate entire I-Cache
-        MCR    p15, 0, r0, c7, c5, 0    //; ICIALLU
-
-        // disable dcache and i cache
-		MRC p15, 0, r0, c1, c0, 0
-		BIC r0, r0, #(1<<0)					// disable mmu ( already disabled )
-		BIC r0, r0, #(1<<2)					// disable data cache
-		BIC r0, r0, #(1<<12)				// disable instruction cache
-		MCR p15, 0, r0, c1, c0, 0
-		ISB
-
-		//; DCIALL to invalidate L2 cache bank (needs to be run 4 times, once per bank)
-        //; This must be done early in code (prior to enabling the caches)
-        MOV    r0, #0x2
-        MCR    p15, 0, r0, c9, c0, 6   //; DCIALL bank D ([15:14] == 2'b00)
-        ORR    r0, r0, #0x00004000
-        MCR    p15, 0, r0, c9, c0, 6   //; DCIALL bank C ([15:14] == 2'b01)
-        ADD    r0, r0, #0x00004000
-        MCR    p15, 0, r0, c9, c0, 6   //; DCIALL bank B ([15:14] == 2'b10)
-        ADD    r0, r0, #0x00004000
-        MCR    p15, 0, r0, c9, c0, 6   //; DCIALL bank A ([15:14] == 2'b11)
-		//; DCIALL to invalidate entire D-Cache
-		MOV    r0, #0
-        MCR    p15, 0, r0, c9, c0, 6    //; DCIALL  r0
-		DSB
-		ISB
-
-		//; Invalidate the UTLB
-        MOV r0, #0
-        MCR    p15, 0, r0, c8, c7, 0    //; UTLBIALL
-        ISB
-
-		MOV R0, #0
-        
-        //flashlight to see we get here
-		ldr     r4, =0xa9000864        @ bank6_in (phys)
-		ldr     r5, =0xa9000814        @ bank6_out (phys)
-		orr     r6, r4, #0x200000      @ 22nd bit for flash
-		str     r6, [r5, #0]           @ store in out (enables bright for 500ms, limited by hardware)
 .ltorg
 
 .code 32
@@ -214,115 +121,6 @@ UefiBase:
 
 UefiSize:
 	.word UEFI_SIZE
-
-.ltorg
-
-FUNCTION(arm_undefined)
-	stmfd 	sp!, { r0-r12, r14 }
-	sub		sp, sp, #12
-	mov		r0, sp
-	mrs		r1, spsr
-	stmia	r0, { r1, r13-r14 }^
-	b		arm_undefined_handler
-	b		.
-
-FUNCTION(arm_syscall)
-	stmfd 	sp!, { r0-r12, r14 }
-	sub		sp, sp, #12
-	mov		r0, sp
-	mrs		r1, spsr
-	stmia	r0, { r1, r13-r14 }^
-	b		arm_syscall_handler
-	b		.
-	
-FUNCTION(arm_prefetch_abort)
-	stmfd 	sp!, { r0-r12, r14 }
-	sub		sp, sp, #12
-	mov		r0, sp
-	mrs		r1, spsr
-	stmia	r0, { r1, r13-r14 }^
-	b		arm_prefetch_abort_handler
-	b		.
-
-FUNCTION(arm_data_abort)
-	stmfd 	sp!, { r0-r12, r14 }
-	sub		sp, sp, #12
-	mov		r0, sp
-	mrs		r1, spsr
-	stmia	r0, { r1, r13-r14 }^
-	b		arm_data_abort_handler
-	b		.
-	
-FUNCTION(arm_reserved)
-	b	.
-	
-FUNCTION(arm_irq)
-	/* XXX only deals with interrupting supervisor mode */
-
-	/* save r4-r6 and use as a temporary place to save while we switch into supervisor mode */
-	stmia	r13, { r4-r6 }
-	mov		r4, r13
-	sub		r5, lr, #4
-	mrs		r6, spsr
-
-	/* move into supervisor mode. irq/fiq disabled */
-	msr	cpsr_c, #(3<<6 | 0x13)
-
-	/* save the return address */
-	stmfd	sp!, { r5 }
-
-	/* save C trashed regs, supervisor lr */
-	stmfd	sp!, { r0-r3, r12, lr }
-
-	/* save spsr */
-	stmfd	sp!, { r6 }
-
-	/* restore r4-r6 */
-	ldmia	r4, { r4-r6 }
-
-	/* increment the global critical section count */
-	ldr     r1, =critical_section_count
-	ldr     r0, [r1]
-	add     r0, r0, #1
-	str     r0, [r1]
-	
-	/* call into higher level code */
-	mov	r0, sp /* iframe */
-	bl	platform_irq
-
-	/* reschedule if the handler returns nonzero */
-	cmp     r0, #0
-	blne    thread_preempt
-
-	/* decrement the global critical section count */
-	ldr     r1, =critical_section_count
-	ldr     r0, [r1]
-	sub     r0, r0, #1
-	str     r0, [r1]
-
-	/* restore spsr */
-	ldmfd	sp!, { r0 }
-	msr     spsr_cxsf, r0
-
-	/* restore back to where we came from */
-	ldmfd	sp!, { r0-r3, r12, lr, pc }^
-
-.bss
-.align 2
-	.global irq_save_spot
-irq_save_spot:
-	.word	0	/* r4 */
-	.word	0	/* r5 */
-	.word	0	/* r6 */
-	
-.text
-FUNCTION(arm_fiq)
-	sub	lr, lr, #4
-	stmfd	sp!, { r0-r3, r12, lr }
-
-	bl	platform_fiq
-	
-	ldmfd	sp!, { r0-r3, r12, pc }^
 
 .ltorg
 

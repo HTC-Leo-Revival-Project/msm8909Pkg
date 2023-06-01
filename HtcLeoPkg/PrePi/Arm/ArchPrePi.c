@@ -8,6 +8,24 @@
 
 #include "PrePi.h"
 
+static void SetVectorBase(unsigned long addr)
+{
+	__asm__ volatile("mcr	p15, 0, %0, c12, c0, 0" :: "r" (addr));
+}
+
+VOID
+ArchEarlyInit()
+{
+  /* turn off the cache */
+	ArchDisableCache(UCACHE);
+
+  /* set the vector base to our exception vectors so we dont need to double map at 0 */
+	SetVectorBase(MEMBASE);
+
+  /* turn the cache back on */
+  ArchEnableCache(UCACHE);
+}
+
 VOID
 ArchInitialize (
   VOID

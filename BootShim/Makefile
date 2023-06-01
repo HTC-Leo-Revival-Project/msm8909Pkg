@@ -1,7 +1,7 @@
 
 
 ARCH              = arm
-TARGET            = arm-linux-gnueabihf
+TARGET            = arm-none-eabi
 CROSS_COMPILE     = $(TARGET)-
 CC                = $(CROSS_COMPILE)gcc
 OBJCOPY           = $(CROSS_COMPILE)objcopy
