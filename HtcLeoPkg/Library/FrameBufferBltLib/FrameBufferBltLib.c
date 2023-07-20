@@ -34,8 +34,9 @@ struct FRAME_BUFFER_CONFIGURE {
 };
 
 CONST EFI_PIXEL_BITMASK mRgbPixelMasks = {
-  0x0000ff, 0x00ff00, 0xff0000
+  0xf800, 0x07e0, 0x001f, 0x0000
 };
+
 
 CONST EFI_PIXEL_BITMASK mBgrPixelMasks = {
   0xff0000, 0x00ff00, 0x0000ff
@@ -49,6 +50,7 @@ CONST EFI_PIXEL_BITMASK mBgrPixelMasks = {
   @param PixelShl      Left shift array.
   @param PixelShr      Right shift array.
 **/
+// Add support for the RGB565 pixel format to FrameBufferBltLibConfigurePixelFormat
 VOID
 FrameBufferBltLibConfigurePixelFormat (
   IN CONST EFI_PIXEL_BITMASK    *BitMask,
@@ -83,9 +85,10 @@ FrameBufferBltLibConfigurePixelFormat (
   MergedMasks = (UINT32) (MergedMasks | Masks[3]);
 
   ASSERT (MergedMasks != 0);
-  *BytesPerPixel = 2;
+  *BytesPerPixel = 2; // For RGB565, each pixel is 16 bits (2 bytes)
   DEBUG ((DEBUG_INFO, "Bytes per pixel: %d\n", *BytesPerPixel));
 }
+
 
 /**
   Create the configuration for a video frame buffer.
@@ -97,12 +100,11 @@ FrameBufferBltLibConfigurePixelFormat (
   @param[in,out] Configure     The created configuration information.
   @param[in,out] ConfigureSize Size of the configuration information.
 
-  @retval RETURN_SUCCESS            The configuration was successful created.
-  @retval RETURN_BUFFER_TOO_SMALL   The Configure is to too small. The required
+  @retval RETURN_SUCCESS            The configuration was successfully created.
+  @retval RETURN_BUFFER_TOO_SMALL   The Configure is too small. The required
                                     size is returned in ConfigureSize.
   @retval RETURN_UNSUPPORTED        The requested mode is not supported by
-                                    this implementaion.
-
+                                    this implementation.
 **/
 RETURN_STATUS
 EFIAPI
@@ -111,7 +113,7 @@ FrameBufferBltConfigure (
   IN     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *FrameBufferInfo,
   IN OUT FRAME_BUFFER_CONFIGURE                *Configure,
   IN OUT UINTN                                 *ConfigureSize
-  )
+)
 {
   CONST EFI_PIXEL_BITMASK                      *BitMask;
   UINT32                                       BytesPerPixel;
@@ -124,12 +126,12 @@ FrameBufferBltConfigure (
 
   switch (FrameBufferInfo->PixelFormat) {
   case PixelRedGreenBlueReserved8BitPerColor:
-    BitMask = &mRgbPixelMasks;
+    BitMask = &mRgbPixelMasks; // Use RGB565 pixel format for RGB888 mode
+    break;
+      case PixelRedGreenBlueReserved16BitPerColor:
+    BitMask = &mRgbPixelMasks; // Use RGB565 pixel format for RGB888 mode
     break;
 
-  case PixelBlueGreenRedReserved8BitPerColor:
-    BitMask = &mBgrPixelMasks;
-    break;
 
   case PixelBitMask:
     BitMask = &FrameBufferInfo->PixelInformation;
@@ -191,141 +193,70 @@ FrameBufferBltConfigure (
 
 **/
 EFI_STATUS
-FrameBufferBltLibVideoFill (
+FrameBufferBltLibVideoFill(
   IN  FRAME_BUFFER_CONFIGURE        *Configure,
   IN  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *Color,
   IN  UINTN                         DestinationX,
   IN  UINTN                         DestinationY,
   IN  UINTN                         Width,
   IN  UINTN                         Height
-  )
+)
 {
   UINTN                             IndexX;
   UINTN                             IndexY;
   UINT8                             *Destination;
-  UINT8                             Uint8;
-  UINT32                            Uint32;
-  UINT64                            WideFill;
-  BOOLEAN                           UseWideFill;
-  BOOLEAN                           LineBufferReady;
-  UINTN                             Offset;
-  UINTN                             WidthInBytes;
-  UINTN                             SizeInBytes;
+  UINT16                            Uint16;
 
   //
   // BltBuffer to Video: Source is BltBuffer, destination is Video
   //
   if (DestinationY + Height > Configure->Height) {
-    DEBUG ((EFI_D_VERBOSE, "VideoFill: Past screen (Y)\n"));
+    DEBUG((EFI_D_VERBOSE, "VideoFill: Past screen (Y)\n"));
     return RETURN_INVALID_PARAMETER;
   }
 
   if (DestinationX + Width > Configure->Width) {
-    DEBUG ((EFI_D_VERBOSE, "VideoFill: Past screen (X)\n"));
+    DEBUG((EFI_D_VERBOSE, "VideoFill: Past screen (X)\n"));
     return RETURN_INVALID_PARAMETER;
   }
 
   if (Width == 0 || Height == 0) {
-    DEBUG ((EFI_D_VERBOSE, "VideoFill: Width or Height is 0\n"));
+    DEBUG((EFI_D_VERBOSE, "VideoFill: Width or Height is 0\n"));
     return RETURN_INVALID_PARAMETER;
   }
 
-  WidthInBytes = Width * Configure->BytesPerPixel;
-
-  Uint32 = *(UINT32*) Color;
-  WideFill =
-    (UINT32) (
-    (((Uint32 << Configure->PixelShl[0]) >> Configure->PixelShr[0]) &
-     Configure->PixelMasks.RedMask) |
-     (((Uint32 << Configure->PixelShl[1]) >> Configure->PixelShr[1]) &
-      Configure->PixelMasks.GreenMask) |
-      (((Uint32 << Configure->PixelShl[2]) >> Configure->PixelShr[2]) &
-       Configure->PixelMasks.BlueMask)
-      );
-  DEBUG ((EFI_D_VERBOSE, "VideoFill: color=0x%x, wide-fill=0x%x\n",
-          Uint32, WideFill));
-
-  //
-  // If the size of the pixel data evenly divides the sizeof
-  // WideFill, then a wide fill operation can be used
-  //
-  UseWideFill = TRUE;
-  if ((sizeof (WideFill) % Configure->BytesPerPixel) == 0) {
-    for (IndexX = Configure->BytesPerPixel; IndexX < sizeof (WideFill); IndexX++) {
-      ((UINT8*) &WideFill)[IndexX] = ((UINT8*) &WideFill)[IndexX % Configure->BytesPerPixel];
-    }
-  } else {
-    //
-    // If all the bytes in the pixel are the same value, then use
-    // a wide fill operation.
-    //
-    for (
-      IndexX = 1, Uint8 = ((UINT8*) &WideFill)[0];
-      IndexX < Configure->BytesPerPixel;
-      IndexX++) {
-      if (Uint8 != ((UINT8*) &WideFill)[IndexX]) {
-        UseWideFill = FALSE;
-        break;
-      }
-    }
-    if (UseWideFill) {
-      SetMem (&WideFill, sizeof (WideFill), Uint8);
-    }
+  if (Configure->PixelFormat != PixelRedGreenBlueReserved8BitPerColor &&
+      Configure->PixelFormat != PixelBlueGreenRedReserved8BitPerColor) {
+    DEBUG((EFI_D_VERBOSE, "VideoFill: Unsupported pixel format\n"));
+    return RETURN_INVALID_PARAMETER;
   }
 
-  if (UseWideFill && (DestinationX == 0) && (Width == Configure->PixelsPerScanLine)) {
-    DEBUG ((EFI_D_VERBOSE, "VideoFill (wide, one-shot)\n"));
-    Offset = DestinationY * Configure->PixelsPerScanLine;
-    Offset = Configure->BytesPerPixel * Offset;
-    Destination = Configure->FrameBuffer + Offset;
-    SizeInBytes = WidthInBytes * Height;
-    if (SizeInBytes >= 8) {
-      SetMem32 (Destination, SizeInBytes & ~3, (UINT32) WideFill);
-      Destination += SizeInBytes & ~3;
-      SizeInBytes &= 3;
-    }
-    if (SizeInBytes > 0) {
-      SetMem (Destination, SizeInBytes, (UINT8) (UINTN) WideFill);
-    }
-  } else {
-    LineBufferReady = FALSE;
-    for (IndexY = DestinationY; IndexY < (Height + DestinationY); IndexY++) {
-      Offset = (IndexY * Configure->PixelsPerScanLine) + DestinationX;
-      Offset = Configure->BytesPerPixel * Offset;
-      Destination = Configure->FrameBuffer + Offset;
+  // Convert color to 5-6-5 RGB format
+  Uint16 = ((Color->Red >> 3) << 11) | ((Color->Green >> 2) << 5) | (Color->Blue >> 3);
 
-      if (UseWideFill && (((UINTN) Destination & 7) == 0)) {
-        DEBUG ((EFI_D_VERBOSE, "VideoFill (wide)\n"));
-        SizeInBytes = WidthInBytes;
-        if (SizeInBytes >= 8) {
-          SetMem64 (Destination, SizeInBytes & ~7, WideFill);
-          Destination += SizeInBytes & ~7;
-          SizeInBytes &= 7;
-        }
-        if (SizeInBytes > 0) {
-          CopyMem (Destination, &WideFill, SizeInBytes);
-        }
-      } else {
-        DEBUG ((EFI_D_VERBOSE, "VideoFill (not wide)\n"));
-        if (!LineBufferReady) {
-          CopyMem (Configure->LineBuffer, &WideFill, Configure->BytesPerPixel);
-          for (IndexX = 1; IndexX < Width; ) {
-            CopyMem (
-              (Configure->LineBuffer + (IndexX * Configure->BytesPerPixel)),
-              Configure->LineBuffer,
-              MIN (IndexX, Width - IndexX) * Configure->BytesPerPixel
-            );
-            IndexX += MIN (IndexX, Width - IndexX);
-          }
-          LineBufferReady = TRUE;
-        }
-        CopyMem (Destination, Configure->LineBuffer, WidthInBytes);
-      }
+  // Calculate the offset to the starting pixel
+  UINTN Offset = (DestinationY * Configure->PixelsPerScanLine) + DestinationX;
+  Offset = Configure->BytesPerPixel * Offset;
+  Destination = Configure->FrameBuffer + Offset;
+
+  // Fill the video buffer
+  for (IndexY = 0; IndexY < Height; IndexY++) {
+    for (IndexX = 0; IndexX < Width; IndexX++) {
+      // Write 16-bit color value to the destination
+      *(UINT16*)Destination = Uint16;
+      // Move to the next pixel
+      Destination += Configure->BytesPerPixel;
     }
+
+    // Move to the next line
+    Offset = Configure->BytesPerPixel * Configure->PixelsPerScanLine;
+    Destination += Offset - Width * Configure->BytesPerPixel;
   }
 
-  return RETURN_SUCCESS;
+  return EFI_SUCCESS;
 }
+
+
 
 /**
   Performs a UEFI Graphics Output Protocol Blt Video to Buffer operation
@@ -450,7 +381,7 @@ FrameBufferBltLibVideoToBltBuffer (
   @param[in]  Height        Height.
   @param[in]  Delta         Number of bytes in a row of BltBuffer.
 
-  @retval RETURN_INVALID_PARAMETER Invalid parameter were passed in.
+  @retval RETURN_INVALID_PARAMETER Invalid parameter was passed in.
   @retval RETURN_SUCCESS           The Blt operation was performed successfully.
 **/
 RETURN_STATUS
@@ -472,7 +403,7 @@ FrameBufferBltLibBufferToVideo (
   UINT8                                    *Source;
   UINT8                                    *Destination;
   UINTN                                    IndexX;
-  UINT32                                   Uint32;
+  UINT16                                   Color;
   UINTN                                    Offset;
   UINTN                                    WidthInBytes;
 
@@ -510,35 +441,24 @@ FrameBufferBltLibBufferToVideo (
     Offset = Configure->BytesPerPixel * Offset;
     Destination = Configure->FrameBuffer + Offset;
 
-    if (Configure->PixelFormat == PixelBlueGreenRedReserved8BitPerColor) {
-      Source = (UINT8 *) BltBuffer + (SrcY * Delta);
-    } else {
-      for (IndexX = 0; IndexX < Width; IndexX++) {
-        Blt =
-          (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) (
-              (UINT8 *) BltBuffer +
-              (SrcY * Delta) +
-              ((SourceX + IndexX) * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL))
-            );
-        Uint32 = *(UINT32*) Blt;
-        *(UINT32*) (Configure->LineBuffer + (IndexX * Configure->BytesPerPixel)) =
-          (UINT32) (
-              (((Uint32 << Configure->PixelShl[0]) >> Configure->PixelShr[0]) &
-               Configure->PixelMasks.RedMask) |
-              (((Uint32 << Configure->PixelShl[1]) >> Configure->PixelShr[1]) &
-               Configure->PixelMasks.GreenMask) |
-              (((Uint32 << Configure->PixelShl[2]) >> Configure->PixelShr[2]) &
-               Configure->PixelMasks.BlueMask)
-            );
-      }
-      Source = Configure->LineBuffer;
-    }
+    Source = (UINT8 *) BltBuffer + (SrcY * Delta);
 
-    CopyMem (Destination, Source, WidthInBytes);
+    for (IndexX = 0; IndexX < Width; IndexX++) {
+      Blt = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) ((UINT8 *) BltBuffer + (SrcY * Delta) + ((SourceX + IndexX) * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL)));
+      Color = ((Blt->Red >> 3) << 11) | ((Blt->Green >> 2) << 5) | (Blt->Blue >> 3);
+
+      if (Configure->PixelFormat == PixelBlueGreenRedReserved8BitPerColor) {
+        // Invert the color for the RGB565 format
+        Color = (UINT16) (~Color);
+      }
+
+      *(UINT16 *) (Destination + (IndexX * Configure->BytesPerPixel)) = Color;
+    }
   }
 
   return RETURN_SUCCESS;
 }
+
 
 /**
   Performs a UEFI Graphics Output Protocol Blt Video to Video operation
