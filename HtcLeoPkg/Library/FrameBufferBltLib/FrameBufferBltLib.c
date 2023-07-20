@@ -128,9 +128,6 @@ FrameBufferBltConfigure (
   case PixelRedGreenBlueReserved8BitPerColor:
     BitMask = &mRgbPixelMasks; // Use RGB565 pixel format for RGB888 mode
     break;
-      case PixelRedGreenBlueReserved16BitPerColor:
-    BitMask = &mRgbPixelMasks; // Use RGB565 pixel format for RGB888 mode
-    break;
 
 
   case PixelBitMask:
