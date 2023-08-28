@@ -22,6 +22,8 @@
 
 #include <Protocol/DebugSupport.h>
 #include <Library/DefaultExceptionHandlerLib.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/MemoryAllocationLib.h>
 
 //
 // The number of elements in a CHAR8 array, including the terminating NUL, that
@@ -206,7 +208,8 @@ DefaultExceptionHandler (
   UINT32   PcAdjust;
 
   PcAdjust = 0;
-
+  //hack clear the framebuffer before printing the exeption
+  ZeroMem((void*)0x02A00000, 0x000C0000);
   CharCount = AsciiSPrint (
                 Buffer,
                 sizeof (Buffer),
