@@ -131,6 +131,9 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x1B700000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
+  gHtcLeoPkgTokenSpaceGuid.PcdSerialRegisterBase|0xA9A00000   # UART1BASE from iomap_qsd8k.h
+  gHtcLeoPkgTokenSpaceGuid.PcdKdUartInstance|1                # UART1
+
   # We boot all processors here!!!!!
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1
   gArmPlatformTokenSpaceGuid.PcdClusterCount|1

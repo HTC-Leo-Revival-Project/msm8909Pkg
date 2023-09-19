@@ -23,7 +23,7 @@
 !if $(USE_SCREEN_FOR_SERIAL_OUTPUT) == 1
   SerialPortLib|HtcLeoPkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
 !else
-  SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
+  SerialPortLib|HtcLeoPkg/Library/UartSerialPortLib/UartSerialPortLib.inf
 !endif
 
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
