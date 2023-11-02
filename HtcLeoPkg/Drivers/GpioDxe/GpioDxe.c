@@ -45,12 +45,18 @@
 #include <Library/LKEnvLib.h>
 #include <Library/reg.h>
 #include <Library/adm.h>
+#include <Library/InterruptsLib.h>
 
 #include <Chipset/gpio.h>
+#include <Chipset/interrupts.h>
 #include <Chipset/iomap.h>
+#include <Chipset/irqs.h>
 #include <Chipset/clock.h>
 
 #include <Protocol/GpioTlmm.h>
+
+// Cached copy of the Hardware Interrupt protocol instance
+//EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 
 static struct msm_gpio_isr_handler
 {
@@ -59,13 +65,13 @@ static struct msm_gpio_isr_handler
 	 bool pending;
 } gpio_irq_handlers[NR_MSM_GPIOS];
 
-static gpioregs *find_gpio(unsigned n, unsigned *bit)
+static gpioregs *find_gpio(UINTN n, UINTN *bit)
 {
 	gpioregs *ret = 0;
 	if (n > GPIO_REGS[ARRAY_SIZE(GPIO_REGS) - 1].end)
 		goto end;
 
-	for (unsigned i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
+	for (UINTN i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
 		ret = GPIO_REGS + i;
 		if (n >= ret->start && n <= ret->end) {
 			*bit = 1 << (n - ret->start);
@@ -77,11 +83,11 @@ end:
 	return ret;
 }
 
-int gpio_config(unsigned n, unsigned flags)
+int gpio_config(UINTN n, UINTN flags)
 {
 	gpioregs *r;
-	unsigned b = 0;
-	unsigned v;
+	UINTN b = 0;
+	UINTN v;
 
 	if ((r = find_gpio(n, &b)) == 0)
 		return -1;
@@ -96,11 +102,11 @@ int gpio_config(unsigned n, unsigned flags)
 	return 0;
 }
 
-void gpio_set(unsigned n, unsigned on)
+void gpio_set(UINTN n, UINTN on)
 {
 	gpioregs *r;
-	unsigned b = 0;
-	unsigned v;
+	UINTN b = 0;
+	UINTN v;
 
 	if ((r = find_gpio(n, &b)) == 0)
 		return;
@@ -115,10 +121,11 @@ void gpio_set(unsigned n, unsigned on)
 	}
 }
 
-int gpio_get(unsigned n)
+UINTN
+gpio_get(UINTN n)
 {
 	gpioregs *r;
-	unsigned b = 0;
+	UINTN b = 0;
 
 	if ((r = find_gpio(n, &b)) == 0)
 		return 0;
@@ -131,19 +138,19 @@ int gpio_get(unsigned n)
 void config_gpio_table(UINT32 *table, int len)
 {
 	int n;
-	unsigned id;
+	UINTN id;
 	for (n = 0; n < len; n++) {
 		id = table[n];
 		msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &id, 0);
 	}
 }
 
-/*void msm_gpio_set_owner(unsigned gpio, unsigned owner)
+/*void msm_gpio_set_owner(UINTN gpio, UINTN owner)
 {
 
 	gpioregs *r;
-	unsigned b = 0;
-	unsigned v;
+	UINTN b = 0;
+	UINTN v;
 
 	if ((r = find_gpio(gpio, &b)) == 0)
 		return;
@@ -156,16 +163,16 @@ void config_gpio_table(UINT32 *table, int len)
 	}
 }*/
 
-static void msm_gpio_update_both_edge_detect(unsigned gpio)
+static void msm_gpio_update_both_edge_detect(UINTN gpio)
 {
 	gpioregs *r;
-	unsigned b = 0;
+	UINTN b = 0;
 
 	if ((r = find_gpio(gpio, &b)) == 0)
 		return;
 
 	int loop_limit = 100;
-	unsigned pol, val, val2, intstat;
+	UINTN pol, val, val2, intstat;
 	do {
 		val = readl(r->in);
 		pol = readl(r->int_pos);
@@ -179,10 +186,10 @@ static void msm_gpio_update_both_edge_detect(unsigned gpio)
 	DEBUG((EFI_D_INFO, "%s, failed to reach stable state %x != %x\n", __func__,val, val2));
 }
 
-static int msm_gpio_irq_clear(unsigned gpio)
+static int msm_gpio_irq_clear(UINTN gpio)
 {
 	gpioregs *r;
-	unsigned b = 0;
+	UINTN b = 0;
 
 	if ((r = find_gpio(gpio, &b)) == 0)
 		return -1;
@@ -192,7 +199,7 @@ static int msm_gpio_irq_clear(unsigned gpio)
 	return 0;
 }
 
-static void msm_gpio_irq_ack(unsigned gpio)
+static void msm_gpio_irq_ack(UINTN gpio)
 {
 	msm_gpio_irq_clear(gpio);
 	msm_gpio_update_both_edge_detect(gpio);
@@ -200,10 +207,10 @@ static void msm_gpio_irq_ack(unsigned gpio)
 
 static enum handler_return msm_gpio_isr(void *arg)
 {
-	unsigned s, e;
+	UINTN s, e;
 	gpioregs *r;
 
-	for (unsigned i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
+	for (UINTN i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
 		r = GPIO_REGS + i;
 		s = readl(r->int_status);
 		e = readl(r->int_en);
@@ -214,7 +221,7 @@ static enum handler_return msm_gpio_isr(void *arg)
 		}
 	}
 	
-	for (unsigned i = 0; i < ARRAY_SIZE(gpio_irq_handlers); i++) {
+	for (UINTN i = 0; i < ARRAY_SIZE(gpio_irq_handlers); i++) {
 		if (gpio_irq_handlers[i].pending) {
 			gpio_irq_handlers[i].pending = 0;
 			if (gpio_irq_handlers[i].handler)
@@ -227,7 +234,7 @@ static enum handler_return msm_gpio_isr(void *arg)
 
 void msm_gpio_init(void)
 {
-	for (unsigned i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
+	for (UINTN i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
 		writel(-1, GPIO_REGS[i].int_clear);
 		writel(0, GPIO_REGS[i].int_en);
 	}
@@ -241,7 +248,7 @@ void msm_gpio_init(void)
 
 /*void msm_gpio_deinit(void)
 {
-	for (unsigned i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
+	for (UINTN i = 0; i < ARRAY_SIZE(GPIO_REGS); i++) {
 		writel(-1, GPIO_REGS[i].int_clear);
 		writel(0, GPIO_REGS[i].int_en);
 	}
@@ -249,6 +256,14 @@ void msm_gpio_init(void)
 	mask_interrupt(INT_GPIO_GROUP1);
 	mask_interrupt(INT_GPIO_GROUP2);
 }*/
+
+/**
+ Protocol variable definition
+ **/
+TLMM_GPIO  gGpio = {
+  gpio_get,
+  gpio_set
+};
 
 EFI_STATUS
 EFIAPI
@@ -258,9 +273,30 @@ GpioDxeInitialize(
 )
 {
 	EFI_STATUS  Status = EFI_SUCCESS;
+  EFI_HANDLE  Handle = NULL;
+
+  //
+  // Make sure the Gpio protocol has not been installed in the system yet.
+  //
+  ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gEmbeddedGpioProtocolGuid);
+
+  // Find the interrupt controller protocol.  ASSERT if not found.
+  //Status = gBS->LocateProtocol (&gHardwareInterruptProtocolGuid, NULL, (VOID **)&gInterrupt);
+  //ASSERT_EFI_ERROR (Status);
 
 	msm_gpio_init();
 	DEBUG((EFI_D_INFO, "Gpio init done!\n"));
+
+  // Install the Embedded GPIO Protocol onto a new handle
+  Status = gBS->InstallMultipleProtocolInterfaces (
+                  &Handle,
+                  &gEmbeddedGpioProtocolGuid,
+                  &gGpio,
+                  NULL
+                  );
+  if (EFI_ERROR (Status)) {
+    Status = EFI_OUT_OF_RESOURCES;
+  }
 
 	return Status;
 }

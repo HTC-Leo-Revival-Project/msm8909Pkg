@@ -47,6 +47,7 @@
   MsmTargetGpioLib
   MsmPcomClientLib
   TimerLib
+  InterruptsLib
 
 [Guids]
 
@@ -54,6 +55,8 @@
   gEfiBlockIoProtocolGuid
   gEfiCpuArchProtocolGuid
   gEfiDevicePathProtocolGuid
+  #gHardwareInterruptProtocolGuid
+  gTlmmGpioProtocolGuid
 
 [Pcd]
 
