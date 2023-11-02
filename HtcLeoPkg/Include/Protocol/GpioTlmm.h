@@ -33,9 +33,7 @@ typedef UINTN TLMM_GPIO_PIN;
 typedef
 UINTN
 (*TLMM_GPIO_GET)(
-  //IN  TLMM_GPIO       *This,
-  IN  TLMM_GPIO_PIN   Gpio//,
-  //OUT UINTN           *Value
+  IN  TLMM_GPIO_PIN   Gpio
   );
 
 /*++
@@ -46,20 +44,17 @@ Routine Description:
 
 Arguments:
 
-  This  - pointer to protocol
   Gpio  - which pin to read
-  Value - state of the pin
 
 Returns:
 
-  EFI_SUCCESS - GPIO state returned in Value
+    Value - state of the pin
 
 --*/
 
 typedef
 VOID
 (*TLMM_GPIO_SET)(
-  //IN TLMM_GPIO      *This,
   IN TLMM_GPIO_PIN  Gpio,
   IN UINTN          Mode
   );
@@ -72,13 +67,8 @@ Routine Description:
 
 Arguments:
 
-  This  - pointer to protocol
   Gpio  - which pin to modify
   Mode  - mode to set
-
-Returns:
-
-  EFI_SUCCESS - GPIO set as requested
 
 --*/
 
@@ -89,6 +79,19 @@ UINTN
     IN UINTN          Flags
     );
 
+/*++
+
+Routine Description:
+
+  Configures a GPIO pin
+
+Arguments:
+
+  Gpio  - which pin to modify
+  Flags - flags to set
+
+--*/
+
 struct _TLMM_GPIO {
   TLMM_GPIO_GET         Get;
   TLMM_GPIO_SET         Set;
@@ -96,22 +99,5 @@ struct _TLMM_GPIO {
 };
 
 extern EFI_GUID  gTlmmGpioProtocolGuid;
-
-/*typedef struct _GPIO_CONTROLLER          GPIO_CONTROLLER;
-typedef struct _PLATFORM_GPIO_CONTROLLER PLATFORM_GPIO_CONTROLLER;
-
-struct _GPIO_CONTROLLER {
-  UINTN    RegisterBase;
-  UINTN    GpioIndex;
-  UINTN    InternalGpioCount;
-};
-
-struct _PLATFORM_GPIO_CONTROLLER {
-  UINTN              GpioCount;
-  UINTN              GpioControllerCount;
-  GPIO_CONTROLLER    *GpioController;
-};
-
-extern EFI_GUID  gPlatformGpioProtocolGuid;*/
 
 #endif
