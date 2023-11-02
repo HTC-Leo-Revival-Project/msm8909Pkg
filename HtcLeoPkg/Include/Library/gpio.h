@@ -47,7 +47,6 @@
 /* top 16 bits of the gpio flags are platform specific */
 #define GPIO_PLATFORM_MASK 0xffff0000
 
-int gpio_config(unsigned nr, unsigned flags);
 int gpio_to_irq(int gpio);
 void config_gpio_table(UINT32 *table, int len);
 #endif

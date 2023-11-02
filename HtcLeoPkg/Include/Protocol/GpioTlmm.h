@@ -82,9 +82,17 @@ Returns:
 
 --*/
 
+typedef
+UINTN
+(*TLMM_GPIO_CONFIG)(
+    IN TLMM_GPIO_PIN  Gpio,
+    IN UINTN          Flags
+    );
+
 struct _TLMM_GPIO {
   TLMM_GPIO_GET         Get;
   TLMM_GPIO_SET         Set;
+  TLMM_GPIO_CONFIG      Config;
 };
 
 extern EFI_GUID  gTlmmGpioProtocolGuid;

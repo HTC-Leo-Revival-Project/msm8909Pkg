@@ -313,7 +313,7 @@ static int msm_i2c_recover_bus_busy(void)
 		gGpio->Set(dev.pdata->sda_gpio, 0);
 		NanoSecondDelay(5);
 		
-		//HACK: gpio_config(dev.pdata->scl_gpio, GPIO_INPUT);
+		gGpio->Config(dev.pdata->scl_gpio, GPIO_INPUT);
 		NanoSecondDelay(5);
 		
 		if (!gGpio->Get(dev.pdata->scl_gpio))
@@ -323,7 +323,7 @@ static int msm_i2c_recover_bus_busy(void)
 			MicroSecondDelay(10);
 			
 		gpio_clk_status = gGpio->Get(dev.pdata->scl_gpio);
-		//HACK: gpio_config(dev.pdata->sda_gpio, GPIO_INPUT);
+		gGpio->Config(dev.pdata->sda_gpio, GPIO_INPUT);
 		NanoSecondDelay(5);
 	}
 	

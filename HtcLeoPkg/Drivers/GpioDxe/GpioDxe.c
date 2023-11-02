@@ -85,7 +85,8 @@ end:
 	return ret;
 }
 
-int gpio_config(UINTN n, UINTN flags)
+UINTN
+gpio_config(UINTN n, UINTN flags)
 {
 	gpioregs *r;
 	UINTN b = 0;
@@ -264,7 +265,8 @@ void msm_gpio_init(void)
  **/
 TLMM_GPIO  gGpio = {
   gpio_get,
-  gpio_set
+  gpio_set,
+  gpio_config
 };
 
 EFI_STATUS
