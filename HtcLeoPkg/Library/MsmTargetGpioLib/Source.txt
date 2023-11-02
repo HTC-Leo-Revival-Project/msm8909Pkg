@@ -1,2 +1,0 @@
-Source: 
-* https://github.com/n0d3/lk/blob/BlackCLK_ex_2/platform/qsd8k/gpio.c
