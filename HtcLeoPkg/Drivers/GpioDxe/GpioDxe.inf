@@ -44,7 +44,6 @@
   BaseLib
   DebugLib
   UefiBootServicesTableLib
-  MsmTargetGpioLib
   MsmPcomClientLib
   TimerLib
   InterruptsLib

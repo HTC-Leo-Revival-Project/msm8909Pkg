@@ -26,6 +26,7 @@
 [Protocols]
   gEFIDroidKeypadDeviceProtocolGuid
   gEfiDevicePathProtocolGuid
+  gTlmmGpioProtocolGuid
 
 [Depex]
-  TRUE
+  gTlmmGpioProtocolGuid

@@ -39,7 +39,10 @@
 
 #include <Chipset/gpio.h>
 #include <Chipset/irqs.h>
+#include <Protocol/GpioTlmm.h>
 
+// Cached copy of the Hardware Gpio protocol instance
+TLMM_GPIO *gGpio = NULL;
 EMBEDDED_CLOCK_PROTOCOL  *gClock = NULL;
 EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 
@@ -298,29 +301,29 @@ static int msm_i2c_recover_bus_busy(void)
 		writel(I2C_WRITE_DATA_LAST_BYTE | 0xff, dev.pdata->i2c_base + I2C_WRITE_DATA);
 	}
 
-	I2C_DBG(DEBUGLEVEL, "i2c_scl: %d, i2c_sda: %d\n", gpio_get(dev.pdata->scl_gpio), gpio_get(dev.pdata->sda_gpio));
+	I2C_DBG(DEBUGLEVEL, "i2c_scl: %d, i2c_sda: %d\n", gGpio->Get(dev.pdata->scl_gpio), gGpio->Get(dev.pdata->sda_gpio));
 
 	for (i = 0; i < 9; i++) {
-		if (gpio_get(dev.pdata->sda_gpio) && gpio_clk_status)
+		if (gGpio->Get(dev.pdata->sda_gpio) && gpio_clk_status)
 			break;
 			
-		gpio_set(dev.pdata->scl_gpio, 0);
+		gGpio->Set(dev.pdata->scl_gpio, 0);
 		NanoSecondDelay(5);
 		
-		gpio_set(dev.pdata->sda_gpio, 0);
+		gGpio->Set(dev.pdata->sda_gpio, 0);
 		NanoSecondDelay(5);
 		
-		gpio_config(dev.pdata->scl_gpio, GPIO_INPUT);
+		//HACK: gpio_config(dev.pdata->scl_gpio, GPIO_INPUT);
 		NanoSecondDelay(5);
 		
-		if (!gpio_get(dev.pdata->scl_gpio))
+		if (!gGpio->Get(dev.pdata->scl_gpio))
 			NanoSecondDelay(20);
 			
-		if (!gpio_get(dev.pdata->scl_gpio))
+		if (!gGpio->Get(dev.pdata->scl_gpio))
 			MicroSecondDelay(10);
 			
-		gpio_clk_status = gpio_get(dev.pdata->scl_gpio);
-		gpio_config(dev.pdata->sda_gpio, GPIO_INPUT);
+		gpio_clk_status = gGpio->Get(dev.pdata->scl_gpio);
+		//HACK: gpio_config(dev.pdata->sda_gpio, GPIO_INPUT);
 		NanoSecondDelay(5);
 	}
 	
@@ -579,6 +582,10 @@ I2CDxeInitialize(
   	// Find the clock controller protocol.  ASSERT if not found.
   	Status = gBS->LocateProtocol (&gEmbeddedClockProtocolGuid, NULL, (VOID **)&gClock);
   	ASSERT_EFI_ERROR (Status);
+
+	// Find the gpio controller protocol.  ASSERT if not found.
+    Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
+    ASSERT_EFI_ERROR (Status);
 
   	msm_i2c_probe(&i2c_pdata);
 

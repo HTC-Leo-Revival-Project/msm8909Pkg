@@ -20,14 +20,11 @@
   MdeModulePkg/MdeModulePkg.dec
   HtcLeoPkg/HtcLeoPkg.dec
 
-    
-  
 [LibraryClasses]
   UefiApplicationEntryPoint
   UefiLib
   UefiBootServicesTableLib 
   MemoryAllocationLib 
   BaseMemoryLib
-  MsmTargetGpioLib
   MsmPcomClientLib
   TimerLib

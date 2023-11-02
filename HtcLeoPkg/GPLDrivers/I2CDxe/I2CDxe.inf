@@ -47,7 +47,6 @@
   UefiBootServicesTableLib
   TimerLib
   MsmPcomLib
-  MsmTargetGpioLib
   
 [Guids]
 
@@ -57,9 +56,10 @@
   gEfiCpuArchProtocolGuid
   gEfiDevicePathProtocolGuid
   gHtcLeoI2CProtocolGuid
+  gTlmmGpioProtocolGuid
 
 [Pcd]
 
 [Depex]
-  TRUE
+  gTlmmGpioProtocolGuid
 

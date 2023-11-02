@@ -45,6 +45,10 @@
 
 #include <Library/adm.h>
 #include <Library/pcom_clients.h>
+#include <Protocol/GpioTlmm.h>
+
+// Cached copy of the Hardware Gpio protocol instance
+TLMM_GPIO *gGpio = NULL;
 
 struct sd_parms sdcn;
 static int high_capacity = 0;
@@ -1284,7 +1288,11 @@ SdCardInitialize(
 	EFI_STATUS  Status;
     UINTN       IsSdPresent = 0;
 
-    if (!gpio_get(HTCLEO_GPIO_SD_STATUS))
+    // Find the gpio controller protocol.  ASSERT if not found.
+    Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
+    ASSERT_EFI_ERROR (Status);
+
+    if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
     {
         // Enable SD
         DEBUG((EFI_D_ERROR, "SD Card inserted!\n"));

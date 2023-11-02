@@ -60,7 +60,6 @@
   MsmPcomLib
   MsmPcomClientLib
   TimerLib
-  MsmTargetGpioLib
 
 [Guids]
 
@@ -68,11 +67,10 @@
   gEfiBlockIoProtocolGuid
   gEfiCpuArchProtocolGuid
   gEfiDevicePathProtocolGuid
-  gEmbeddedGpioProtocolGuid
+  gTlmmGpioProtocolGuid
 
 [Pcd]
 
-
-[depex]
- TRUE
+[Depex]
+  gTlmmGpioProtocolGuid
 

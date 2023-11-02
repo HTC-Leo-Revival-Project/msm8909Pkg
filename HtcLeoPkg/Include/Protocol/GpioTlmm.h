@@ -9,6 +9,14 @@
 #ifndef __TLMM_GPIO_H__
 #define __TLMM_GPIO_H__
 
+#define TLMM_GPIO_GUID                                             \
+  {                                                                            \
+    0x2c898318, 0x41c1, 0x4309,                                                \
+    {                                                                          \
+      0x89, 0x8a, 0x2f, 0x55, 0xc8, 0xcf, 0x0b, 0x87                           \
+    }                                                                          \
+  }
+
 //
 // Protocol interface structure
 //
@@ -49,8 +57,8 @@ Returns:
 --*/
 
 typedef
-EFI_STATUS
-(EFIAPI *TLMM_GPIO_SET)(
+VOID
+(*TLMM_GPIO_SET)(
   //IN TLMM_GPIO      *This,
   IN TLMM_GPIO_PIN  Gpio,
   IN UINTN          Mode

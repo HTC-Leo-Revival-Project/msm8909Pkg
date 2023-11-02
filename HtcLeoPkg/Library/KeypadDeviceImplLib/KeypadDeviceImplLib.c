@@ -7,6 +7,10 @@
 #include <Library/KeypadDeviceImplLib.h>
 #include <Library/UefiLib.h>
 #include <Protocol/KeypadDevice.h>
+#include <Protocol/GpioTlmm.h>
+
+// Cached copy of the Hardware Gpio protocol instance
+TLMM_GPIO *gGpio = NULL;
 
 #define HTCLEO_GPIO_KP_LED 48
 
@@ -88,7 +92,12 @@ EFIAPI
 KeypadDeviceImplConstructor(VOID)
 {
   UINTN                Index;
+  EFI_STATUS           Status = EFI_SUCCESS;
   KEY_CONTEXT_PRIVATE *StaticContext;
+
+  // Find the gpio controller protocol.  ASSERT if not found.
+  Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
+  ASSERT_EFI_ERROR (Status);
 
   // Reset all keys
   for (Index = 0; Index < (sizeof(KeyList) / sizeof(KeyList[0])); Index++) {
@@ -183,9 +192,6 @@ EFI_STATUS EFIAPI KeypadDeviceImplReset(KEYPAD_DEVICE_PROTOCOL *This)
   return EFI_SUCCESS;
 }
 
-extern void gpio_set(unsigned n, unsigned on);
-extern int gpio_get(unsigned n);
-
 EFI_EVENT m_CallbackTimer = NULL;
 EFI_EVENT m_ExitBootServicesEvent = NULL;
 BOOLEAN timerRunning = FALSE;
@@ -194,7 +200,7 @@ BOOLEAN timerRunning = FALSE;
 VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
 {
     // Disable the GPIO
-    gpio_set(HTCLEO_GPIO_KP_LED, 0);
+    gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
     timerRunning = FALSE;
 }
 
@@ -207,7 +213,7 @@ VOID EnableKeypadLedWithTimer(VOID)
         timerRunning = FALSE;
     }
 
-    gpio_set(HTCLEO_GPIO_KP_LED, 1);
+    gGpio->Set(HTCLEO_GPIO_KP_LED, 1);
     EFI_STATUS Status;
 
     Status = gBS->CreateEvent(
@@ -242,10 +248,10 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         // get status
         if (Context->DeviceType == KEY_DEVICE_TYPE_LEGACY) {
             // implement hd2 gpio stuff here
-            GpioStatus = gpio_get(Context->Gpio);
+            GpioStatus = gGpio->Get(Context->Gpio);
         } else if (Context->DeviceType == KEY_DEVICE_TYPE_KEYMATRIX) {
-            gpio_set(Context->GpioOut, 0);
-            GpioStatus = gpio_get(Context->GpioIn);
+            gGpio->Set(Context->GpioOut, 0);
+            GpioStatus = gGpio->Get(Context->GpioIn);
         } else {
             continue;
         }
@@ -258,7 +264,7 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         }
 
         if (Context->DeviceType == KEY_DEVICE_TYPE_KEYMATRIX) {
-            gpio_set(Context->GpioOut, 1);
+            gGpio->Set(Context->GpioOut, 1);
         }
 
         LibKeyUpdateKeyStatus(

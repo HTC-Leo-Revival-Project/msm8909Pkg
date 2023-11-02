@@ -89,7 +89,6 @@
   StrLib|HtcLeoPkg/Library/StrLib/StrLib.inf
   PTableLib|HtcLeoPkg/Library/PTableLib/PTableLib.inf
   SmemLib|HtcLeoPkg/Drivers/SmemDxe/SmemImplLib.inf
-  MsmTargetGpioLib|HtcLeoPkg/Library/MsmTargetGpioLib/MsmTargetGpioLib.inf
   KeypadDeviceHelperLib|HtcLeoPkg/Library/KeypadDeviceHelperLib/KeypadDeviceHelperLib.inf
   KeypadDeviceImplLib|HtcLeoPkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
 

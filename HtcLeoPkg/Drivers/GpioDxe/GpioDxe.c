@@ -46,6 +46,8 @@
 #include <Library/reg.h>
 #include <Library/adm.h>
 #include <Library/InterruptsLib.h>
+#include <Library/gpio.h>
+#include <Library/pcom.h>
 
 #include <Chipset/gpio.h>
 #include <Chipset/interrupts.h>
@@ -278,7 +280,7 @@ GpioDxeInitialize(
   //
   // Make sure the Gpio protocol has not been installed in the system yet.
   //
-  ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gEmbeddedGpioProtocolGuid);
+  ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gTlmmGpioProtocolGuid);
 
   // Find the interrupt controller protocol.  ASSERT if not found.
   //Status = gBS->LocateProtocol (&gHardwareInterruptProtocolGuid, NULL, (VOID **)&gInterrupt);
@@ -287,10 +289,10 @@ GpioDxeInitialize(
 	msm_gpio_init();
 	DEBUG((EFI_D_INFO, "Gpio init done!\n"));
 
-  // Install the Embedded GPIO Protocol onto a new handle
+  // Install the Tlmm GPIO Protocol onto a new handle
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &Handle,
-                  &gEmbeddedGpioProtocolGuid,
+                  &gTlmmGpioProtocolGuid,
                   &gGpio,
                   NULL
                   );

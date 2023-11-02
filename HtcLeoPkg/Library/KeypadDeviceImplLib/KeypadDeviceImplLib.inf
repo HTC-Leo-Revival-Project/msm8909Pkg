@@ -16,7 +16,12 @@
   HtcLeoPkg/HtcLeoPkg.dec
 
 [LibraryClasses]
-  MsmTargetGpioLib
   KeypadDeviceHelperLib
   TimerLib
+
+[Protocols]
+  gTlmmGpioProtocolGuid
+
+[Depex]
+  gTlmmGpioProtocolGuid
   

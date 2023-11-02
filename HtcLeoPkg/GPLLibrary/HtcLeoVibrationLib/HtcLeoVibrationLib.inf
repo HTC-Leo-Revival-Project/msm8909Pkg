@@ -18,7 +18,6 @@
   IoLib
   TimerLib
   ArmLib
-  MsmTargetGpioLib
   TimerLib
   
 
@@ -29,4 +28,10 @@
   HtcLeoPkg/HtcLeoPkg.dec
   
 [FixedPcd]
+
+[Protocols]
+  gTlmmGpioProtocolGuid
+
+[Depex]
+  gTlmmGpioProtocolGuid
 
