@@ -122,8 +122,8 @@ typedef ulong lbaint_t;
 #define ALWAYS DEBUG_ERROR
 #define INFO DEBUG_INFO
 #define SPEW DEBUG_VERBOSE
-
-//#if !defined(MDEPKG_NDEBUG)*/
+*/
+#if !defined(MDEPKG_NDEBUG)
 #define debug(fmt, ...) do { \
                                    if (DebugPrintEnabled ()) { \
                                      CHAR8 __printbuf[100]; \
@@ -139,8 +139,41 @@ typedef ulong lbaint_t;
                                      DEBUG(((EFI_D_ERROR), __printbuf, ##__VA_ARGS__)); \
                                    } \
                                  } while(0)                              
-#define printf(fmt, ...) debug(fmt, ...)
-#define sprintf(fmt, ...) debug(fmt, ...)
+#define printf(fmt, ...) do { \
+                                   if (DebugPrintEnabled ()) { \
+                                     CHAR8 __printbuf[100]; \
+                                     UINTN __printindex; \
+                                     CONST CHAR8 *__fmtptr = (fmt); \
+                                     UINTN __fmtlen = AsciiStrSize(__fmtptr); \
+                                     CopyMem(__printbuf, __fmtptr, __fmtlen); \
+                                     __printbuf[__fmtlen-1] = 0; \
+                                     for(__printindex=1; __printbuf[__printindex]; __printindex++) { \
+                                       if (__printbuf[__printindex-1]=='%' && __printbuf[__printindex]=='s') \
+                                         __printbuf[__printindex] = 'a'; \
+                                     } \
+                                     DEBUG(((EFI_D_ERROR), __printbuf, ##__VA_ARGS__)); \
+                                   } \
+                                 } while(0)   
+#define sprintf(fmt, ...) do { \
+                                   if (DebugPrintEnabled ()) { \
+                                     CHAR8 __printbuf[100]; \
+                                     UINTN __printindex; \
+                                     CONST CHAR8 *__fmtptr = (fmt); \
+                                     UINTN __fmtlen = AsciiStrSize(__fmtptr); \
+                                     CopyMem(__printbuf, __fmtptr, __fmtlen); \
+                                     __printbuf[__fmtlen-1] = 0; \
+                                     for(__printindex=1; __printbuf[__printindex]; __printindex++) { \
+                                       if (__printbuf[__printindex-1]=='%' && __printbuf[__printindex]=='s') \
+                                         __printbuf[__printindex] = 'a'; \
+                                     } \
+                                     DEBUG(((EFI_D_ERROR), __printbuf, ##__VA_ARGS__)); \
+                                   } \
+                                 } while(0)   
+#else 
+#define sprintf(fmt, ...)
+#define printf(fmt, ...)
+#define debug(fmt, ...)
+#endif
 
 #define DMB ArmDataMemoryBarrier()
 #define DSB ArmDataSynchronizationBarrier()
