@@ -33,7 +33,7 @@
   ENTRY_POINT                    = SdCardInitialize
 
 [Sources.common]
-  adm.c #hack
+  adm.c
   mmc.c
   SdCardDxe.c
 

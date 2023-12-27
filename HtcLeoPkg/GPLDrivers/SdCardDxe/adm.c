@@ -79,21 +79,8 @@ int adm_start_transfer(uint32_t adm_chn, uint32_t *cmd_ptr_list)
     adm_addr_shift = (uint32_t)cmd_ptr_list >> 3;
     IO_WRITE32(HI0_CHn_CMD_PTR_SD3(adm_chn), adm_addr_shift);
 
-    // Wait until the transfer has finished
-    /*timeout = 1;
-    start = get_timer(0);
-    do
-    {
-       adm_status = IO_READ32(HI0_CHn_STATUS_SD3(adm_chn));
-       if ((adm_status & HI0_CHn_STATUS_SD3__RSLT_VLD___M) != 0)
-       {
-          timeout = 0;
-          break;
-       }
-    } while (get_timer(start) < CONFIG_SYS_HZ);   // 1 second timeout*/
-    // Wait until the transfer has finished
 	do
-    {
+   {
 		adm_status = IO_READ32(HI0_CHn_STATUS_SD3(adm_chn));
        if ((adm_status & HI0_CHn_STATUS_SD3__RSLT_VLD___M) != 0)
 		{
