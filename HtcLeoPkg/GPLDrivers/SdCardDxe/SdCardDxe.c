@@ -213,6 +213,7 @@ MMCHSWriteBlocks(
 {
 	EFI_STATUS Status = EFI_SUCCESS;
 	UINTN      ret = 0;
+    UINTN      WriteSize = 0;
 
 	if (BufferSize % gMMCHSMedia.BlockSize != 0) 
     {
@@ -235,9 +236,11 @@ MMCHSWriteBlocks(
         return EFI_SUCCESS;
     }
 
-	//ret = MmcWriteInternal((UINT64) Lba * 512, Buffer, BufferSize);
+	WriteSize = BufferSize / gMMCHSMedia.BlockSize;
+
+	ret = sdc_dev->block_write(SDC_INSTANCE, (ulong)Lba, (lbaint_t)WriteSize, Buffer);
 	
-	if (ret == 1)
+	if (ret)
     {
         return EFI_SUCCESS;
     }

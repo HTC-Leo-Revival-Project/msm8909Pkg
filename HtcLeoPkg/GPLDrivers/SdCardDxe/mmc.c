@@ -47,7 +47,7 @@ uint32_t sd_box_mode_entry[8]   __attribute__ ((aligned(8))); // Must aligned on
 static uchar spec_ver;
 static int mmc_ready = 0;
 static int high_capacity = FALSE;
-//#define DEBUG
+
 #ifdef USE_PROC_COMM
 //the desired duty cycle is 50%,
 //using proc_comm with 45Mhz possibly giving too low duty cycle,
@@ -98,28 +98,6 @@ block_dev_desc_t *mmc_get_dev(int dev)
 {
 	return ((block_dev_desc_t *) & mmc_dev);
 }
-
-#if 0
-int
-/****************************************************/
-mmc_write(uchar * src, ulong dst, int size)
-/****************************************************/
-{
-    // ZZZZ not implemented yet.  Called by do_mem_cp().
-    return 0;
-}
-
-
-int
-/****************************************************/
-mmc_read(ulong src, uchar *dst, int size)
-/****************************************************/
-{
-
-    // ZZZZ not implemented yet.  Called by do_mem_cp().
-    return 0;
-}
-#endif
 
 ulong
 /****************************************************/
@@ -184,14 +162,14 @@ mmc_bread(int dev_num, ulong blknr, lbaint_t blkcnt, void *dst)
 // TODO: Actually implement
 ulong
 /****************************************************/
-mmc_bwrite(int dev_num, ulong blknr, lbaint_t blkcnt, void *dst)
+mmc_bwrite(int dev_num, ulong blknr, lbaint_t blkcnt, void *buffer)
 /****************************************************/
 {
 
     int i;
     lbaint_t run_blkcnt = 0;
 
-    debug("bwrite blknr=0x%08lx blkcnt=0x%08lx dst=0x%08lx\n", blknr, blkcnt, dst);
+    debug("bwrite blknr=0x%08lx blkcnt=0x%08lx buffer=0x%08lx\n", blknr, blkcnt, buffer);
 
     if (blkcnt == 0) {
         return 0;
@@ -207,7 +185,7 @@ mmc_bwrite(int dev_num, ulong blknr, lbaint_t blkcnt, void *dst)
         if (i==1)
         {
             // Single block read
-            if(!write_a_block(blknr, dst, rca))
+            if(!write_a_block(blknr, buffer, rca))
             {
                debug("SD - write_a_block_dm error, blknr= 0x%08lx\n", blknr);
                return run_blkcnt;
@@ -216,7 +194,7 @@ mmc_bwrite(int dev_num, ulong blknr, lbaint_t blkcnt, void *dst)
         else
         {
             // Multiple block read using data mover
-            if(!write_a_block_dm(blknr, i, dst, rca))
+            if(!write_a_block_dm(blknr, i, buffer, rca))
             {
                debug("SD - write_a_block_dm error, blknr= 0x%08lx\n", blknr);
                return run_blkcnt;
@@ -232,7 +210,7 @@ mmc_bwrite(int dev_num, ulong blknr, lbaint_t blkcnt, void *dst)
 
         blknr += i;
         blkcnt -= i;
-        dst += (BLOCK_SIZE * i);
+        buffer += (BLOCK_SIZE * i);
     }
 
     if (run_blkcnt >= NUM_BLOCKS_STATUS) {

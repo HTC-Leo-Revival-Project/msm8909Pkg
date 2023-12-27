@@ -139,19 +139,11 @@ typedef ulong lbaint_t;
                                      DEBUG(((EFI_D_ERROR), __printbuf, ##__VA_ARGS__)); \
                                    } \
                                  } while(0)                              
-//#define debug(message) DEBUG((EFI_D_ERROR, message))
-//#define debug(fmt, ...)
-#define printf(fmt, ...)
-#define sprintf(fmt, ...)
-
-//#define ntohl(n) SwapBytes32(n)
+#define printf(fmt, ...) debug(fmt, ...)
+#define sprintf(fmt, ...) debug(fmt, ...)
 
 #define DMB ArmDataMemoryBarrier()
 #define DSB ArmDataSynchronizationBarrier()
-
-
-//#define arch_clean_invalidate_cache_range(start, len) WriteBackInvalidateDataCacheRange ((VOID *)(UINTN)(start), (UINTN)(len))
-//#define arch_invalidate_cache_range(start, len) InvalidateDataCacheRange ((VOID *)(UINTN)(start), (UINTN)(len));
 
 #define __ALWAYS_INLINE __attribute__ ((always_inline))
 
@@ -172,12 +164,6 @@ typedef ulong lbaint_t;
 #define LE16SWAP(var) (var) = LE16(var);
 #define BE32SWAP(var) (var) = BE32(var);
 #define BE16SWAP(var) (var) = BE16(var);
-
-/* classic network byte swap stuff */
-/*#define ntohs(n) BE16(n)
-#define htons(h) BE16(h)
-#define ntohl(n) BE32(n)
-#define htonl(h) BE32(h)*/
 
 /* low level macros for accessing memory mapped hardware registers */
 #define REG64(addr) ((volatile UINT64 *)(addr))

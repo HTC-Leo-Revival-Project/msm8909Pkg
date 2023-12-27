@@ -8,7 +8,6 @@
 #include <Library/part.h>
 #include <Library/mmc.h>
 #include <Library/adm.h>
-//#include <asm-armv7Scorpion/mmu.h>
 #ifdef USE_PROC_COMM
 #include <Library/pcom_clients.h>
 #endif /*USE_PROC_COMM */
