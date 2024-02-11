@@ -154,10 +154,10 @@ VOID EFIAPI WantsCharging(
   if (CheckUsbStatus())
   {
     voltage = ds2746_voltage(DS2746_I2C_SLAVE_ADDR);
-    DEBUG((EFI_D_INFO, "ChargingApp: Battery Voltage is: %d\n", voltage));
+    DEBUG((EFI_D_ERROR, "ChargingApp: Battery Voltage is: %d\n", voltage));
 
     if(voltage < default_chg_voltage_threshold[VOLTAGE_4100]) {
-      DEBUG((EFI_D_INFO, "ChargingApp: Voltage < default_threshold\n"));
+      DEBUG((EFI_D_ERROR, "ChargingApp: Voltage < default_threshold\n"));
       // If battery needs charging, set new charger state
       if (IsAcOnline()) {
         if (gState != CHG_AC ) {
@@ -172,13 +172,13 @@ VOID EFIAPI WantsCharging(
           SetCharger(CHG_USB_LOW);
         }
       }
-      DEBUG((EFI_D_INFO, "ChargingApp: Charging enabled\n"));
+      DEBUG((EFI_D_ERROR, "ChargingApp: Charging enabled\n"));
       // and turn LED amber
       gMicroP->LedSetMode(LED_AMBER);
     }
     else {
       // Battery is full
-      DEBUG((EFI_D_INFO, "ChargingApp: Voltage >= default_threshold\n"));
+      DEBUG((EFI_D_ERROR, "ChargingApp: Voltage >= default_threshold\n"));
       // Set charger state to CHG_OFF_FULL_BAT
       if (gState != CHG_OFF_FULL_BAT ) {
         MmioWrite32(USB_USBCMD, 0x00080001);
@@ -234,7 +234,9 @@ ChargingDxeInit(
   Status = gBS->LocateProtocol (&gHtcLeoMicropProtocolGuid, NULL, (VOID **)&gMicroP);
   ASSERT_EFI_ERROR (Status);
 
-  // Install a timer to check for want charging every 100ms
+  //toDo: check the voltage initally once here so the charger gets enabled if needed before the timer fires the first time
+
+  // Install a timer to check for want charging every 300000ms
   Status = gBS->CreateEvent (
                 EVT_TIMER | EVT_NOTIFY_SIGNAL,  // Type
                 TPL_NOTIFY,                     // NotifyTpl
@@ -245,12 +247,12 @@ ChargingDxeInit(
   ASSERT_EFI_ERROR(Status);
 
   //
-  // Program the timer event to be signaled every 100 ms.
+  // Program the timer event to be signaled every 300000 ms.
   //
   Status = gBS->SetTimer (
                 m_CallbackTimer,
                 TimerPeriodic,
-                EFI_TIMER_PERIOD_MILLISECONDS (100)
+                EFI_TIMER_PERIOD_MILLISECONDS (300000)
                 );
   ASSERT_EFI_ERROR(Status);
 
