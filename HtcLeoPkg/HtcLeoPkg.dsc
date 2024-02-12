@@ -92,6 +92,8 @@
   KeypadDeviceImplLib|HtcLeoPkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
   DS2746Lib|HtcLeoPkg/Library/DS2746Lib/DS2746.inf
 
+  libboot|HtcLeoPkg/Library/libboot/libboot.inf
+
 [LibraryClasses.common.SEC]
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
   PrePiHobListPointerLib|ArmPlatformPkg/Library/PrePiHobListPointerLib/PrePiHobListPointerLib.inf

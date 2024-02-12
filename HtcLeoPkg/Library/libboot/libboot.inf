@@ -4,7 +4,7 @@
   FILE_GUID                      = 12345678-1234-1234-1234-123456789ABC
   MODULE_TYPE                    = BASE
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = libboot_entry_point
+  LIBRARY_CLASS                  = libboot
 
 [Sources]
   libboot.c
@@ -26,10 +26,6 @@
   BaseLib
   UefiLib
   UefiApplicationEntryPoint
-
-[BuildOptions]
-  EDK2BUILDTOOLFLAGS            = -ffunction-sections -fdata-sections -Wl,-gc-sections -O0 -ggdb
-  EDK2GCCFLAGS                  = -Wall -Wextra -Wshadow -Wno-format-security -Werror -Wno-unused-parameter
 
 [Packages]
   MdePkg/MdePkg.dec
