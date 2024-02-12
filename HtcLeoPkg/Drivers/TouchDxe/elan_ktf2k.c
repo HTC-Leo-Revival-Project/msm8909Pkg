@@ -85,10 +85,10 @@ struct elan_ktf2k_ts_data {
 	struct input_dev *input_dev;
 	struct workqueue_struct *elan_wq;
 	struct work_struct work;
-	int (*power)(int on);
-	int (*reset)(void);
+	INTN (*power)(INTN on);
+	INTN (*reset)(void);
 	struct early_suspend early_suspend;
-	int intr_gpio;
+	INTN intr_gpio;
 	UINT16 fw_ver;
 	UINT8 first_pressed;
 	UINT8 finger_pressed;
@@ -168,7 +168,7 @@ static DEVICE_ATTR(vendor, S_IRUGO, elan_ktf2k_vendor_show, NULL);
 static ssize_t elan_ktf2k_packet_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-	int rc = 0;
+	INTN rc = 0;
 	ssize_t ret = 0;
 	struct elan_ktf2k_ts_data *ts = private_ts;
 	UINT8 cmd[] = {CMD_R_PKT, 0x00, 0x00, 0x01};
@@ -253,7 +253,7 @@ static ssize_t elan_ktf2k_reset_store(struct device *dev,
 static INTN __elan_ktf2k_ts_poll(struct i2c_client *client)
 {
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
-	int status = 0, retry = 5;
+	INTN status = 0, retry = 5;
 
 	while ((status = gpio_get_value(ts->intr_gpio)) && retry) {
         DEBUG((EFI_D_INFO,&client->dev, "%s: INTN status = %d\n", __func__, status));
@@ -273,7 +273,7 @@ static INTN elan_ktf2k_ts_poll(struct i2c_client *client)
 static INTN elan_ktf2k_ts_get_data(struct i2c_client *client, UINT8 *cmd,
 			UINT8 *buf, size_t len)
 {
-	int rc = 0;
+	INTN rc = 0;
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
 	UINT8 loop_i;
 
@@ -320,7 +320,7 @@ static INTN elan_ktf2k_ts_get_data(struct i2c_client *client, UINT8 *cmd,
 
 static INTN __hello_packet_handler(struct i2c_client *client)
 {
-	int rc = 0;
+	INTN rc = 0;
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
 	UINT8 data[4] = {0};
 	UINT8 loop_i;
@@ -351,7 +351,7 @@ static INTN __hello_packet_handler(struct i2c_client *client)
 
 static INTN elan_ktf2k_ts_get_firmware_version(struct i2c_client *client)
 {
-	int rc = 0;
+	INTN rc = 0;
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
 	UINT8 major, minor;
 	UINT8 cmd[] = {CMD_R_PKT, 0x00, 0x00, 0x01};
@@ -393,7 +393,7 @@ static INTN elan_ktf2k_ts_setup(struct i2c_client *client)
 static INTN elan_ktf2k_ts_set_packet_state(struct i2c_client *client, INTN state)
 {
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
-	int rc = 0;
+	INTN rc = 0;
 	UINT8 cmd[] = {CMD_W_PKT, 0x8E, 0x00, 0x01};
 	UINT8 loop_i;
 
@@ -417,7 +417,7 @@ static INTN elan_ktf2k_ts_set_packet_state(struct i2c_client *client, INTN state
 
 static INTN elan_ktf2k_ts_get_packet_state(struct i2c_client *client)
 {
-	int rc = 0;
+	INTN rc = 0;
 	UINT8 cmd[] = {CMD_R_PKT, 0x8E, 0x00, 0x01};
 	UINT8 data[4] = {0};
 	UINT8 state;
@@ -443,7 +443,7 @@ static INTN elan_ktf2k_ts_get_packet_state(struct i2c_client *client)
 static INTN elan_ktf2k_ts_set_power_state(struct i2c_client *client, INTN state)
 {
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
-	int rc = 0;
+	INTN rc = 0;
 	UINT8 cmd[] = {CMD_W_PKT, 0x50, 0x00, 0x01};
 	UINT8 loop_i;
 
@@ -467,7 +467,7 @@ static INTN elan_ktf2k_ts_set_power_state(struct i2c_client *client, INTN state)
 
 static INTN elan_ktf2k_ts_get_power_state(struct i2c_client *client)
 {
-	int rc = 0;
+	INTN rc = 0;
 	UINT8 cmd[] = {CMD_R_PKT, 0x50, 0x00, 0x01};
 	UINT8 data[4] = {0};
 	UINT8 power_state;
@@ -494,7 +494,7 @@ static INTN elan_ktf2k_ts_get_power_state(struct i2c_client *client)
 static INTN elan_ktf2k_ts_calibration(struct i2c_client *client)
 {
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
-	int rc = 0;
+	INTN rc = 0;
 	UINT8 cmd[4] = {0};
 	UINT8 loop_i;
 
@@ -545,7 +545,7 @@ static INTN elan_ktf2k_ts_calibration(struct i2c_client *client)
 static INTN i2c_elan_ktf2k_read(struct i2c_client *client,
 	UINT8 *buf, size_t len)
 {
-	int retry;
+	INTN retry;
 
 	if (buf == NULL)
 		return -EINVAL;
@@ -571,7 +571,7 @@ static INTN i2c_elan_ktf2k_read(struct i2c_client *client,
 static INTN i2c_elan_ktf2k_write(struct i2c_client *client,
 	UINT8 *buf, size_t len)
 {
-	int retry;
+	INTN retry;
 
 	if (buf == NULL)
 		return -EINVAL;
@@ -669,7 +669,7 @@ static void elan_ktf2k_ts_report_data(struct i2c_client *client, UINT8 *buf)
 
 static void elan_ktf2k_ts_work_func(struct work_struct *work)
 {
-	int rc = 0;
+	INTN rc = 0;
 	struct elan_ktf2k_ts_data *ts =
 		container_of(work, struct elan_ktf2k_ts_data, work);
 	UINT8 data[IDX_PACKET_SIZE] = {0};
@@ -725,7 +725,7 @@ static void elan_ktf2k_ts_work_func(struct work_struct *work)
 	return;
 }
 
-static irqreturn_t elan_ktf2k_ts_irq_handler(int irq, void *dev_id)
+static irqreturn_t elan_ktf2k_ts_irq_handler(INTN irq, void *dev_id)
 {
 	struct elan_ktf2k_ts_data *ts = dev_id;
 	struct i2c_client *client = ts->client;
@@ -739,7 +739,7 @@ static irqreturn_t elan_ktf2k_ts_irq_handler(int irq, void *dev_id)
 static INTN elan_ktf2k_ts_register_interrupt(struct i2c_client *client)
 {
 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
-	int err = 0;
+	INTN err = 0;
 
 	err = request_irq(client->irq, elan_ktf2k_ts_irq_handler,
 			IRQF_TRIGGER_LOW, client->name, ts);
@@ -753,7 +753,7 @@ static INTN elan_ktf2k_ts_register_interrupt(struct i2c_client *client)
 static INTN elan_ktf2k_ts_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
-	int err = 0;
+	INTN err = 0;
 	struct elan_ktf2k_i2c_platform_data *pdata;
 	struct elan_ktf2k_ts_data *ts;
 
@@ -841,7 +841,7 @@ err_check_functionality_failed:
 
 // static INTN elan_ktf2k_ts_suspend(struct i2c_client *client, pm_message_t mesg)
 // {
-// 	int rc = 0;
+// 	INTN rc = 0;
 // 	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
 
 // 	DEBUG((EFI_D_INFO,"%s: enter\n", __func__));
