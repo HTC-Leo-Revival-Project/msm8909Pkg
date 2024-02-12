@@ -273,6 +273,9 @@
   # Tetris
   HtcLeoPkg/Application/TetrisApp/tetris.inf
 
+  # LinuxLoader
+  HtcLeoPkg/Application/LinuxLoader/LinuxLoader.inf
+
   # Charging
   HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
