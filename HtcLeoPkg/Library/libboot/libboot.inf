@@ -7,32 +7,29 @@
   LIBRARY_CLASS                  = libboot
 
 [Sources]
-  libboot.c
-  cmdline.c
-  qcdt.c
-  crc32.c
-  android.c
-  efi.c
-  elf.c
-  gzip.c
-  qcmbn.c
-  zimage.c
-  atags.c
-  fdt.c
-  platform.c
-  main.c
+    boot.c
+    cmdline.c
+    qcdt.c
+    cksum/crc32.c
+    loaders/android.c
+    loaders/efi.c
+    loaders/elf.c
+    loaders/gzip.c
+    loaders/qcmbn.c
+    loaders/zimage.c
+    tagloaders/atags.c
+    tagloaders/fdt.c
+    tagloaders/qcdt.c
 
 [LibraryClasses]
   BaseLib
   UefiLib
-  UefiApplicationEntryPoint
+  FdtLib
+  BaseMemoryLib
 
 [Packages]
   MdePkg/MdePkg.dec
 
-[LibraryClasses]
-  FdtLib
-  BaseMemoryLib
 
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid
