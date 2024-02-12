@@ -4,7 +4,7 @@
 #include <string.h>
 #include <malloc.h>
 
-#include <lib/boot.h>
+#include <Library/boot.h>
 
 static off_t fdsize(int fd)
 {

@@ -14,8 +14,8 @@
  * limitations under the License.
 */
 
-#include <lib/boot.h>
-#include <lib/boot/internal/boot_internal.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/boot_internal.h>
 
 #include <zlib.h>
 

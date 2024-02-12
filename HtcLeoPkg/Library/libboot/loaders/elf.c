@@ -16,8 +16,8 @@
 
 #include <elf.h>
 
-#include <lib/boot.h>
-#include <lib/boot/internal/boot_internal.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/boot_internal.h>
 
 static Elf64_Ehdr *elf_get_hdr(boot_io_t *io, int *is_32bit_elf)
 {

@@ -1,7 +1,7 @@
 #ifndef _LINUX_ELF_H
 #define _LINUX_ELF_H
 
-#include <lib/boot/boot_platform.h>
+#include <Library/boot/boot_platform.h>
 #include <elf-em.h>
 
 /* 32-bit ELF base types. */

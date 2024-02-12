@@ -14,9 +14,9 @@
  * limitations under the License.
 */
 
-#include <lib/boot.h>
-#include <lib/boot/internal/boot_internal.h>
-#include <lib/boot/qcdt.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/boot_internal.h>
+#include <Library/boot/qcdt.h>
 #include <libfdt.h>
 
 #define DTB_PAD_SIZE (1*1024*1024)

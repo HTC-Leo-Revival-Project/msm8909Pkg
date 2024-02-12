@@ -14,9 +14,9 @@
  * limitations under the License.
 */
 
-#include <lib/boot.h>
-#include <lib/boot/internal/boot_internal.h>
-#include <lib/boot/internal/atags.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/boot_internal.h>
+#include <Library/boot/internal/atags.h>
 
 #define ATAG_MAX_SIZE   0x3000
 

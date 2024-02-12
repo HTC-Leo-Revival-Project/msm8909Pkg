@@ -14,10 +14,10 @@
  * limitations under the License.
 */
 
-#include <lib/boot.h>
-#include <lib/boot/internal/boot_internal.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/boot_internal.h>
 
-#include <lib/boot/internal/bootimg.h>
+#include <Library/boot/internal/bootimg.h>
 
 static int ldrmodule_load(bootimg_context_t *context, boot_uintn_t type, boot_uint8_t recursive)
 {

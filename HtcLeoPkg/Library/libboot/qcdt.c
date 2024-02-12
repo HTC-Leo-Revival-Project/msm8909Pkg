@@ -26,10 +26,10 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <lib/boot.h>
-#include <lib/boot/internal/boot_internal.h>
-#include <lib/boot/qcdt.h>
-#include <lib/boot/internal/qcdt.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/boot_internal.h>
+#include <Library/boot/qcdt.h>
+#include <Library/boot/internal/qcdt.h>
 #include <libfdt.h>
 
 #ifndef __WEAK
