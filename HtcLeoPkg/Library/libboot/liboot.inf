@@ -1,0 +1,43 @@
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = libboot
+  FILE_GUID                      = 12345678-1234-1234-1234-123456789ABC
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = libboot_entry_point
+
+[Sources]
+  libboot.c
+  cmdline.c
+  qcdt.c
+  crc32.c
+  android.c
+  efi.c
+  elf.c
+  gzip.c
+  qcmbn.c
+  zimage.c
+  atags.c
+  fdt.c
+  platform.c
+  main.c
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  UefiApplicationEntryPoint
+
+[BuildOptions]
+  EDK2BUILDTOOLFLAGS            = -ffunction-sections -fdata-sections -Wl,-gc-sections -O0 -ggdb
+  EDK2GCCFLAGS                  = -Wall -Wextra -Wshadow -Wno-format-security -Werror -Wno-unused-parameter
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  FdtLib
+  BaseMemoryLib
+
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid
+  gEfiDevicePathProtocolGuid
