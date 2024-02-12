@@ -17,8 +17,8 @@
 #ifndef LIB_BOOT_H
 #define LIB_BOOT_H
 
-#include <lib/boot/boot_platform.h>
-#include <lib/boot/list.h>
+#include <Library/boot/boot_platform.h>
+#include <Library/boot/list.h>
 
 #define LIBBOOT_LOAD_TYPE_KERNEL 1
 #define LIBBOOT_LOAD_TYPE_RAMDISK 2

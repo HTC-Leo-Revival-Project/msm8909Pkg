@@ -17,8 +17,8 @@
 #ifndef LIB_BOOT_INTERNAL_H
 #define LIB_BOOT_INTERNAL_H
 
-#include <lib/boot.h>
-#include <lib/boot/internal/platform.h>
+#include <Library/boot.h>
+#include <Library/boot/internal/platform.h>
 
 // default settings
 #ifndef DEBUG_ERROR_SOURCE
