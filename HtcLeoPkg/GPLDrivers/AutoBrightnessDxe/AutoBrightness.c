@@ -45,6 +45,39 @@ static struct lsensor_data
 	INTN opened;
 } the_data;
 
+
+INTN htcleo_panel_status = 0;
+static void htcleo_panel_bkl_pwr(INTN enable)
+{
+	htcleo_panel_status = enable;
+	UINT8 data[1];
+	data[0] = !!enable;
+	gMicroP->Write(MICROP_I2C_WCMD_BL_EN, data, 1);
+}
+
+static void htcleo_panel_bkl_level(UINT8 value)
+{
+	UINT8 data[1];
+	data[0] = value << 4;
+	gMicroP->Write(MICROP_I2C_WCMD_LCM_BL_MANU_CTL, data, 1);
+}
+
+void htcleo_panel_set_brightness(INTN val)
+{
+	if (val > 9) val = 9;
+	if (val < 1) {
+		if (htcleo_panel_status != 0)
+			htcleo_panel_bkl_pwr(0);
+		return;
+	} else {
+		if (htcleo_panel_status == 0)
+			htcleo_panel_bkl_pwr(1);
+		htcleo_panel_bkl_level((UINT8)val);
+		return;
+	}
+}
+
+
 // range: adc: 0..1023, value: 0..9
 static void map_adc_to_level(UINT32 adc, UINT32 *value)
 {
@@ -258,6 +291,10 @@ EFI_STATUS EFIAPI AutoBrightnessDxeInit(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM
 		map_adc_to_level(adc, &level);
 
 		DEBUG((EFI_D_ERROR, "Light sensor level is: %d \n", level));
+		htcleo_panel_set_brightness(level == 0 ? 1 : level);
+		//test if keyboard light level can be set prior to turn on, else move light sensor to a lib and use it in keypaddxe
+
+		htcleo_panel_set_brightness(level);
 		MicroSecondDelay(2000000);
 	}
 
