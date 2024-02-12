@@ -343,6 +343,9 @@ TouchDxeInitialize(
   }
   htcleo_init_ts();
 
+  DEBUG((EFI_D_ERROR, "TS: INITED\n"));
+  MicroSecondDelay(10000000);
+
   //gInterrupt->RegisterInterruptSource(gInterrupt, gpio_to_irq(HTCLEO_GPIO_TS_IRQ), TouchIrqHandler);
 
 	/*
