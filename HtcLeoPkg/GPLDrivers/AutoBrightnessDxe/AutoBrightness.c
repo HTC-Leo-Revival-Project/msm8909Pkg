@@ -112,7 +112,7 @@ static INTN lightsensor_enable(void)
 	if (p->enabled)
 		return 0;
 	
-	rc = capella_cm3602_power(LS_PWR_ON, 1);
+	rc = gMicroP->CapellaCM3602Power(LS_PWR_ON, 1);
 	if (rc < 0)
 		return -1;
 	
@@ -178,7 +178,7 @@ INTN htcleo_lsensor_probe(void)
 	
 	ret = lightsensor_enable();
 	if (ret) {
-		DEBUG((EFI_D_INFO, "lightsensor_enable failed\n"));
+		DEBUG((EFI_D_ERROR, "lightsensor_enable failed\n"));
 		return -1;
 	}
 
@@ -195,7 +195,7 @@ INTN htcleo_lsensor_probe(void)
 }
 
 VOID PollSensor(IN EFI_EVENT Event, IN VOID *Context){
-	DEBUG((EFI_D_INFO, "TIMER\n"));
+	DEBUG((EFI_D_ERROR, "TIMER\n"));
 }
 
 VOID
@@ -215,6 +215,17 @@ EFI_STATUS EFIAPI AutoBrightnessDxeInit(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM
   // Find the MicroP protocol.  ASSERT if not found.
   Status = gBS->LocateProtocol (&gHtcLeoMicropProtocolGuid, NULL, (VOID **)&gMicroP);
   ASSERT_EFI_ERROR (Status);
+
+  INTN ret = htcleo_lsensor_probe();
+  if (ret == -1){
+	DEBUG((EFI_D_ERROR, "Probing light sensor failed !!!\n"));
+	MicroSecondDelay(5000);
+  }else {
+	DEBUG((EFI_D_ERROR, "Probing light sensor success !!!\n"));
+	MicroSecondDelay(10000);
+  }
+
+  for(;;);
 
   // Install a timer to check for want charging every 100ms
   Status = gBS->CreateEvent (

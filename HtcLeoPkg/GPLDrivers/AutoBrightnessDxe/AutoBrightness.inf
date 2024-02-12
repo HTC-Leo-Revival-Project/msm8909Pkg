@@ -1,7 +1,7 @@
 [Defines] 
   INF_VERSION                    = 0x00010005
   BASE_NAME                      = AutoBrightnessDxe
-  FILE_GUID                      = D7A59C0A-899E-4E31-A1C3-3D551D7A9999 #7C04A583-9E3E-4f1c-AD65-E05268D0B4D1
+  FILE_GUID                      = D7A59C0A-873E-4E31-A1C3-3D551D7A9999 #7C04A583-9E3E-4f1c-AD65-E05268D0B4D1
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 0.1 
   ENTRY_POINT                    = AutoBrightnessDxeInit
