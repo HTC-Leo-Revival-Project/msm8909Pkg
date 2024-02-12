@@ -239,7 +239,11 @@ SimpleFbDxeInitialize(
   }
 
   ASSERT_EFI_ERROR(Status);
-  ZeroMem((VOID *)FrameBufferAddress, FrameBufferSize);
+  /* Causes gcc to error with "-Werror=int-to-pointer-cast" 
+   * Unneded cause the framebuffer is cleaned in PrePi anyway
+   *
+   * ZeroMem((VOID *)FrameBufferAddress, FrameBufferSize); 
+   */
 
   /* Register handle */
   Status = gBS->InstallMultipleProtocolInterfaces(

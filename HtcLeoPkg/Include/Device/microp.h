@@ -81,14 +81,19 @@
 // Specific defines from board_htcleo.h
 #define HTCLEO_GPIO_UP_RESET_N		91
 
+// Colors
+#define LED_OFF   0
+#define LED_GREEN 1
+#define LED_AMBER 2
+
 struct microp_platform_data {
 	int chip;
-	uint32_t gpio_reset;
+	UINT32 gpio_reset;
 };
-int capella_cm3602_power(int pwr_device, uint8_t enable);
-int microp_i2c_read(uint8_t addr, uint8_t *data, int length);
-int microp_i2c_write(uint8_t addr, uint8_t *data, int length);
+int capella_cm3602_power(int pwr_device, UINT8 enable);
+int microp_i2c_read(UINT8 addr, UINT8 *data, int length);
+int microp_i2c_write(UINT8 addr, UINT8 *data, int length);
 void microp_i2c_probe(struct microp_platform_data *kpdata);
-int microp_gpo_enable(uint16_t gpo_mask);
-int microp_gpo_disable(uint16_t gpo_mask);
-int microp_read_gpo_status(uint16_t *status);
+int microp_gpo_enable(UINT16 gpo_mask);
+int microp_gpo_disable(UINT16 gpo_mask);
+int microp_read_gpo_status(UINT16 *status);

@@ -28,6 +28,7 @@ UINT64  mSystemMemoryEnd = FixedPcdGet64 (PcdSystemMemoryBase) +
 UINTN Width = FixedPcdGet32(PcdMipiFrameBufferWidth);
 UINTN Height = FixedPcdGet32(PcdMipiFrameBufferHeight);
 UINTN Bpp = FixedPcdGet32(PcdMipiFrameBufferPixelBpp);
+UINTN FbAddr = FixedPcdGet32(PcdMipiFrameBufferAddress);
 
 VOID
 PaintScreen(
@@ -37,7 +38,7 @@ PaintScreen(
   // Code from FramebufferSerialPortLib
 	char* Pixels = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
 
-	// Set to black color.
+	// Set color.
 	for (UINTN i = 0; i < Width; i++)
 	{
 		for (UINTN j = 0; j < Height; j++)
@@ -56,36 +57,54 @@ PaintScreen(
 VOID
 ReconfigFb()
 {
-  // Format (32bpp)
-  MmioWrite32(MDP_DMA_P_CONFIG, DMA_PACK_ALIGN_LSB|DMA_PACK_PATTERN_RGB|DMA_DITHER_EN|DMA_OUT_SEL_LCDC|DMA_IBUF_FORMAT_xRGB8888_OR_ARGB8888|DMA_DSTC0G_8BITS|DMA_DSTC1B_8BITS|DMA_DSTC2R_8BITS);
+  UINT32 dma_cfg = 0;
+
+  PaintScreen(0);
+
+  // Stop any previous transfers
+  MmioWrite32(MDP_LCDC_EN, 0);
+
+  ArmInstructionSynchronizationBarrier();
+  ArmDataMemoryBarrier();
+
+  // Format
+  // https://github.com/marc1706/hd2_kernel/blob/f4951cda4525e4cba87a3de83fd00aee61bb2897/drivers/video/msm/mdp_lcdc.c#L152
+  dma_cfg |= (DMA_PACK_ALIGN_LSB |
+          DMA_PACK_PATTERN_RGB |
+          DMA_DITHER_EN);
+  
+  dma_cfg |= DMA_OUT_SEL_LCDC; // Select the DMA channel for LCDC
+  
+  // Format
+  if(Bpp == 16) {
+      dma_cfg |= DMA_IBUF_FORMAT_RGB565;
+  }
+  else if(Bpp == 24) {
+      dma_cfg |= DMA_IBUF_FORMAT_RGB888;
+  }
+  else if(Bpp == 32) {
+      dma_cfg |= DMA_IBUF_FORMAT_XRGB8888;
+  }
+
+  dma_cfg &= ~DMA_DST_BITS_MASK;
+  dma_cfg |= DMA_DSTC0G_8BITS|DMA_DSTC1B_8BITS|DMA_DSTC2R_8BITS;
+
+  MmioWrite32(MDP_DMA_P_CONFIG, dma_cfg);
+
   // Stride
-  MmioWrite32(MDP_DMA_P_BUF_Y_STRIDE, 4 * Width);
+  MmioWrite32(MDP_DMA_P_BUF_Y_STRIDE, (Bpp / 8) * Width);
+
+  // Ensure all transfers finished
+  ArmInstructionSynchronizationBarrier();
+  ArmDataMemoryBarrier();
+
+  // Enable LCDC
+  MmioWrite32(MDP_LCDC_EN, 0x1);
 }
 
 VOID
-PrePiMain (
-  IN  UINTN   UefiMemoryBase,
-  IN  UINTN   StacksBase,
-  IN  UINT64  StartTimeStamp
-  )
+EnableCounter()
 {
-  EFI_HOB_HANDOFF_INFO_TABLE  *HobList;
-  EFI_STATUS                  Status;
-  CHAR8                       Buffer[100];
-  UINTN                       CharCount;
-  UINTN                       StacksSize;
-  FIRMWARE_SEC_PERFORMANCE    Performance;
-
-  // Initialize the architecture specific bits
-  ArchInitialize ();
-
-  // Reconfigure the framebuffer to 32bpp BGRA8888
-  ReconfigFb();
-
-  // Paint the screen to black
-  PaintScreen(FB_BGRA8888_BLACK);
-
-  // There are still a few things to do
   /* enable cp10 and cp11 */
 	UINT32 val;
 	__asm__ volatile("mrc	p15, 0, %0, c1, c0, 2" : "=r" (val));
@@ -110,6 +129,30 @@ PrePiMain (
 	/* enable cycle counter */
 	en = (1<<31);
 	__asm__ volatile("mcr	p15, 0, %0, c9, c12, 1" :: "r" (en));
+}
+
+VOID
+PrePiMain (
+  IN  UINTN   UefiMemoryBase,
+  IN  UINTN   StacksBase,
+  IN  UINT64  StartTimeStamp
+  )
+{
+  EFI_HOB_HANDOFF_INFO_TABLE  *HobList;
+  EFI_STATUS                  Status;
+  CHAR8                       Buffer[100];
+  UINTN                       CharCount;
+  UINTN                       StacksSize;
+  FIRMWARE_SEC_PERFORMANCE    Performance;
+
+  // Initialize the architecture specific bits
+  ArchInitialize ();
+
+  // Reconfigure the framebuffer based on PCD
+  ReconfigFb();
+
+  // Enable the counter (code from PrimeG2Pkg)
+  EnableCounter();
 
   // Initialize the Serial Port
   SerialPortInitialize ();

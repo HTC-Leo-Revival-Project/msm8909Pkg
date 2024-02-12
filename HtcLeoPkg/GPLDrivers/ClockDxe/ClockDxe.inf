@@ -17,11 +17,8 @@
   FILE_GUID                      = A9AE7F06-35A1-40AF-A894-7CF3BA488B2D
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-
   ENTRY_POINT                    = ClockDxeInitialize
 
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable -Wno-shift-count-overflow -Wno-implicit-function-declaration -Wno-missing-braces
 [Sources.common]
   acpuclock.c
   ClockDxe.c

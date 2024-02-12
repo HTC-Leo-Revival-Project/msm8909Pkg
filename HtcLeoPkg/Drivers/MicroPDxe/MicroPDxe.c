@@ -296,7 +296,7 @@ static void microp_i2c_intr_work_func(struct work_struct *work)
 
 	enable_irq(client->irq);
 }
-*/
+
 
 static int microp_function_initialize(void)
 {    
@@ -314,7 +314,7 @@ static int microp_function_initialize(void)
 
 err_irq_en:
 	return ret;
-}
+}*/
 
 void microp_i2c_probe(struct microp_platform_data *kpdata)
 {
@@ -366,7 +366,8 @@ void htcleo_led_set_mode(uint8_t mode)
 
 HTCLEO_MICROP_PROTOCOL gHtcLeoMicropProtocol = {
   microp_i2c_write,
-  microp_i2c_read
+  microp_i2c_read,
+  htcleo_led_set_mode
 };
 
 EFI_STATUS

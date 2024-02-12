@@ -45,9 +45,6 @@
 [Protocols]
   gHardwareInterruptProtocolGuid
   gEfiCpuArchProtocolGuid
-  
-[FixedPcd.common]
-  gEmbeddedTokenSpaceGuid.PcdInterruptBaseAddress
 
 [Depex]
   gEfiCpuArchProtocolGuid

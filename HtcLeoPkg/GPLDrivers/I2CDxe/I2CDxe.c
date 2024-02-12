@@ -267,8 +267,8 @@ static int msm_i2c_poll_notbusy(int warn)
 		if (!(status & I2C_STATUS_BUS_ACTIVE)) {
 			if (retries && warn){
 				I2C_DBG(DEBUGLEVEL, "Warning bus was busy (%d)\n", retries);
-				return 0;
 			}
+			return 0;
 		}
 		
 		if (retries++ > 100)

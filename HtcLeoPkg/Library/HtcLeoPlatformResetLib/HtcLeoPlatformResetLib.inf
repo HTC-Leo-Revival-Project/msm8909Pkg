@@ -8,8 +8,6 @@
   LIBRARY_CLASS                  = EfiResetSystemLib
  # VALID_ARCHITECTURES            = ARM
 
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Werror -Wno-unused-function -Wno-unused-variable -Wno-shift-count-overflow -Wno-incompatible-pointer-types
 [Sources.common]
   HtcLeoPlatformResetLib.c
 
@@ -18,7 +16,6 @@
   IoLib
   TimerLib
   ArmLib
-
   MsmPcomLib
 
 [Packages]

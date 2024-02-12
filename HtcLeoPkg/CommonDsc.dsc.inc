@@ -23,7 +23,7 @@
 !if $(USE_SCREEN_FOR_SERIAL_OUTPUT) == 1
   SerialPortLib|HtcLeoPkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
 !else
-  SerialPortLib|HtcLeoPkg/Library/InMemorySerialPortLib/InMemorySerialPortLib.inf
+  SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
 !endif
 
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
@@ -92,6 +92,7 @@
 
   SemihostLib|ArmPkg/Library/SemihostLib/SemihostLib.inf
 
+  ImagePropertiesRecordLib|MdeModulePkg/Library/ImagePropertiesRecordLib/ImagePropertiesRecordLib.inf
   TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
   AuthVariableLib|MdeModulePkg/Library/AuthVariableLibNull/AuthVariableLibNull.inf
 

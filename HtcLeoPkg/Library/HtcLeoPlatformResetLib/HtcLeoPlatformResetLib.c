@@ -146,9 +146,6 @@ LibResetSystem (
   IN CHAR16          *ResetData OPTIONAL
   )
 {
-  UINTN  Address;
-  UINT8  Data;
-
   switch (ResetType) {
     case EfiResetCold:
       ResetCold();

@@ -30,12 +30,11 @@
   FILE_GUID                      = A9AE7F06-35A1-40AF-A894-7CF3BA488B2C
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-
   ENTRY_POINT                    = SdCardInitialize
 
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-uninitialized -Wno-unused-variable -Wno-shift-count-overflow -Wno-implicit-function-declaration -Wno-missing-braces -Wlto-type-mismatch
 [Sources.common]
+  adm.c
+  mmc.c
   SdCardDxe.c
 
 [Packages]
@@ -68,6 +67,7 @@
   gEfiCpuArchProtocolGuid
   gEfiDevicePathProtocolGuid
   gTlmmGpioProtocolGuid
+  gEmbeddedClockProtocolGuid
 
 [Pcd]
 

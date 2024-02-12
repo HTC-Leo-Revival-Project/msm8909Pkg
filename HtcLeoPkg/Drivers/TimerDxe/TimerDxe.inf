@@ -5,11 +5,7 @@
   FILE_GUID                      = 6ddbf08b-cfc9-43cc-9e81-0784ba312ca0
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-
   ENTRY_POINT                    = TimerInitialize
-  
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable -Wno-shift-count-overflow -Wno-implicit-function-declaration -Wno-return-type
 
 [Sources.common]
   Timer.c

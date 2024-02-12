@@ -9,8 +9,6 @@
   CONSTRUCTOR                    = VibrationLibConstructor
  # VALID_ARCHITECTURES            = ARM
 
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Werror -Wno-unused-function -Wno-unused-variable -Wno-shift-count-overflow -Wno-incompatible-pointer-types
 [Sources.common]
   HtcLeoVibrationLib.c
 
@@ -19,8 +17,6 @@
   IoLib
   TimerLib
   ArmLib
-  TimerLib
-  
 
 [Packages]
   ArmPkg/ArmPkg.dec

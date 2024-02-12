@@ -21,8 +21,6 @@
 #include <Library/SerialPortLib.h>
 #include <Library/ArmPlatformLib.h>
 
-extern UINT64  mSystemMemoryEnd;
-
 /* some BGRA8888 color definitions */
 #define FB_BGRA8888_BLACK 0xff000000
 #define FB_BGRA8888_WHITE 0xffffffff
@@ -37,27 +35,40 @@ extern UINT64  mSystemMemoryEnd;
 /* MDP-related defines */
 #define MSM_MDP_BASE1 	0xAA200000
 #define LCDC_BASE     	0xE0000
+#define MDP_LCDC_EN (0xAA2E0000)
 
-#define BIT(x)  (1<<(x))
-#define DMA_DSTC0G_8BITS (BIT(1)|BIT(0))
-#define DMA_DSTC1B_8BITS (BIT(3)|BIT(2))
-#define DMA_DSTC2R_8BITS (BIT(5)|BIT(4))
+/* MDP 3.1 */
+#define DMA_DSTC0G_8BITS (3<<0)
+#define DMA_DSTC1B_8BITS (3<<2)
+#define DMA_DSTC2R_8BITS (3<<4)
+
 #define CLR_G 0x0
 #define CLR_B 0x1
 #define CLR_R 0x2
+#define CLR_ALPHA 0x3
+
 #define MDP_GET_PACK_PATTERN(a,x,y,z,bit) (((a)<<(bit*3))|((x)<<(bit*2))|((y)<<bit)|(z))
-#define DMA_PACK_TIGHT                      BIT(6)
+#define DMA_PACK_TIGHT                      (1 << 6)
 #define DMA_PACK_LOOSE                      0
 #define DMA_PACK_ALIGN_LSB                  0
+
 #define DMA_PACK_PATTERN_RGB				\
-        (MDP_GET_PACK_PATTERN(0,CLR_R,CLR_G,CLR_B,2)<<8)
+        (MDP_GET_PACK_PATTERN(0,CLR_R,CLR_G,CLR_B, 2)<<8)
 #define DMA_PACK_PATTERN_BGR \
-       (MDP_GET_PACK_PATTERN(0, CLR_B, CLR_G, CLR_R, 2)<<8)
-#define DMA_DITHER_EN                       BIT(24)
-#define DMA_OUT_SEL_LCDC                    BIT(20)
-#define DMA_IBUF_FORMAT_RGB565              BIT(25)
-#define DMA_IBUF_FORMAT_RGB888              (0 << 25)
-#define DMA_IBUF_FORMAT_xRGB8888_OR_ARGB8888  BIT(26)
+        (MDP_GET_PACK_PATTERN(0, CLR_B, CLR_G, CLR_R, 2)<<8)
+
+#define DMA_PACK_PATTERN_BGRA \
+        (MDP_GET_PACK_PATTERN(CLR_ALPHA, CLR_B, CLR_G, CLR_R, 2)<<8)
+
+#define DMA_DITHER_EN                         (1 << 24)
+#define DMA_OUT_SEL_LCDC                      (1 << 20)
+#define DMA_IBUF_FORMAT_RGB888			          (0 << 25)
+#define DMA_IBUF_FORMAT_RGB565			          (1 << 25)
+#define DMA_IBUF_FORMAT_XRGB8888		          (2 << 25)
+#define DMA_IBUF_FORMAT_xRGB8888_OR_ARGB8888  (1 << 26)
+#define DMA_IBUF_FORMAT_MASK			            (3 << 25)
+
+#define DMA_DST_BITS_MASK 0x3F
 
 /* MDP regs */
 #define REG_MDP(offset)                       MSM_MDP_BASE1 + offset
@@ -68,6 +79,8 @@ extern UINT64  mSystemMemoryEnd;
 #define MDP_DMA_P_BUF_ADDR                    REG_MDP(0x90008)
 #define MDP_DMA_P_BUF_Y_STRIDE                REG_MDP(0x9000C)
 #define MDP_DMA_P_OP_MODE                     REG_MDP(0x90070)
+
+extern UINT64  mSystemMemoryEnd;
 
 RETURN_STATUS
 EFIAPI

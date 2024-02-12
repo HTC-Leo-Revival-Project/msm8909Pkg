@@ -41,9 +41,6 @@
   ShellPkg/ShellPkg.dec
   HtcLeoPkg/HtcLeoPkg.dec
 
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Wno-unused-variable
-
 [LibraryClasses]
   BaseLib
   BaseMemoryLib

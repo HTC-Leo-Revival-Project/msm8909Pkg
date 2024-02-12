@@ -11,8 +11,6 @@
 #
 #  VALID_ARCHITECTURES           = ARM IA32 X64 IPF EBC
 #
-[BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Werror -Wno-unused-function -Wno-unused-variable
   
 [Sources.common]
   pcom.c
