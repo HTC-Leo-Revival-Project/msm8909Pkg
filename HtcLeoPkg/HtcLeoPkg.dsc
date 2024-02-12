@@ -272,7 +272,7 @@
   HtcLeoPkg/Application/TetrisApp/tetris.inf
 
   # Charging
-  HtcLeoPkg/Application/ChargingApp/charger.inf
+  HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
   #
   # FAT filesystem + GPT/MBR partitioning
