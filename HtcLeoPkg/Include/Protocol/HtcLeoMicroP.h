@@ -14,12 +14,14 @@ typedef struct _HTCLEO_MICROP_PROTOCOL HTCLEO_MICROP_PROTOCOL;
 
 typedef INTN(*microp_i2c_write_t)(UINT8 addr, UINT8 *cmd, INTN lengt);
 typedef INTN(*microp_i2c_read_t)(UINT8 addr, UINT8 *data, INTN length);
+typedef INTN(*capella_cm3602_power_t)(UINT8 pwr_device, UINT8 enable);
 typedef VOID(*microp_led_set_mode_t)(UINT8 mode);
 
 struct _HTCLEO_MICROP_PROTOCOL {
   microp_i2c_write_t  Write;
   microp_i2c_read_t Read;
   microp_led_set_mode_t LedSetMode;
+  capella_cm3602_power_t CapellaCM3602Power;
 };
 
 extern EFI_GUID gHtcLeoMicropProtocolGuid;

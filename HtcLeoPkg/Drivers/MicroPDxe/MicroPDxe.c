@@ -212,7 +212,7 @@ int microp_gpo_disable(uint16_t gpo_mask)
 }
 
 static int als_power_control=0;
-int capella_cm3602_power(int pwr_device, uint8_t enable)
+int capella_cm3602_power(UINT8 pwr_device, UINT8 enable)
 {
 	unsigned int old_status = 0;
 	uint16_t interrupts = 0;
@@ -363,7 +363,8 @@ void htcleo_led_set_mode(uint8_t mode)
 HTCLEO_MICROP_PROTOCOL gHtcLeoMicropProtocol = {
   microp_i2c_write,
   microp_i2c_read,
-  htcleo_led_set_mode
+  htcleo_led_set_mode,
+  capella_cm3602_power
 };
 
 EFI_STATUS
@@ -381,6 +382,8 @@ MicroPDxeInitialize(
   	ASSERT_EFI_ERROR (Status);
 
 	microp_i2c_probe(&microp_pdata);
+
+	//power the capella light sensor here
 
 	if (msm_microp_i2c_status) 
 	{

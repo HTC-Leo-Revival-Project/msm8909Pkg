@@ -90,7 +90,7 @@ struct microp_platform_data {
 	int chip;
 	UINT32 gpio_reset;
 };
-int capella_cm3602_power(int pwr_device, UINT8 enable);
+int capella_cm3602_power(UINT8 pwr_device, UINT8 enable);
 int microp_i2c_read(UINT8 addr, UINT8 *data, int length);
 int microp_i2c_write(UINT8 addr, UINT8 *data, int length);
 void microp_i2c_probe(struct microp_platform_data *kpdata);
