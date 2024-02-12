@@ -18,14 +18,13 @@
 #include <linux/module.h>
 #include <linux/input.h>
 #include <linux/interrupt.h>
-#include <linux/earlysuspend.h>
 #include <linux/platform_device.h>
 #include <linux/i2c.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/gpio.h>
 #include <mach/board.h>
-#include <linux/elan_ktf2k.h>
+#include <Device/elan_ktf2k.h>
 #include <linux/device.h>
 #include <linux/jiffies.h>
 #include <mach/msm_hsusb.h>
@@ -120,11 +119,6 @@ struct test_mode_cmd_close_v2 {
 
 static struct elan_ktf2k_ts_data *private_ts;
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-static void elan_ktf2k_ts_early_suspend(struct early_suspend *h);
-static void elan_ktf2k_ts_late_resume(struct early_suspend *h);
-#endif
-
 static int i2c_elan_ktf2k_read(struct i2c_client *client,
 	uint8_t *buf, size_t len);
 static int i2c_elan_ktf2k_write(struct i2c_client *client,
@@ -134,7 +128,6 @@ static int elan_ktf2k_ts_poll(struct i2c_client *client);
 static int elan_ktf2k_ts_get_data(struct i2c_client *client, uint8_t *cmd,
 	uint8_t *buf, size_t len);
 static int elan_ktf2k_ts_setup(struct i2c_client *client);
-/* static int elan_ktf2k_ts_repeat(struct i2c_client *client); */
 
 static ssize_t elan_ktf2k_gpio_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
@@ -148,8 +141,6 @@ static ssize_t elan_ktf2k_gpio_show(struct device *dev,
 	ret = strlen(buf) + 1;
 	return ret;
 }
-
-static DEVICE_ATTR(gpio, S_IRUGO, elan_ktf2k_gpio_show, NULL);
 
 static ssize_t elan_ktf2k_vendor_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
@@ -237,34 +228,6 @@ static ssize_t elan_ktf2k_packet_store(struct device *dev,
     return count;
 }
 
-static DEVICE_ATTR(packet, (S_IWUSR|S_IRUGO),
-	elan_ktf2k_packet_show,
-	elan_ktf2k_packet_store);
-
-static ssize_t elan_ktf2k_debug_level_show(struct device *dev,
-	struct device_attribute *attr, char *buf)
-{
-	size_t ret = 0;
-	struct elan_ktf2k_ts_data *ts = private_ts;
-
-	ret += sprintf(buf, "%d\n", ts->debug_log_level);
-	return ret;
-}
-
-static ssize_t elan_ktf2k_debug_level_store(struct device *dev,
-	struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct elan_ktf2k_ts_data *ts = private_ts;
-
-	if (buf[0] >= '0' && buf[0] <= '9' && buf[1] == '\n')
-		ts->debug_log_level = buf[0] - '0';
-
-	return count;
-}
-
-static DEVICE_ATTR(debug_level, (S_IWUSR|S_IRUGO),
-	elan_ktf2k_debug_level_show, elan_ktf2k_debug_level_store);
-
 static ssize_t elan_ktf2k_reset_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -278,429 +241,7 @@ static ssize_t elan_ktf2k_reset_store(struct device *dev,
 	return count;
 }
 
-static DEVICE_ATTR(reset, S_IWUSR, NULL, elan_ktf2k_reset_store);
 
-static int elan_ktf2k_diag_open(struct i2c_client *client, uint8_t diag_command)
-{
-	struct test_mode_cmd_open cmd[] = {
-		{
-			.cmd1 = {CMD_W_PKT, 0x9F, 0x01, 0x00, 0x00, 0x01},
-			.cmd2 = {CMD_W_PKT, 0x9E, 0x06, 0x00, 0x00, 0x01},
-			.cmd3 = {CMD_W_PKT, 0x9F, 0x00, 0x00, 0x00, 0x01},
-			.cmd4 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd5 = {0x59, 0xC4, 0x0B, 0x29, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-		{
-			.cmd1 = {CMD_W_PKT, 0x9F, 0x01, 0x00, 0x00, 0x01},
-			.cmd2 = {CMD_W_PKT, 0x9E, 0x00, 0x00, 0x00, 0x01},
-			.cmd3 = {CMD_W_PKT, 0x9F, 0x00, 0x00, 0x00, 0x01},
-			.cmd4 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd5 = {0x59, 0xC0, 0x0B, 0x29, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-		{
-			.cmd1 = {CMD_W_PKT, 0x9F, 0x01, 0x00, 0x00, 0x01},
-			.cmd2 = {CMD_W_PKT, 0x9E, 0x00, 0x00, 0x00, 0x01},
-			.cmd3 = {CMD_W_PKT, 0x9F, 0x00, 0x00, 0x00, 0x01},
-			.cmd4 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd5 = {0x59, 0xC0, 0x13, 0x19, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-	};
-	uint8_t i;
-
-	if (diag_command == TEST_MODE_OFFSET)
-		i = 1;
-	else if (diag_command == TEST_MODE_OFFSET_Y)
-		i = 2;
-	else
-		i = diag_command - 1;
-
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd1, sizeof(cmd[i].cmd1)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd2, sizeof(cmd[i].cmd2)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd3, sizeof(cmd[i].cmd3)) < 0)
-		return -1;
-	msleep(500);
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd4, sizeof(cmd[i].cmd4)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd5, sizeof(cmd[i].cmd5)) < 0)
-		return -1;
-
-	return 0;
-}
-
-static int elan_ktf2k_diag_open_v2(struct i2c_client *client, uint8_t diag_command)
-{
-	struct test_mode_cmd_open_v2 cmd[] = {
-		{
-			.cmd1 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd2 = {0x59, 0xC4, 0x0B, 0x29, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-		{
-			.cmd1 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd2 = {0x59, 0xC3, 0x0B, 0x29, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-		{
-			.cmd1 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd2 = {0x59, 0xC4, 0x13, 0x19, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-		{
-			.cmd1 = {HELLO_PKT, HELLO_PKT, HELLO_PKT, HELLO_PKT},
-			.cmd2 = {0x59, 0xC3, 0x13, 0x19, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00},
-		},
-	};
-	uint8_t i = 0;
-
-	if (diag_command == TEST_MODE_DV)
-		i = 0;
-	else if (diag_command == TEST_MODE_ADC)
-		i = 1;
-	else if (diag_command == TEST_MODE_DV_Y)
-		i = 2;
-	else if (diag_command == TEST_MODE_ADC_Y)
-		i = 3;
-
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd1, sizeof(cmd[i].cmd1)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd[i].cmd2, sizeof(cmd[i].cmd2)) < 0)
-		return -1;
-
-	return 0;
-}
-
-static int elan_ktf2k_diag_close(struct i2c_client *client)
-{
-	struct test_mode_cmd_close cmd = {
-		.cmd1 = {0x9F, 0x00, 0x00, 0x01},
-		.cmd2 = {0xA5, 0xA5, 0xA5, 0xA5},
-		.cmd3 = {CMD_W_PKT, 0x9F, 0x01, 0x00, 0x00, 0x01},
-		.cmd4 = {CMD_W_PKT, 0x9E, 0x06, 0x00, 0x00, 0x01},
-		.cmd5 = {CMD_W_PKT, 0x9F, 0x00, 0x00, 0x00, 0x01},
-	};
-
-	if (i2c_elan_ktf2k_write(client, cmd.cmd1, sizeof(cmd.cmd1)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd.cmd2, sizeof(cmd.cmd2)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd.cmd3, sizeof(cmd.cmd3)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd.cmd4, sizeof(cmd.cmd4)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd.cmd5, sizeof(cmd.cmd5)) < 0)
-		return -1;
-
-	return 0;
-}
-
-static int elan_ktf2k_diag_close_v2(struct i2c_client *client)
-{
-	struct test_mode_cmd_close_v2 cmd = {
-		.cmd1 = {0x9F, 0x00, 0x00, 0x01},
-		.cmd2 = {0xA5, 0xA5, 0xA5, 0xA5},
-	};
-
-	if (i2c_elan_ktf2k_write(client, cmd.cmd1, sizeof(cmd.cmd1)) < 0)
-		return -1;
-	if (i2c_elan_ktf2k_write(client, cmd.cmd2, sizeof(cmd.cmd2)) < 0)
-		return -1;
-
-	return 0;
-}
-
-static ssize_t elan_ktf2k_diag_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	int rc = 0;
-	size_t count = 0;
-	struct elan_ktf2k_ts_data *ts = private_ts;
-	uint8_t data[TEST_MODE_SIZE] = {0};
-	uint8_t dataY[TEST_MODE_SIZE_Y] = {0};
-	uint16_t matrix[19][11];
-	uint8_t loop_i, loop_j;
-	int x, y, outer, inner;
-
-	if (ts->diag_command != TEST_MODE_DV &&
-		ts->diag_command != TEST_MODE_OFFSET &&
-		ts->diag_command != TEST_MODE_ADC &&
-		ts->diag_command != TEST_MODE_DV_Y &&
-		ts->diag_command != TEST_MODE_OFFSET_Y &&
-		ts->diag_command != TEST_MODE_ADC_Y)
-		return count;
-
-	if (ts->diag_mode != TEST_MODE_OPEN)
-		return count;
-
-	x = 11;
-	y = 19;
-	count += sprintf(buf, "Channel: %d * %d\n", x, y);
-
-	if (ts->diag_command == TEST_MODE_DV_Y ||
-		ts->diag_command == TEST_MODE_OFFSET_Y ||
-		ts->diag_command == TEST_MODE_ADC_Y) {
-		outer = y;
-		inner = x;
-	} else {
-		outer = x;
-		inner = y;
-	}
-
-	rc = elan_ktf2k_ts_poll(ts->client);
-	if (rc < 0)
-		goto out;
-
-	for (loop_i = 0; loop_i < outer; loop_i++) {
-		if (ts->diag_command == TEST_MODE_DV_Y ||
-			ts->diag_command == TEST_MODE_OFFSET_Y ||
-			ts->diag_command == TEST_MODE_ADC_Y) {
-			if (i2c_elan_ktf2k_read(ts->client, dataY, sizeof(dataY)) < 0)
-				goto out;
-		} else {
-			if (i2c_elan_ktf2k_read(ts->client, data, sizeof(data)) < 0)
-				goto out;
-		}
-
-		if (ts->diag_command == TEST_MODE_DV_Y ||
-			ts->diag_command == TEST_MODE_OFFSET_Y ||
-			ts->diag_command == TEST_MODE_ADC_Y) {
-			if (dataY[0] != 0x93) {
-				printk(KERN_WARNING "%s: not a test data packet: %X\n",
-					__func__, dataY[0]);
-				goto out;
-			}
-		} else {
-			if (data[0] != 0x93) {
-				printk(KERN_WARNING "%s: not a test data packet: %X\n",
-					__func__, data[0]);
-				goto out;
-			}
-		}
-
-		if (ts->diag_command == TEST_MODE_DV_Y ||
-			ts->diag_command == TEST_MODE_OFFSET_Y ||
-			ts->diag_command == TEST_MODE_ADC_Y) {
-			for (loop_j = 0; loop_j < inner * 2; loop_j += 2)
-				matrix[loop_i][loop_j>>1] = (dataY[loop_j+3] << 8) | dataY[loop_j+4];
-		} else {
-			for (loop_j = 0; loop_j < inner * 2; loop_j += 2)
-				matrix[loop_j>>1][loop_i] = (data[loop_j+3] << 8) | data[loop_j+4];
-		}
-	}
-
-	for (loop_i = 0; loop_i < y; loop_i++) {
-		for (loop_j = 0; loop_j < x; loop_j++)
-			count += sprintf(buf + count, "%5d", matrix[loop_i][loop_j]);
-		count += sprintf(buf + count, "\n");
-	}
-
-out:
-	return count;
-}
-
-static void elan_ktf2k_diag_print(void)
-{
-	char buf[256];
-	int rc = 0;
-	size_t count = 0;
-	struct elan_ktf2k_ts_data *ts = private_ts;
-	uint8_t data[TEST_MODE_SIZE] = {0};
-	uint8_t dataY[TEST_MODE_SIZE_Y] = {0};
-	uint16_t matrix[19][11];
-	uint8_t loop_i, loop_j;
-	int x, y, outer, inner;
-
-	if (ts->diag_command != TEST_MODE_DV &&
-		ts->diag_command != TEST_MODE_OFFSET &&
-		ts->diag_command != TEST_MODE_ADC &&
-		ts->diag_command != TEST_MODE_DV_Y &&
-		ts->diag_command != TEST_MODE_OFFSET_Y &&
-		ts->diag_command != TEST_MODE_ADC_Y)
-		return;
-
-	x = 11;
-	y = 19;
-	printk(KERN_INFO "Channel: %d * %d\n", x, y);
-
-	if (ts->diag_command == TEST_MODE_DV_Y ||
-		ts->diag_command == TEST_MODE_OFFSET_Y ||
-		ts->diag_command == TEST_MODE_ADC_Y) {
-		outer = y;
-		inner = x;
-	} else {
-		outer = x;
-		inner = y;
-	}
-
-	rc = elan_ktf2k_ts_poll(ts->client);
-	if (rc < 0)
-		goto out;
-
-	for (loop_i = 0; loop_i < outer; loop_i++) {
-		if (ts->diag_command == TEST_MODE_DV_Y ||
-			ts->diag_command == TEST_MODE_OFFSET_Y ||
-			ts->diag_command == TEST_MODE_ADC_Y) {
-			if (i2c_elan_ktf2k_read(ts->client, dataY, sizeof(dataY)) < 0)
-				goto out;
-		} else {
-			if (i2c_elan_ktf2k_read(ts->client, data, sizeof(data)) < 0)
-				goto out;
-		}
-
-		if (ts->diag_command == TEST_MODE_DV_Y ||
-			ts->diag_command == TEST_MODE_OFFSET_Y ||
-			ts->diag_command == TEST_MODE_ADC_Y) {
-			if (dataY[0] != 0x93) {
-				printk(KERN_WARNING "%s: not a test data packet: %X\n",
-					__func__, dataY[0]);
-				goto out;
-			}
-		} else {
-			if (data[0] != 0x93) {
-				printk(KERN_WARNING "%s: not a test data packet: %X\n",
-					__func__, data[0]);
-				goto out;
-			}
-		}
-
-		if (ts->diag_command == TEST_MODE_DV_Y ||
-			ts->diag_command == TEST_MODE_OFFSET_Y ||
-			ts->diag_command == TEST_MODE_ADC_Y) {
-			for (loop_j = 0; loop_j < inner * 2; loop_j += 2)
-				matrix[loop_i][loop_j>>1] = (dataY[loop_j+3] << 8) | dataY[loop_j+4];
-		} else {
-			for (loop_j = 0; loop_j < inner * 2; loop_j += 2)
-				matrix[loop_j>>1][loop_i] = (data[loop_j+3] << 8) | data[loop_j+4];
-		}
-	}
-
-	for (loop_i = 0; loop_i < y; loop_i++) {
-		count = 0;
-		for (loop_j = 0; loop_j < x; loop_j++)
-			count += sprintf(buf + count, "%5d", matrix[loop_i][loop_j]);
-		printk(KERN_INFO "%s\n", buf);
-	}
-
-out:
-	return;
-}
-
-static ssize_t elan_ktf2k_diag_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	int rc = 0;
-	struct elan_ktf2k_ts_data *ts = private_ts;
-
-	if (buf[0] == '1')
-		ts->diag_command = TEST_MODE_DV;
-	else if (buf[0] == '2')
-		ts->diag_command = TEST_MODE_OFFSET;
-	else if (buf[0] == '3')
-		ts->diag_command = TEST_MODE_ADC;
-	else if (buf[0] == '4')
-		ts->diag_command = TEST_MODE_DV_Y;
-	else if (buf[0] == '5')
-		ts->diag_command = TEST_MODE_OFFSET_Y;
-	else if (buf[0] == '6')
-		ts->diag_command = TEST_MODE_ADC_Y;
-	else
-		goto out;
-
-	if (ts->diag_mode == TEST_MODE_OPEN) {
-		if (ts->fw_ver < 0x0032 || ts->diag_command == TEST_MODE_OFFSET ||
-			ts->diag_command == TEST_MODE_OFFSET_Y)
-			rc = elan_ktf2k_diag_close(ts->client);
-		else
-			rc = elan_ktf2k_diag_close_v2(ts->client);
-		if (rc < 0)
-			goto out;
-	}
-
-	if (buf[1] == 'S' || buf[1] == 'Y') {
-		if (buf[1] == 'S')
-			disable_irq(ts->client->irq);
-		if (ts->fw_ver < 0x0032 || ts->diag_command == TEST_MODE_OFFSET ||
-			ts->diag_command == TEST_MODE_OFFSET_Y)
-			rc = elan_ktf2k_diag_open(ts->client, ts->diag_command);
-		else
-			rc = elan_ktf2k_diag_open_v2(ts->client, ts->diag_command);
-		if (rc < 0)
-			goto out;
-		ts->diag_mode = TEST_MODE_OPEN;
-	} else if (buf[1] == 'E' || buf[1] == 'N') {
-		ts->diag_mode = TEST_MODE_CLOSE;
-		if (buf[1] == 'E')
-			enable_irq(ts->client->irq);
-	}
-
-out:
-	return count;
-}
-
-static DEVICE_ATTR(diag, (S_IWUSR|S_IRUGO),
-	elan_ktf2k_diag_show, elan_ktf2k_diag_store);
-
-static struct kobject *android_touch_kobj;
-
-static int elan_ktf2k_touch_sysfs_init(void)
-{
-	int ret ;
-
-	android_touch_kobj = kobject_create_and_add("android_touch", NULL) ;
-	if (android_touch_kobj == NULL) {
-		printk(KERN_ERR "TOUCH_ERR: subsystem_register failed\n");
-		ret = -ENOMEM;
-		return ret;
-	}
-	ret = sysfs_create_file(android_touch_kobj, &dev_attr_gpio.attr);
-	if (ret) {
-		printk(KERN_ERR "TOUCH_ERR: sysfs_create_file gpio failed\n");
-		return ret;
-	}
-	ret = sysfs_create_file(android_touch_kobj, &dev_attr_vendor.attr);
-	if (ret) {
-		printk(KERN_ERR "TOUCH_ERR: sysfs_create_file vendor failed\n");
-		return ret;
-	}
-	ret = sysfs_create_file(android_touch_kobj, &dev_attr_packet.attr);
-	if (ret) {
-		printk(KERN_ERR "TOUCH_ERR: sysfs_create_file packet failed\n");
-		return ret;
-	}
-	ret = sysfs_create_file(android_touch_kobj, &dev_attr_debug_level.attr);
-	if (ret) {
-		printk(KERN_ERR "TOUCH_ERR: sysfs_create_file debug_level failed\n");
-		return ret;
-	}
-	ret = sysfs_create_file(android_touch_kobj, &dev_attr_reset.attr);
-	if (ret) {
-		printk(KERN_ERR "TOUCH_ERR: sysfs_create_file reset failed\n");
-		return ret;
-	}
-	ret = sysfs_create_file(android_touch_kobj, &dev_attr_diag.attr);
-	if (ret) {
-		printk(KERN_ERR "TOUCH_ERR: sysfs_create_file diag failed\n");
-		return ret;
-	}
-
-	return 0 ;
-}
-
-static void elan_touch_sysfs_deinit(void)
-{
-	sysfs_remove_file(android_touch_kobj, &dev_attr_diag.attr);
-	sysfs_remove_file(android_touch_kobj, &dev_attr_reset.attr);
-	sysfs_remove_file(android_touch_kobj, &dev_attr_debug_level.attr);
-	sysfs_remove_file(android_touch_kobj, &dev_attr_packet.attr);
-	sysfs_remove_file(android_touch_kobj, &dev_attr_vendor.attr);
-	sysfs_remove_file(android_touch_kobj, &dev_attr_gpio.attr);
-	kobject_del(android_touch_kobj);
-}
 
 static int __elan_ktf2k_ts_poll(struct i2c_client *client)
 {
@@ -994,56 +535,8 @@ static int elan_ktf2k_ts_get_finger_state(struct i2c_client *client)
     return finger_state;
 }
 
-#if 0
-static int elan_ktf2k_ts_repeat(struct i2c_client *client)
-{
-	int rc = 0;
-	uint8_t cmd[4] = {0};
-	uint8_t loop_i;
 
-	dev_dbg(&client->dev, "%s: enter\n", __func__);
-
-	memset(cmd, REPEAT_PKT, sizeof(cmd));
-
-	if (ts->debug_log_level & 0x1) {
-		printk("send ");
-		for (loop_i = 0; loop_i < sizeof(cmd); loop_i++)
-			printk("0x%2.2X ", cmd[loop_i]);
-		printk("\n");
-	}
-
-	rc = i2c_elan_ktf2k_write(client, cmd, sizeof(cmd));
-	if (rc < 0)
-		return rc;
-
-	return 0;
-}
-
-static int elan_ktf2k_ts_soft_reset(struct i2c_client *client)
-{
-	int rc = 0;
-	uint8_t cmd[4] = {0};
-	uint8_t loop_i;
-
-	dev_dbg(&client->dev, "%s: enter\n", __func__);
-
-	memset(cmd, RESET_PKT, sizeof(cmd));
-
-	if (ts->debug_log_level & 0x1) {
-		printk("send ");
-		for (loop_i = 0; loop_i < sizeof(cmd); loop_i++)
-			printk("0x%2.2X ", cmd[loop_i]);
-		printk("\n");
-	}
-
-	rc = i2c_elan_ktf2k_write(client, cmd, sizeof(cmd));
-	if (rc < 0)
-		return -EINVAL;
-
-	return 0;
-}
-#endif
-
+//can be replaced with msm_i2c_read probably
 static int i2c_elan_ktf2k_read(struct i2c_client *client,
 	uint8_t *buf, size_t len)
 {
@@ -1082,6 +575,8 @@ static int i2c_elan_ktf2k_read(struct i2c_client *client,
 
 	return 0;
 }
+
+//can be replaced with msm_i2c_write probably
 
 static int i2c_elan_ktf2k_write(struct i2c_client *client,
 	uint8_t *buf, size_t len)
@@ -1135,12 +630,12 @@ static void elan_ktf2k_ts_report_data(struct i2c_client *client, uint8_t *buf)
 						ts->last_finger_data[i][1]);
 			ts->first_pressed = 1;
 		}
-#ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
+//#ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
 		input_report_abs(idev, ABS_MT_PRESSURE, 0);
-#else
-		input_report_abs(idev, ABS_MT_AMPLITUDE, 0);
-		input_report_abs(idev, ABS_MT_POSITION, BIT(31));
-#endif
+// #else
+// 		input_report_abs(idev, ABS_MT_AMPLITUDE, 0);
+// 		input_report_abs(idev, ABS_MT_POSITION, BIT(31));
+// #endif
 		if (ts->debug_log_level & 0x2)
 			printk(KERN_INFO "Finger leave\n");
 	} else {
@@ -1171,26 +666,26 @@ static void elan_ktf2k_ts_report_data(struct i2c_client *client, uint8_t *buf)
 				else
 					z = w = (buf[IDX_WIDTH + (i >> 1)] >> 4) & 0xf;
 			}
-#ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
+//#ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
 			input_report_abs(idev, ABS_MT_PRESSURE, z);
 			input_report_abs(idev, ABS_MT_WIDTH_MAJOR, w);
 			input_report_abs(idev, ABS_MT_POSITION_X, x);
 			input_report_abs(idev, ABS_MT_POSITION_Y, y);
 			input_mt_sync(idev);
-#else
-			input_report_abs(idev, ABS_MT_AMPLITUDE, z << 16 | w);
-			input_report_abs(idev, ABS_MT_POSITION,
-				(reported == finger_count - 1 ? BIT(31) : 0) | x << 16 | y);
-#endif
+// #else
+// 			input_report_abs(idev, ABS_MT_AMPLITUDE, z << 16 | w);
+// 			input_report_abs(idev, ABS_MT_POSITION,
+// 				(reported == finger_count - 1 ? BIT(31) : 0) | x << 16 | y);
+// #endif
 			if (ts->debug_log_level & 0x2)
 				printk(KERN_INFO "Finger %d=> X:%d, Y:%d w:%d z:%d F:%d\n",
 					i + 1, x, y, w, z, finger_count);
 			reported++;
 		}
 	}
-#ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
-	input_sync(ts->input_dev);
-#endif
+// #ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
+// 	input_sync(ts->input_dev);
+// #endif
 
 	if (ts->debug_log_level & 0x4) {
 		report_time2 = jiffies;
@@ -1411,12 +906,12 @@ static int elan_ktf2k_ts_probe(struct i2c_client *client,
 	input_set_abs_params(ts->input_dev, ABS_MT_WIDTH_MAJOR,
 		0, 20,
 		ELAN_TS_FUZZ, ELAN_TS_FLAT);
-#ifndef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
-	input_set_abs_params(ts->input_dev, ABS_MT_AMPLITUDE,
-		0, ((15 << 16) | 20), 0, 0);
-	input_set_abs_params(ts->input_dev, ABS_MT_POSITION,
-		0, (BIT(31) | (pdata->abs_x_max << 16) | pdata->abs_y_max), 0, 0);
-#endif
+// #ifndef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
+// 	input_set_abs_params(ts->input_dev, ABS_MT_AMPLITUDE,
+// 		0, ((15 << 16) | 20), 0, 0);
+// 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION,
+// 		0, (BIT(31) | (pdata->abs_x_max << 16) | pdata->abs_y_max), 0, 0);
+// #endif
 
 	err = input_register_device(ts->input_dev);
 	if (err) {
@@ -1434,12 +929,12 @@ static int elan_ktf2k_ts_probe(struct i2c_client *client,
 		elan_ktf2k_ts_irq_handler(client->irq, ts);
 	}
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-	ts->early_suspend.level = EARLY_SUSPEND_LEVEL_STOP_DRAWING - 1;
-	ts->early_suspend.suspend = elan_ktf2k_ts_early_suspend;
-	ts->early_suspend.resume = elan_ktf2k_ts_late_resume;
-	register_early_suspend(&ts->early_suspend);
-#endif
+// #ifdef CONFIG_HAS_EARLYSUSPEND
+// 	ts->early_suspend.level = EARLY_SUSPEND_LEVEL_STOP_DRAWING - 1;
+// 	ts->early_suspend.suspend = elan_ktf2k_ts_early_suspend;
+// 	ts->early_suspend.resume = elan_ktf2k_ts_late_resume;
+// 	register_early_suspend(&ts->early_suspend);
+// #endif
 
 	private_ts = ts;
 
@@ -1527,13 +1022,13 @@ static int elan_ktf2k_ts_resume(struct i2c_client *client)
 	if (elan_ktf2k_ts_get_power_state(client) != PWR_STATE_NORMAL)
 		printk(KERN_ERR "TOUCH_ERR: wakeup tp failed!\n");
 
-#ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
-        input_report_abs(ts->input_dev, ABS_MT_PRESSURE, 0);
-	input_sync(ts->input_dev);
-#else
+// #ifdef CONFIG_TOUCHSCREEN_COMPATIBLE_REPORT
+//         input_report_abs(ts->input_dev, ABS_MT_PRESSURE, 0);
+// 	input_sync(ts->input_dev);
+// #else
 	input_report_abs(ts->input_dev, ABS_MT_AMPLITUDE, 0);
 	input_report_abs(ts->input_dev, ABS_MT_POSITION, 1 << 31);
-#endif
+//#endif
 
 	touch = elan_ktf2k_ts_get_finger_state(client);
 	if (touch < 0)
@@ -1560,54 +1055,8 @@ static int elan_ktf2k_ts_resume(struct i2c_client *client)
 	return 0;
 }
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-static void elan_ktf2k_ts_early_suspend(struct early_suspend *h)
-{
-	struct elan_ktf2k_ts_data *ts;
-	ts = container_of(h, struct elan_ktf2k_ts_data, early_suspend);
-	elan_ktf2k_ts_suspend(ts->client, PMSG_SUSPEND);
-}
-
-static void elan_ktf2k_ts_late_resume(struct early_suspend *h)
-{
-	struct elan_ktf2k_ts_data *ts;
-	ts = container_of(h, struct elan_ktf2k_ts_data, early_suspend);
-	elan_ktf2k_ts_resume(ts->client);
-}
-#endif
-
 static const struct i2c_device_id elan_ktf2k_ts_id[] = {
 	{ ELAN_KTF2K_NAME, 0 },
 	{ }
 };
 
-static struct i2c_driver ektf2k_ts_driver = {
-	.probe		= elan_ktf2k_ts_probe,
-	.remove		= elan_ktf2k_ts_remove,
-#ifndef CONFIG_HAS_EARLYSUSPEND
-	.suspend	= elan_ktf2k_ts_suspend,
-	.resume		= elan_ktf2k_ts_resume,
-#endif
-	.id_table	= elan_ktf2k_ts_id,
-	.driver		= {
-		.name = ELAN_KTF2K_NAME,
-	},
-};
-
-static int __devinit elan_ktf2k_ts_init(void)
-{
-	printk(KERN_INFO "%s\n", __func__);
-	return i2c_add_driver(&ektf2k_ts_driver);
-}
-
-static void __exit elan_ktf2k_ts_exit(void)
-{
-	i2c_del_driver(&ektf2k_ts_driver);
-	return;
-}
-
-module_init(elan_ktf2k_ts_init);
-module_exit(elan_ktf2k_ts_exit);
-
-MODULE_DESCRIPTION("ELAN KTF2000 Touchscreen Driver");
-MODULE_LICENSE("GPL");
