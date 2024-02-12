@@ -85,6 +85,7 @@
 #define LED_OFF   0
 #define LED_GREEN 1
 #define LED_AMBER 2
+#define LS_PWR_ON				(1<<1)
 
 struct microp_platform_data {
 	int chip;

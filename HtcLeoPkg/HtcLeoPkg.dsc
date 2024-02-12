@@ -274,6 +274,9 @@
   # Charging
   HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
+  # AutoBrightness
+  HtcLeoPkg/GPLDrivers/AutoBrightnessDxe/AutoBrightness.inf
+
   #
   # FAT filesystem + GPT/MBR partitioning
   #
