@@ -211,21 +211,19 @@ int microp_gpo_disable(uint16_t gpo_mask)
 	return ret;
 }
 
-/*static int als_power_control=0;
-struct mutex capella_cm3602_lock;
+static int als_power_control=0;
 int capella_cm3602_power(int pwr_device, uint8_t enable)
 {
 	unsigned int old_status = 0;
 	uint16_t interrupts = 0;
 	int ret = 0, on = 0;
 	
-	mutex_acquire(&capella_cm3602_lock);
 	if(pwr_device==PS_PWR_ON) { // Switch the Proximity IRQ
 		if(enable) {
 			microp_gpo_enable(PS_PWR_ON);
 			ret = microp_interrupt_get_status(&interrupts);
 			if (ret < 0) {
-				printf("read interrupt status fail\n");
+				DEBUG((EFI_D_ERROR, "read interrupt status fail\n"));
 				return ret;
 			}
 			interrupts |= IRQ_PROXIMITY;
@@ -237,7 +235,7 @@ int capella_cm3602_power(int pwr_device, uint8_t enable)
 			microp_gpo_disable(PS_PWR_ON);
 		}
 		if (ret < 0) {
-			printf("failed to enable gpi irqs\n");
+			DEBUG((EFI_D_ERROR, "failed to enable gpi irqs\n"));
 			return ret;
 		}
 	}
@@ -253,11 +251,9 @@ int capella_cm3602_power(int pwr_device, uint8_t enable)
 		microp_gpo_enable(LS_PWR_ON);
 	else if (!on)
 		microp_gpo_disable(LS_PWR_ON);
-		
-	mutex_release(&capella_cm3602_lock);
 	
 	return ret;
-}*/
+}
 
 /*
 static irqreturn_t microp_i2c_intr_irq_handler(int irq, void *dev_id)
