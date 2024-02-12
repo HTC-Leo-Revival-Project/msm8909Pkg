@@ -27,7 +27,6 @@
   FLASH_DEFINITION               = HtcLeoPkg/HtcLeoPkg.fdf
 
   DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 1
-  DEFINE USE_MEMORY_FOR_SERIAL_OUTPUT = 0
 
 !include HtcLeoPkg/CommonDsc.dsc.inc
 
