@@ -14,6 +14,7 @@
 | Battery Gauge | Supported in cLK since 1.5.x                     |   ❌   |
 | USB           | Driver exists in cLK                             |   ❌   |
 | Keypad        | Loosely based on cLK driver                      |   ✅   |
+| Light sensor  | Based on cLK code                                |   ✅   |
 
 ## Loading
 UEFI can be either chainloaded as a kernel from cLK, as well as flashed to boot directly from HSPL.
