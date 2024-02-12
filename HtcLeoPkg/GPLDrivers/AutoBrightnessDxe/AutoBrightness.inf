@@ -9,9 +9,10 @@
 
 [BuildOptions.ARM]
   GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable -Wno-shift-count-overflow -Wno-implicit-function-declaration -Wno-missing-braces
-  
+
 [Sources]
   AutoBrightness.c
+  Capella3602.c
 
 [Packages]
   MdePkg/MdePkg.dec
