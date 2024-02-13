@@ -45,6 +45,13 @@
 
 #include "TouchDxe.h"
 
+static signed char irq2gpio[32] = {
+	-1, -1, -1, -1, -1, -1,  0,  1,
+	-1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1,  2,  3,  4,  5,  6,
+	 7,  8,  9, 10, 11, 12, -1, -1,
+};
+
 // Cached copy of the i2c protocol
 HTCLEO_I2C_PROTOCOL *gI2C = NULL;
 
@@ -333,7 +340,7 @@ TouchDxeInitialize(
 
   htcleo_ts_reset();
   htcleo_ts_detect_type();
-  if (ts_type == TOUCH_TYPE_68 || ts_type == TOUCH_TYPE_B8) {
+  if (ts_type == TOUCH_TYPE_B8) {
 	DEBUG((EFI_D_ERROR, "TS: NOT SUPPORTED\n"));
 	goto error;
   } else
