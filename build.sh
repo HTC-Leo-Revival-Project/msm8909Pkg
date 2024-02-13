@@ -18,10 +18,13 @@ mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kern
 if [ ! -f ImageResources/Tools/nbgen ]; then
 	gcc -std=c99 ImageResources/Tools/nbgen.c -o ImageResources/Tools/nbgen
 fi
+if [ ! -f ImageResources/Tools/yang ]; then
+	gcc  ImageResources/Tools/yang/nbh.c ImageResources/Tools/yang/nbhextract.c ImageResources/Tools/yang/yang.c -o ImageResources/Tools/yangbin
+fi
 
 cd ImageResources/Tools
 ./nbgen os.nb
-./yang -F ../LEOIMG.nbh -f logo.nb,os.nb -t 0x600,0x400 -s 64 -d PB8110000 -c 11111111 -v EDK2 -l WWE
+./yangbin -F ../LEOIMG.nbh -f logo.nb,os.nb -t 0x600,0x400 -s 64 -d PB8110000 -c 11111111 -v EDK2 -l WWE
 rm *.bin
 rm os.nb
 cd ../../
