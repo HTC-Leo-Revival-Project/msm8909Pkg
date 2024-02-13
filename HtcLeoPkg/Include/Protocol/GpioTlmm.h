@@ -92,10 +92,32 @@ Arguments:
 
 --*/
 
+typedef
+VOID
+(*TLMM_GPIO_CONFIG_TABLE)(
+    IN UINT32  *Table,
+    IN int     Len
+    );
+
+/*++
+
+Routine Description:
+
+  Configures a GPIO table
+
+Arguments:
+
+  Table - pointer to the gpio table
+  Len - length
+
+--*/
+
+
 struct _TLMM_GPIO {
-  TLMM_GPIO_GET         Get;
-  TLMM_GPIO_SET         Set;
-  TLMM_GPIO_CONFIG      Config;
+  TLMM_GPIO_GET          Get;
+  TLMM_GPIO_SET          Set;
+  TLMM_GPIO_CONFIG       Config;
+  TLMM_GPIO_CONFIG_TABLE ConfigTable;
 };
 
 extern EFI_GUID  gTlmmGpioProtocolGuid;

@@ -13,14 +13,17 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = GpioDxe
-  FILE_GUID                      = A9AE7F06-35A1-40AF-A894-7CF3BA488B2F
+  BASE_NAME                      = TouchDxe
+  FILE_GUID                      = A9AE7F06-35A1-40AF-A894-8CF3BA488B2F
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = GpioDxeInitialize
 
+  ENTRY_POINT                    = TouchDxeInitialize
+
+[BuildOptions.ARM]
+  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable -Wno-shift-count-overflow -Wno-implicit-function-declaration -Wno-missing-braces
 [Sources.common]
-  GpioDxe.c
+  TouchDxe.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -41,7 +44,6 @@
   BaseLib
   DebugLib
   UefiBootServicesTableLib
-  MsmPcomLib
   MsmPcomClientLib
   TimerLib
 
@@ -53,9 +55,10 @@
   gEfiDevicePathProtocolGuid
   gHardwareInterruptProtocolGuid
   gTlmmGpioProtocolGuid
+  gHtcLeoI2CProtocolGuid
 
 [Pcd]
 
 
-[depex]
- TRUE
+[Depex]
+  gHtcLeoI2CProtocolGuid

@@ -341,7 +341,8 @@ MsmGpioIsr (
 TLMM_GPIO  gGpio = {
   gpio_get,
   gpio_set,
-  gpio_config
+  gpio_config,
+  config_gpio_table
 };
 
 EFI_STATUS
