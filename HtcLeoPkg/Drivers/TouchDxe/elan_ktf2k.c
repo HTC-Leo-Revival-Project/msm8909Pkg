@@ -804,8 +804,6 @@ static INTN elan_ktf2k_ts_probe(struct i2c_client *client,
 	DEBUG((EFI_D_INFO,&client->dev, "Start touchscreen %s in interrupt mode\n",
 		ts->input_dev->name));
 
-	// usb_register_notifier(&cable_status_handler);
-
 	return 0;
 
 err_input_register_device_failed:
