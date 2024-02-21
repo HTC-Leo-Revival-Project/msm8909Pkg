@@ -41,6 +41,7 @@ STATIC struct ReservedMemory {
     { 0x00100000, 0x00100000 },    // SMEM
     { 0x00200000, 0x00200000 },    // OEMSBL
     { 0x00400000, 0x02100000 },    // AMSS
+    { 0x10000000, 0x01800000 },    // QDSP6
     { FB_ADDR,    FB_SIZE    },    // Display Reserved
 };
 
