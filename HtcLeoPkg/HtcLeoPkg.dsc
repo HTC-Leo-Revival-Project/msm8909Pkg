@@ -90,6 +90,7 @@
   SmemLib|HtcLeoPkg/Drivers/SmemDxe/SmemImplLib.inf
   KeypadDeviceHelperLib|HtcLeoPkg/Library/KeypadDeviceHelperLib/KeypadDeviceHelperLib.inf
   KeypadDeviceImplLib|HtcLeoPkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
+  DS2746Lib|HtcLeoPkg/Library/DS2746Lib/DS2746.inf
 
 [LibraryClasses.common.SEC]
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
@@ -271,6 +272,9 @@
 
   # Tetris
   HtcLeoPkg/Application/TetrisApp/tetris.inf
+
+  # Charging
+  HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
   #
   # FAT filesystem + GPT/MBR partitioning

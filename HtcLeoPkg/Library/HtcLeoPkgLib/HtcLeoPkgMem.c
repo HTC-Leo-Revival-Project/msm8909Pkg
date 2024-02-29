@@ -24,7 +24,23 @@
 #define DDR_ATTRIBUTES_CACHED               ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK
 #define DDR_ATTRIBUTES_UNCACHED             ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED
 
-#define SOC_REGISTERS_ATTRIBUTES            ARM_MEMORY_REGION_ATTRIBUTE_DEVICE
+#define QSD8250_PERIPH_BASE              0xA0000000
+#define QSD8250_PERIPH_SIZE              0x0C300000
+
+#define FB_ADDR FixedPcdGet32(PcdMipiFrameBufferAddress)
+#define FB_SIZE FixedPcdGet32(PcdMipiFrameBufferWidth)*FixedPcdGet32(PcdMipiFrameBufferHeight)*(FixedPcdGet32(PcdMipiFrameBufferPixelBpp) / 8)
+
+STATIC struct ReservedMemory {
+    EFI_PHYSICAL_ADDRESS         Offset;
+    EFI_PHYSICAL_ADDRESS         Size;
+} ReservedMemoryBuffer [] = {
+    { 0x00000000, 0x00100000 },    // APPSBL
+    { 0x00100000, 0x00100000 },    // SMEM
+    { 0x00200000, 0x00200000 },    // OEMSBL
+    { 0x00400000, 0x02100000 },    // AMSS
+    { 0x10000000, 0x01800000 },    // QDSP6
+    { FB_ADDR,    FB_SIZE    },    // Display Reserved
+};
 
 /**
   Return the Virtual Memory Map of your platform

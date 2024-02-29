@@ -80,6 +80,11 @@
 // Specific defines from board_htcleo.h
 #define HTCLEO_GPIO_UP_RESET_N		91
 
+// Colors
+#define LED_OFF   0
+#define LED_GREEN 1
+#define LED_AMBER 2
+
 struct microp_platform_data {
 	int chip;
 	UINT32 gpio_reset;

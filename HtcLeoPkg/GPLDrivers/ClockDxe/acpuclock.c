@@ -44,10 +44,6 @@ unsigned acpuclk_init_done = 0;
 #define SRC_RAW		0 /* clock from SPSS_CLK_CNTL */
 #define SRC_SCPLL	1 /* output of scpll 128-998 MHZ */
 
-//#define 	dmb()   __asm__ __volatile__("DMB")
-
-//extern void dmb(void);
-
 /* Set rate and enable the clock */
 void clock_config(UINT32 ns, UINT32 md, UINT32 ns_addr, UINT32 md_addr)
 {

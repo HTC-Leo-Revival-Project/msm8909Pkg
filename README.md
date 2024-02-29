@@ -10,7 +10,7 @@
 | I2C           | Based on cLK driver                              |   ✅   |
 | Panel         | Driver exists in cLK                             |   ❌   |
 | Touchscreen   | Driver exists in linux                           |   ❌   |
-| Charging      | Supported in cLK since 1.5.x                     |   ❌   |
+| Charging      | Based on cLK code                                |   ✅   |
 | Battery Gauge | Supported in cLK since 1.5.x                     |   ❌   |
 | USB           | Driver exists in cLK                             |   ❌   |
 | Keypad        | Loosely based on cLK driver                      |   ✅   |

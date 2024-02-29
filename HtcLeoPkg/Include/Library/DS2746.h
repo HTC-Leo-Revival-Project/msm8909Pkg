@@ -40,8 +40,8 @@
 #define DS2745_CURRENT_ACCUM_RES	1562500
 #define DS2745_TEMPERATURE_RES		125
 
-uint32_t ds2746_voltage(uint8_t addr);
-int16_t  ds2746_current(uint8_t addr, uint16_t resistance);
-int16_t  ds2745_temperature(uint8_t addr);
+UINT32 ds2746_voltage(UINT8 addr);
+INT16  ds2746_current(UINT8 addr, UINT16 resistance);
+INT16  ds2745_temperature(UINT8 addr);
 
 #endif //__DS2746_H__
