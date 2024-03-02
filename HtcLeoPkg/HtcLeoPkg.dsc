@@ -83,6 +83,7 @@
   MsmPcomLib|HtcLeoPkg/Library/MsmPcomLib/MsmPcomLib.inf
   MsmPcomClientLib|HtcLeoPkg/Library/MsmPcomClientLib/MsmPcomClientLib.inf
   HtcLeoVibrationLib|HtcLeoPkg/GPLLibrary/HtcLeoVibrationLib/HtcLeoVibrationLib.inf
+  MallocLib|HtcLeoPkg/Library/MallocLib/MallocLib.inf
 
   # SoC Drivers libraries
   StrLib|HtcLeoPkg/Library/StrLib/StrLib.inf
