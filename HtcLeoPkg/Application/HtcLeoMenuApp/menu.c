@@ -13,6 +13,7 @@
 #include <Library/UefiBootManagerLib.h>
 #include <Library/TimerLib.h>
 #include <Protocol/HtcLeoMicroP.h>
+#include <Protocol/HardwareInterrupt.h>
 
 #include <Protocol/LoadedImage.h>
 #include <Resources/FbColor.h>
@@ -22,8 +23,12 @@
 
 #include "menu.h"
 #include "CommonHeader.h"
+#include "hsusb.h"
+#include "udc.h"
 
 HTCLEO_MICROP_PROTOCOL  *gMicrop;
+
+EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 
 MenuEntry MenuOptions[] = 
 {
@@ -33,7 +38,8 @@ MenuEntry MenuOptions[] =
     {4, L"Reboot Menu", TRUE, &RebootMenu},
     {5, L"Exit to Bootmgr", TRUE, &EnterBootMgr},
     {6, L"Test Hexagon", TRUE, &HexagonFunction},
-    {7, L"Exit", TRUE, &ExitMenu}
+    {7, L"Test Usb", TRUE, &HsUsbFunction},
+    {8, L"Exit", TRUE, &ExitMenu}
 };
 
 UINTN MenuOptionCount = 0;
@@ -340,6 +346,32 @@ ConfigureMpu(BOOLEAN Disable)
   ArmInstructionSynchronizationBarrier();
 }
 
+extern UINTN udc_start();
+
+static struct udc_device surf_udc_device = {
+	.vendor_id	= 0x18d1,
+	.product_id	= 0x0D02,
+	.version_id	= 0x0001,
+	.manufacturer	= "google",
+	.product	= "EDK2",
+};
+
+extern UINTN udc_init(struct udc_device *dev);
+
+void HsUsbFunction(
+    IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+    EFI_STATUS  Status;
+
+  // Find the interrupt controller protocol.  ASSERT if not found.
+  Status = gBS->LocateProtocol (&gHardwareInterruptProtocolGuid, NULL, (VOID **)&gInterrupt);
+  ASSERT_EFI_ERROR (Status);
+
+  DEBUG((EFI_D_ERROR, "Starting udc\n"));
+  udc_init(&surf_udc_device);
+  udc_start(&gInterrupt);
+}
+
 void HexagonFunction(
     IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -399,7 +431,8 @@ void ReturnToMainMenu(
   MenuOptions[3] = (MenuEntry){4, L"Reboot Menu", TRUE, &RebootMenu};
   MenuOptions[4] = (MenuEntry){5, L"Exit to Bootmgr", TRUE, &EnterBootMgr},
   MenuOptions[5] = (MenuEntry){6, L"Test Hexagon", TRUE, &HexagonFunction},
-  MenuOptions[6] = (MenuEntry){7, L"Exit", TRUE, &ExitMenu};
+  MenuOptions[6] = (MenuEntry){6, L"Test Usb", TRUE, &HsUsbFunction},
+  MenuOptions[7] = (MenuEntry){7, L"Exit", TRUE, &ExitMenu};
 }
 
 void NullFunction()

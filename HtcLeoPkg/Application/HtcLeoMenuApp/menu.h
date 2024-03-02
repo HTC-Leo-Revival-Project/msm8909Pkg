@@ -33,6 +33,8 @@ EFI_STATUS StartAnotherApp(
     IN EFI_GUID *AppGuid);
 void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut);
 
+void HsUsbFunction(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+
 void  NullFunction();
 UINTN GetActiveMenuEntryLength();
 void ReturnToMainMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);

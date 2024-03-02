@@ -35,6 +35,7 @@
 #include <Library/UefiLib.h>
 #include <Library/IoLib.h>
 #include <Library/TimerLib.h>
+#include <Library/MemoryAllocationLib.h>
 #include <Protocol/HardwareInterrupt.h>
 
 
@@ -42,7 +43,6 @@
 #include <stdlib.h>
 #include <Chipset/iomap.h>
 #include <Chipset/irqs.h>
-#include <Library/MallocLib.h>
 #include <Library/types.h>
 
 #include "udc.h"
@@ -75,6 +75,8 @@
 #define ENDPOINT_READ        0x82
 #define ENDPOINT_WRITE       0x02
 
+#define strlen(s) ((size_t)AsciiStrLen((s)))
+
 UINTN charger_usb_disconnected(VOID);
 UINTN charger_usb_i(UINTN current);
 UINTN charger_usb_is_pc_connected(VOID);
@@ -97,8 +99,7 @@ struct udc_descriptor *udc_descriptor_alloc(UINTN type, UINTN num, UINTN len)
 	if ((len > 255) || (len < 2) || (num > 255) || (type > 255))
 		return 0;
 
-	if(!(desc = malloc(sizeof(struct udc_descriptor) + len)))
-		return 0;
+    desc = AllocatePool(sizeof(struct udc_descriptor) + len);
 
 	desc->next = 0;
 	desc->tag = (type << 8) | num;
@@ -186,8 +187,10 @@ struct udc_endpoint *_udc_endpoint_alloc(UINTN num, UINTN in, UINTN max_pkt)
 {
 	struct udc_endpoint *ept;
 	UINTN cfg;
-	ept = malloc(sizeof(*ept));
- 
+	//ept = malloc(sizeof(*ept));
+
+    ept = AllocatePool( sizeof( ept ) );
+    
 	ept->maxpkt = max_pkt;
 	ept->num = num;
 	ept->in = !!in;
@@ -275,10 +278,14 @@ static VOID endpoint_enable(struct udc_endpoint *ept, UINTN yes)
 struct udc_request *udc_request_alloc(VOID)
 {
 	struct usb_request *req;
-    req = malloc(sizeof(*req));
+   //req = malloc(sizeof(*req));
+        UINTN Size = sizeof(*req);
+
+    req=AllocatePool( sizeof( req ) );
+    
 	req->req.buf = 0;
 	req->req.length = 0;
-	req->item = memalign(32, 32);
+	//req->item = memalign(32, 32);
 	return &req->req;
 }
 
@@ -566,7 +573,7 @@ VOID board_ulpi_init(VOID);
 UINTN udc_init(struct udc_device *dev) 
 {
 
-	epts = memalign(4096, 4096);
+	epts = AllocatePool(4096);
 
 	//dprintf(INFO, "USB init ept @ %p\n", epts);
 	memset(epts, 0, 32 * sizeof(struct ept_queue_head));
@@ -595,8 +602,8 @@ writel(0x00080002, USB_USBCMD);
 	ep0out = _udc_endpoint_alloc(0, 0, 64);
 	ep0in = _udc_endpoint_alloc(0, 1, 64);
 	ep0req = udc_request_alloc();
-	ep0req->buf = malloc(4096);
-
+	//ep0req->buf = malloc(4096);
+   ep0req->buf=  AllocatePool( sizeof(  ep0req->buf ) );
 	{
 		/* create and register a language table descriptor */
 		/* language 0x0409 is US English */
@@ -693,8 +700,11 @@ enum handler_return udc_interrupt(VOID *arg)
 
 UINTN udc_register_gadget(struct udc_gadget *gadget)
 {
+    
+    DEBUG((EFI_D_ERROR, "udc_register_gadget()\n"));
 	if (the_gadget) {
 		// dprintf(CRITICAL, "only one gadget supported\n");
+         DEBUG((EFI_D_ERROR, "only one gadget supported\n"));
 		return -1;
 	}
 	the_gadget = gadget;
@@ -738,9 +748,6 @@ static VOID udc_ifc_desc_fill(struct udc_gadget *g, char *data)
 	}
 }
 
-char device_cid[24];
-extern char* generate_serial_from_cid(const char* input);
-
 UINTN udc_start(EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterupt)
 {
 	struct udc_descriptor *desc;
@@ -748,15 +755,18 @@ UINTN udc_start(EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterupt)
 	UINTN size;
 
 	// dprintf(ALWAYS, "udc_start()\n");
+    DEBUG((EFI_D_ERROR, "udc_start()\n"));
 
 	if (!the_device) {
 		// dprintf(CRITICAL, "udc cannot start before init\n");
+        DEBUG((EFI_D_ERROR, "udc cannot start before init\n"));
 		return -1;
 	}
-	if (!the_gadget) {
-		// dprintf(CRITICAL, "udc has no gadget registered\n");
-		return -1;
-	}
+	// if (!the_gadget) {
+	// 	// dprintf(CRITICAL, "udc has no gadget registered\n");
+    //     DEBUG((EFI_D_ERROR, "udc has no gadget registered\n"));
+	// 	return -1;
+	// }
 
 	/* create our device descriptor */
 	desc = udc_descriptor_alloc(TYPE_DEVICE, 0, 18);
@@ -794,7 +804,7 @@ UINTN udc_start(EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterupt)
 	udc_descriptor_register(desc);
 
         /* go to RUN mode (D+ pullup enable) */
-	writel(0x00080001, USB_USBCMD);
+	MmioWrite32(USB_USBCMD, 0x00080001);
     gInterupt->RegisterInterruptSource(gInterupt,INT_USB_HS,(VOID*) 0);
 	//register_int_handler(INT_USB_HS, udc_interrupt, (VOID*) 0);
 	//unmask_interrupt(INT_USB_HS);
