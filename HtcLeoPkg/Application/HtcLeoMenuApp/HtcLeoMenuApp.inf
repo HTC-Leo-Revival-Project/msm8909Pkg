@@ -12,6 +12,7 @@
 [Sources]
   menu.c
   CommonHeader.c
+  hsusb.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -31,6 +32,7 @@
   IoLib
   ResetSystemLib
   UefiBootManagerLib
+  MallocLib
 
 [Protocols]
   gEfiLoadedImageProtocolGuid
