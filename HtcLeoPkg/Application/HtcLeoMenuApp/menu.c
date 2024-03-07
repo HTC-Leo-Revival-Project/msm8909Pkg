@@ -369,7 +369,7 @@ void HsUsbFunction(
 
   DEBUG((EFI_D_ERROR, "Starting udc\n"));
   udc_init(&surf_udc_device);
-  udc_start(&gInterrupt);
+  udc_start(gInterrupt);
 }
 
 void HexagonFunction(

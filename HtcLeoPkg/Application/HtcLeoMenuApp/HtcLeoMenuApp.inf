@@ -37,3 +37,4 @@
 [Protocols]
   gEfiLoadedImageProtocolGuid
   gHtcLeoMicropProtocolGuid
+  gHardwareInterruptProtocolGuid
