@@ -233,13 +233,37 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
   EFI_SIMPLE_TEXT_OUTPUT_MODE InitialMode;
   EFI_STATUS Status;
+  EFI_INPUT_KEY key;
+  UINT32 Timeout = 400; //TODO: Get from pcd
 
   EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut = gST->ConOut;
 
-  // TODO: Implement a check for loading menu anyway
+  Print(L" Press Home within %d seconds to boot to menu", (Timeout / 100));
+
+  do {
+    Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
+
+    if (Status != EFI_NOT_READY) {
+      ASSERT_EFI_ERROR(Status);
+
+      switch (key.ScanCode) {
+      case SCAN_HOME:
+        // home button
+        goto menu;
+        break;
+      default:
+        break;
+      }
+    }
+    // TODO: Use events?
+    MicroSecondDelay(10000);
+    Timeout--;
+  }while(Timeout);
+
   Status = DiscoverAndBootApp(
       ImageHandle, EFI_REMOVABLE_MEDIA_FILE_NAME_ARM, NULL);
 
+menu:
   // Fill main menu
   FillMenu();
 
