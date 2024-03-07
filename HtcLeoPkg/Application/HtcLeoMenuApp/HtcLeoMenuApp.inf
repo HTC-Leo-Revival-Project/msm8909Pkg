@@ -33,6 +33,10 @@
   UefiBootManagerLib
   DevicePathLib
 
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor
+
 [Protocols]
   gEfiGraphicsOutputProtocolGuid                ## CONSUMES
   gEfiSimpleTextInProtocolGuid                  ## CONSUMES

@@ -69,9 +69,14 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
   MenuOptionCount = GetActiveMenuEntryLength();
 
   // Print menu title
-  gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_RED));
+  gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
   gST->ConOut->SetCursorPosition( gST->ConOut, 15, 1 );
-  Print(L" HtcLeoRevivalProject EDK2 Main Menu ");
+  
+  Print(L" %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVendor));
+  gST->ConOut->SetCursorPosition( gST->ConOut, 15, 2 );
+  Print(L" EDK2 Main Menu \n");
+  gST->ConOut->SetCursorPosition( gST->ConOut, 15, 3 );
+  Print(L" Version: %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVersionString));
 
   // Print menu options
   ConsoleOut->SetAttribute(ConsoleOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
@@ -80,7 +85,7 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
     if (!MenuOptions[i].IsActive) {
       break;
     }
-    gST->ConOut->SetCursorPosition( gST->ConOut, 25, 3+i );
+    gST->ConOut->SetCursorPosition( gST->ConOut, 15, 5+i );
     if (i == SelectedIndex) {
       ConsoleOut->SetAttribute(
           ConsoleOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));
@@ -190,12 +195,12 @@ void StartApp(CHAR16 *Description)
   EfiBootManagerFreeLoadOptions(BootOptions, BootOptionCount);
 }
 
-void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+void StartShell()
 {
   StartApp(SHELL_APP_TITLE);
 }
 
-void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+void StartTetris()
 {
   StartApp(TETRIS_APP_TITLE);
 }
