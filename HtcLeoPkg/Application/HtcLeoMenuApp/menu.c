@@ -70,12 +70,12 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
 
   // Print menu title
   gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
-  gST->ConOut->SetCursorPosition( gST->ConOut, 15, 1 );
+  gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 1 );
   
   Print(L" %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVendor));
-  gST->ConOut->SetCursorPosition( gST->ConOut, 15, 2 );
+  gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 2 );
   Print(L" EDK2 Main Menu \n");
-  gST->ConOut->SetCursorPosition( gST->ConOut, 15, 3 );
+  gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 3 );
   Print(L" Version: %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVersionString));
 
   // Print menu options
@@ -85,7 +85,7 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
     if (!MenuOptions[i].IsActive) {
       break;
     }
-    gST->ConOut->SetCursorPosition( gST->ConOut, 15, 5+i );
+    gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 5+i );
     if (i == SelectedIndex) {
       ConsoleOut->SetAttribute(
           ConsoleOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));
