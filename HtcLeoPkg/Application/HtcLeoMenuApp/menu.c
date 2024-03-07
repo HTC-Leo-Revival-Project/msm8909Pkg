@@ -3,6 +3,7 @@
 #include <Library/UefiLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/BaseLib.h>
+#include <Library/BootAppLib.h>
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
 #include <Library/ArmLib.h>
@@ -19,8 +20,6 @@
 #include <Chipset/timer.h>
 
 #include "menu.h"
-
-#define OPTIONS_COUNT 7
 
 MenuEntry MenuOptions[OPTIONS_COUNT] = {0};
 
@@ -107,11 +106,9 @@ void
 FillMenu()
 {
   UINTN Index = 0;
-  MenuOptions[Index++] = (MenuEntry){Index, L"Option 1", TRUE, &NullFunction};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Option 2", TRUE, &NullFunction};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &NullFunction};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
+  MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Exit to Bootmgr", TRUE, &NullFunction},
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
 
@@ -191,17 +188,36 @@ void HandleKeyInput(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   }
 }
 
-/*void EnterBootMgr(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable){
-  EFI_STATUS                   Status;
-  EFI_BOOT_MANAGER_LOAD_OPTION BootManagerMenu;
-  Status = EfiBootManagerGetBootManagerMenu(&BootManagerMenu);
-    if (!EFI_ERROR(Status)) {
-    EfiBootManagerBoot(&BootManagerMenu);
+// Start another app
+void StartApp(CHAR16 *Description)
+{
+  EFI_BOOT_MANAGER_LOAD_OPTION *BootOptions;
+  UINTN                         BootOptionCount;
+  EFI_STATUS                    Status;
+  
+  EfiBootManagerRefreshAllBootOption();
+
+  BootOptions =
+      EfiBootManagerGetLoadOptions(&BootOptionCount, LoadOptionTypeBoot);
+  ASSERT(BootOptionCount != -1);
+  for (UINTN i = 0; i < BootOptionCount; i++) {
+    if (StrCmp(Description, BootOptions[i].Description) == 0) {
+      EfiBootManagerBoot(&BootOptions[i]);
+    }
   }
-  else {
-    ResetCold();
-  }
-}*/
+
+  EfiBootManagerFreeLoadOptions(BootOptions, BootOptionCount);
+}
+
+void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+  StartApp(SHELL_APP_TITLE);
+}
+
+void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+  StartApp(TETRIS_APP_TITLE);
+}
 
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {

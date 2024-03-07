@@ -10,6 +10,8 @@ typedef struct {
   void (*Function)();
 } MenuEntry;
 
+#define OPTIONS_COUNT 7
+
 void Option1Function(
     IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
@@ -28,14 +30,12 @@ void RestoreInitialConsoleMode(
 void HandleKeyInput(
     IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 
-EFI_STATUS StartAnotherApp(
-    IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,
-    IN EFI_GUID *AppGuid);
 void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut);
 
 void  NullFunction();
 UINTN GetActiveMenuEntryLength();
 void ReturnToMainMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
-void EnterBootMgr(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+void StartBootMgr(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 
 #endif
