@@ -1,0 +1,2 @@
+BootApp loader source:
+https://github.com/WOA-Project/Lumia950XLPkg/blob/master/Application/BootSplashApp/SplashApp.c#L104

@@ -1,28 +1,7 @@
-#include <Uefi.h>
-#include <PiDxe.h>
-#include <Library/UefiLib.h>
-#include <Library/BaseMemoryLib.h>
-#include <Library/BaseLib.h>
-#include <Library/BootAppLib.h>
-#include <Library/DebugLib.h>
-#include <Library/IoLib.h>
-#include <Library/ArmLib.h>
-
-#include <Library/HtcLeoPlatformResetLib.h>
-#include <Library/MemoryAllocationLib.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Library/UefiBootManagerLib.h>
-#include <Library/DevicePathLib.h>
-#include <Library/TimerLib.h>
-#include <Protocol/HtcLeoMicroP.h>
-
-#include <Protocol/LoadedImage.h>
-#include <Resources/FbColor.h>
-#include <Chipset/timer.h>
-
 #include "menu.h"
+#include "BootApp.h"
 
-MenuEntry MenuOptions[OPTIONS_COUNT] = {0};
+MenuEntry MenuOptions[MAX_OPTIONS_COUNT] = {0};
 
 UINTN MenuOptionCount = 0;
 UINTN SelectedIndex = 0;
@@ -234,7 +213,7 @@ void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   // Fill disabled options
   do {
     MenuOptions[Index++] = (MenuEntry){Index, L"", FALSE, &NullFunction};
-  }while(Index < OPTIONS_COUNT);
+  }while(Index < MAX_OPTIONS_COUNT);
 }
 
 void NullFunction()
@@ -247,47 +226,6 @@ void ExitMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   EFI_STATUS Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
   ASSERT_EFI_ERROR(Status);
   SystemTable->BootServices->Exit(ImageHandle, EFI_SUCCESS, 0, NULL);
-}
-
-EFI_STATUS EFIAPI DiscoverAndBootApp(
-    IN EFI_HANDLE ImageHandle, CHAR16 *AppPath, CHAR16 *FallbackPath)
-{
-  EFI_HANDLE *               FileSystemHandles;
-  EFI_LOADED_IMAGE_PROTOCOL *LoadedAppImage;
-  EFI_HANDLE                 LoadedAppHandle;
-  UINTN                      NumberFileSystemHandles;
-  EFI_STATUS                 Status;
-  EFI_DEVICE_PATH_PROTOCOL * FilePath = NULL;
-
-  Status = gBS->LocateHandleBuffer(
-      ByProtocol, &gEfiSimpleFileSystemProtocolGuid, NULL,
-      &NumberFileSystemHandles, &FileSystemHandles);
-
-  for (UINTN Handle = 0; Handle < NumberFileSystemHandles; Handle++) {
-    FilePath = FileDevicePath(FileSystemHandles[Handle], AppPath);
-    Status =
-        gBS->LoadImage(TRUE, ImageHandle, FilePath, NULL, 0, &LoadedAppHandle);
-
-    if (EFI_ERROR(Status) && FallbackPath != NULL) {
-      FilePath = FileDevicePath(FileSystemHandles[Handle], FallbackPath);
-      Status   = gBS->LoadImage(
-          TRUE, ImageHandle, FilePath, NULL, 0, &LoadedAppHandle);
-    }
-
-    if (EFI_ERROR(Status)) {
-      continue;
-    }
-
-    Status = gBS->HandleProtocol(
-        LoadedAppHandle, &gEfiLoadedImageProtocolGuid, (VOID *)&LoadedAppImage);
-
-    if (!EFI_ERROR(Status)) {
-      Status = gBS->StartImage(LoadedAppHandle, NULL, NULL);
-      return Status;
-    }
-  }
-
-  return Status;
 }
 
 EFI_STATUS EFIAPI
