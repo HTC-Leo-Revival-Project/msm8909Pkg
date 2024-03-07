@@ -762,11 +762,12 @@ UINTN udc_start(EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterupt)
         DEBUG((EFI_D_ERROR, "udc cannot start before init\n"));
 		return -1;
 	}
-	// if (!the_gadget) {
+	
+	if (!the_gadget) {
 	// 	// dprintf(CRITICAL, "udc has no gadget registered\n");
-    //     DEBUG((EFI_D_ERROR, "udc has no gadget registered\n"));
-	// 	return -1;
-	// }
+         DEBUG((EFI_D_ERROR, "udc has no gadget registered\n"));
+	 	return -1;
+	}
 
 	/* create our device descriptor */
 	desc = udc_descriptor_alloc(TYPE_DEVICE, 0, 18);
