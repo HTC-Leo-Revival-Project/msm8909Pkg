@@ -30,6 +30,13 @@
   IoLib
   ResetSystemLib
   UefiBootManagerLib
+  DevicePathLib
 
 [Protocols]
-  gEfiLoadedImageProtocolGuid
+  gEfiGraphicsOutputProtocolGuid                ## CONSUMES
+  gEfiSimpleTextInProtocolGuid                  ## CONSUMES
+  gEfiSimpleTextInputExProtocolGuid             ## CONSUMES
+  gEfiDevicePathProtocolGuid                    ## CONSUMES
+  gEfiSimpleFileSystemProtocolGuid              ## CONSUMES
+  gEfiLoadedImageProtocolGuid                   ## CONSUMES
+  gEfiGraphicsOutputProtocolGuid                ## CONSUMES
