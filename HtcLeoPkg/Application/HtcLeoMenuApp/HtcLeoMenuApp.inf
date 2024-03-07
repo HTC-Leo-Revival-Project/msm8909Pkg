@@ -13,6 +13,7 @@
   menu.c
   CommonHeader.c
   hsusb.c
+  fastboot.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
