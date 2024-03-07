@@ -6,6 +6,17 @@ MenuEntry MenuOptions[MAX_OPTIONS_COUNT] = {0};
 UINTN MenuOptionCount = 0;
 UINTN SelectedIndex = 0;
 
+void
+FillMenu()
+{
+  UINTN Index = 0;
+  MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
+  MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
+  MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
+}
+
 void PrepareConsole(
     IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *Cout,
     OUT EFI_SIMPLE_TEXT_OUTPUT_MODE    *ModeToStore)
@@ -80,16 +91,6 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
 
     Print(L"%d. %s ", MenuOptions[i].Index, MenuOptions[i].Name);
   }
-}
-
-void
-FillMenu()
-{
-  UINTN Index = 0;
-  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
-  MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
-  MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
 
 void MainMenu(
@@ -228,6 +229,19 @@ void ExitMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   SystemTable->BootServices->Exit(ImageHandle, EFI_SUCCESS, 0, NULL);
 }
 
+void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+  EFI_STATUS Status = EFI_SUCCESS;
+
+  Status = DiscoverAndBootApp(
+      ImageHandle, EFI_REMOVABLE_MEDIA_FILE_NAME_ARM, NULL);
+
+  // We shouldn't reach here if the default file is present
+  if(Status) {
+    Print(L"Booting default entry failed!");
+  }
+}
+
 EFI_STATUS EFIAPI
 ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -260,8 +274,7 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     Timeout--;
   }while(Timeout);
 
-  Status = DiscoverAndBootApp(
-      ImageHandle, EFI_REMOVABLE_MEDIA_FILE_NAME_ARM, NULL);
+  BootDefault(ImageHandle, SystemTable);
 
 menu:
   // Fill main menu
