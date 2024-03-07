@@ -36,12 +36,15 @@
   PlatformBm.c
 
 [Packages]
+  ArmPkg/ArmPkg.dec
   MdeModulePkg/MdeModulePkg.dec
   MdePkg/MdePkg.dec
   ShellPkg/ShellPkg.dec
   HtcLeoPkg/HtcLeoPkg.dec
 
 [LibraryClasses]
+  ArmLib
+  ArmSmcLib
   BaseLib
   BaseMemoryLib
   BootLogoLib
@@ -77,6 +80,8 @@
   gEfiEndOfDxeEventGroupGuid
   gEfiTtyTermGuid
   gUefiShellFileGuid
+  gHtcLeoBootSplashAppGuid
+  gTetrisAppGuid
 
 [Protocols]
   gEfiDevicePathProtocolGuid
