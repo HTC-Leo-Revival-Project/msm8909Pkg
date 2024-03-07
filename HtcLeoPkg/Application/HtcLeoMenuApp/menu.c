@@ -64,7 +64,7 @@ UINTN GetActiveMenuEntryLength()
   return MenuCount;
 }
 
-void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
+void DrawMenu()
 {
   MenuOptionCount = GetActiveMenuEntryLength();
 
@@ -79,7 +79,7 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
   Print(L" Version: %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVersionString));
 
   // Print menu options
-  ConsoleOut->SetAttribute(ConsoleOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
+  gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
 
   for (UINTN i = 0; i < sizeof(MenuOptions) / sizeof(MenuOptions[0]); i++) {
     if (!MenuOptions[i].IsActive) {
@@ -87,11 +87,10 @@ void DrawMenu(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut)
     }
     gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 5+i );
     if (i == SelectedIndex) {
-      ConsoleOut->SetAttribute(
-          ConsoleOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));
+      gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));
     }
     else {
-      ConsoleOut->SetAttribute(ConsoleOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
+      gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
     }
 
     Print(L"%d. %s ", MenuOptions[i].Index, MenuOptions[i].Name);
@@ -255,8 +254,6 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   EFI_INPUT_KEY key;
   UINT32 Timeout = 400; //TODO: Get from pcd
 
-  EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConsoleOut = gST->ConOut;
-
   Print(L" Press Home within %d seconds to boot to menu", (Timeout / 100));
 
   do {
@@ -289,7 +286,7 @@ menu:
 
   // Loop for key input
   while (TRUE) {
-    DrawMenu(ConsoleOut);
+    DrawMenu();
     HandleKeyInput(ImageHandle, SystemTable);
   }
 
