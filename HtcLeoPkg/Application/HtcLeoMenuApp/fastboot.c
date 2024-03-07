@@ -115,8 +115,10 @@ VOID fastboot_publish(const char *name, const char *value)
 }
 
 
-static event_t usb_online;
-static event_t txn_done;
+// static event_t usb_online;
+// static event_t txn_done;
+EFI_EVENT usb_online;
+EFI_EVENT txn_done;
 static UINTN  buffer[4096]; //used to be char remember for later
 static struct udc_endpoint *in, *out;
 static struct udc_request *req;
@@ -137,7 +139,15 @@ static VOID req_complete(struct udc_request *req, UINTN actual, UINTN status)
 {
 	txn_status = status;
 	req->length = actual;
-	event_signal(&txn_done, 0);
+
+     EFI_STATUS Status;
+	//event_signal(&txn_done, 0);
+                Status = gBS->SignalEvent(txn_done);
+    if (EFI_ERROR(Status)) {
+         DEBUG((EFI_D_ERROR, "Failed to signal event: %r\n", Status));
+        gBS->CloseEvent(txn_done); // Clean up event if signaling fails
+    }
+		
 }
 
 static UINTN usb_read(VOID *_buf, UINTN len)
@@ -146,6 +156,7 @@ static UINTN usb_read(VOID *_buf, UINTN len)
 	UINTN xfer;
 	UINTN *buf = _buf; // used to be int char or unsigned char
 	UINTN count = 0;
+    EFI_STATUS Status;
 
 	if (fastboot_state == STATE_ERROR)
 		goto oops;
@@ -161,7 +172,13 @@ static UINTN usb_read(VOID *_buf, UINTN len)
              DEBUG((EFI_D_ERROR,  "usb_read() queue failed\n"));
 			goto oops;
 		}
-		event_wait(&txn_done);
+		//event_wait(&txn_done);
+            // Wait for the event to be signaled
+    Status = gBS->WaitForEvent(
+        1,                              // Number of events to wait for
+        &txn_done,                       // Array of event objects to wait for
+        NULL                            // Pointer to the index of the event that was signaled
+    );
 
 		if (txn_status < 0) {
 			// dprintf(INFO, "usb_read() transaction failed\n");
@@ -187,6 +204,7 @@ oops:
 static UINTN usb_write(VOID *buf, UINTN len)
 {
 	UINTN r;
+    EFI_STATUS Status;
 
 	if (fastboot_state == STATE_ERROR)
 		goto oops;
@@ -200,7 +218,13 @@ static UINTN usb_write(VOID *buf, UINTN len)
          DEBUG((EFI_D_ERROR, "usb_write() queue failed\n"));
 		goto oops;
 	}
-	event_wait(&txn_done);
+	// event_wait(&txn_done);
+                // Wait for the event to be signaled
+    Status = gBS->WaitForEvent(
+        1,                              // Number of events to wait for
+        &txn_done,                       // Array of event objects to wait for
+        NULL                            // Pointer to the index of the event that was signaled
+    );
 	if (txn_status < 0) {
 		// dprintf(INFO, "usb_write() transaction failed\n");
          DEBUG((EFI_D_ERROR, "usb_write() transaction failed\n"));
@@ -357,17 +381,30 @@ again:
 
 static UINTN fastboot_handler(VOID *arg)
 {
-	for (;;) {
-		event_wait(&usb_online);
+    EFI_STATUS Status;
+		// event_wait(&usb_online);
+                    // Wait for the event to be signaled
+    Status = gBS->WaitForEvent(
+        1,                              // Number of events to wait for
+        &usb_online,                       // Array of event objects to wait for
+        NULL                            // Pointer to the index of the event that was signaled
+    );
 		fastboot_command_loop();
-	}
 	return 0;
 }
 
 static VOID fastboot_notify(struct udc_gadget *gadget, UINTN event)
 {
+
+     EFI_STATUS Status;
+
 	if (event == UDC_EVENT_ONLINE) {
-		event_signal(&usb_online, 0);
+            Status = gBS->SignalEvent(usb_online);
+    if (EFI_ERROR(Status)) {
+         DEBUG((EFI_D_ERROR, "Failed to signal event: %r\n", Status));
+        gBS->CloseEvent(usb_online); // Clean up event if signaling fails
+    }
+		//event_signal(&usb_online, 0);
 	}
 }
 
@@ -383,17 +420,54 @@ static struct udc_gadget fastboot_gadget = {
 	.ept		= fastboot_endpoints,
 };
 
+VOID UsbOnlineNotifyFunction(IN EFI_EVENT Event, IN VOID *Context) {
+    Print(L"UsbOnlineNotifyFunction has been called.\n");
+}
+
+VOID TxnDoneNotifyFunction(IN EFI_EVENT Event, IN VOID *Context) {
+    Print(L"TxnDoneNotifyFunction has been called.\n");
+}
+
 UINTN fastboot_init(VOID *base, UINTN size)
 {
-	thread_t *thr;
 	// dprintf(INFO, "fastboot_init()\n");
      DEBUG((EFI_D_ERROR, "fastboot_init()\n"));
 
 	download_base = base;
 	download_max = size;
 
-	event_init(&usb_online, 0, EVENT_FLAG_AUTOUNSIGNAL);
-	event_init(&txn_done, 0, EVENT_FLAG_AUTOUNSIGNAL);
+	// event_init(&usb_online, 0, EVENT_FLAG_AUTOUNSIGNAL);
+	// event_init(&txn_done, 0, EVENT_FLAG_AUTOUNSIGNAL);
+
+        EFI_STATUS Status;
+
+    // Create an event for usb online
+    Status = gBS->CreateEvent(
+        EVT_NOTIFY_SIGNAL,             // Event type
+        TPL_CALLBACK,                  // Notify function's priority
+        UsbOnlineNotifyFunction,         // Function to be called when the event is signaled
+        NULL,                          // Context to pass to the notify function
+        &usb_online                       // Event object
+    );
+
+        if (EFI_ERROR(Status)) {
+        Print(L"Failed to create event: %r\n", Status);
+        return Status;
+    }
+
+        // Create an event for txn_done
+    Status = gBS->CreateEvent(
+        EVT_NOTIFY_SIGNAL,             // Event type
+        TPL_CALLBACK,                  // Notify function's priority
+        TxnDoneNotifyFunction,         // Function to be called when the event is signaled
+        NULL,                          // Context to pass to the notify function
+        &txn_done                       // Event object
+    );
+
+        if (EFI_ERROR(Status)) {
+        Print(L"Failed to create event: %r\n", Status);
+        return Status;
+    }
 
 	in = udc_endpoint_alloc(UDC_TYPE_BULK_IN, 512);
 	if (!in)
@@ -414,10 +488,10 @@ UINTN fastboot_init(VOID *base, UINTN size)
 
 	fastboot_register("getvar:", cmd_getvar);
 	fastboot_register("download:", cmd_download);
-	fastboot_publish("version", CLK_VERSION);
+	//fastboot_publish("version", CLK_VERSION);
 
-	thr = thread_create("fastboot", fastboot_handler, 0, DEFAULT_PRIORITY, 4096);
-	thread_resume(thr);
+	// thr = thread_create("fastboot", fastboot_handler, 0, DEFAULT_PRIORITY, 4096);
+	// thread_resume(thr);
 	return 0;
 
 fail_udc_register:
