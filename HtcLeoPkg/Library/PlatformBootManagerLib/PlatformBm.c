@@ -399,7 +399,7 @@ VOID EFIAPI PlatformBootManagerAfterConsole(VOID)
   //
   // Show version information.
   //
-  Print(L"HTC HD2 Bootstrap, version %a \n", "Testing");
+  Print(L"HTC HD2 Bootstrap, version %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVersionString));
 
   //
   // Connect the rest of the devices.

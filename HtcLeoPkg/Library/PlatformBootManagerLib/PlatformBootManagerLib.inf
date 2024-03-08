@@ -72,6 +72,7 @@
 
 [Pcd]
   gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
 
 [Guids]
   gEfiFileInfoGuid
