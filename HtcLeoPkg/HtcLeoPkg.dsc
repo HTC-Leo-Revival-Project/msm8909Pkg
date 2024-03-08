@@ -119,7 +119,7 @@
 [PcdsFixedAtBuild.common]
   gEfiMdePkgTokenSpaceGuid.PcdDefaultTerminalType|4
 
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor|L"HtcLeoRevivalProject"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor|L"Htc Leo Revival Project"
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Testing"
 
   # Memory protection

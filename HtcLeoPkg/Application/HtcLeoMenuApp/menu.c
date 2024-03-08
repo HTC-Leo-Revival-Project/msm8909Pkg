@@ -5,6 +5,7 @@ MenuEntry MenuOptions[MAX_OPTIONS_COUNT] = {0};
 
 UINTN MenuOptionCount = 0;
 UINTN SelectedIndex = 0;
+EFI_SIMPLE_TEXT_OUTPUT_MODE InitialMode;
 
 void
 FillMenu()
@@ -118,63 +119,59 @@ void HandleKeyInput(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     ASSERT_EFI_ERROR(Status);
 
     switch (key.ScanCode) {
-    case SCAN_HOME:
-      // home button
-      MainMenu(ImageHandle, SystemTable);
-      break;
-    case SCAN_UP:
-      // volume up button
-      if (SelectedIndex == 0) {
-        SelectedIndex = MenuOptionCount - 1;
-      }
-      else {
-        SelectedIndex--;
-      }
-      break;
-    case SCAN_DOWN:
-      // volume down button
-      if (SelectedIndex == MenuOptionCount - 1) {
-        SelectedIndex = 0;
-      }
-      else {
-        SelectedIndex++;
-      }
-      break;
-    case SCAN_ESC:
-      // power button
-
-      break;
-
-    default:
-      switch (key.UnicodeChar) {
-      case CHAR_CARRIAGE_RETURN:
-        // dial button
-        if (MenuOptions[SelectedIndex].Function != NULL) {
-          MenuOptions[SelectedIndex].Function(ImageHandle, SystemTable);
+      case SCAN_HOME:
+        // home button
+        MainMenu(ImageHandle, SystemTable);
+        break;
+      case SCAN_UP:
+        // volume up button
+        if (SelectedIndex == 0) {
+          SelectedIndex = MenuOptionCount - 1;
+        }
+        else {
+          SelectedIndex--;
         }
         break;
-
-      case CHAR_TAB:
-        // windows button
-        DEBUG(
-            (EFI_D_ERROR, "%d Menuentries are marked as active\n",
-             GetActiveMenuEntryLength()));
-        DEBUG((EFI_D_ERROR, "SelectedIndex is: %d\n", SelectedIndex));
+      case SCAN_DOWN:
+        // volume down button
+        if (SelectedIndex == MenuOptionCount - 1) {
+          SelectedIndex = 0;
+        }
+        else {
+          SelectedIndex++;
+        }
         break;
-
-      case CHAR_BACKSPACE:
-        // back button
+      case SCAN_ESC:
+        // power button
         break;
       default:
+        switch (key.UnicodeChar) {
+        case CHAR_CARRIAGE_RETURN:
+          // dial button
+          if (MenuOptions[SelectedIndex].Function != NULL) {
+            MenuOptions[SelectedIndex].Function(ImageHandle, SystemTable);
+          }
+          break;
+        case CHAR_TAB:
+          // windows button
+          DEBUG(
+              (EFI_D_ERROR, "%d Menuentries are marked as active\n",
+              GetActiveMenuEntryLength()));
+          DEBUG((EFI_D_ERROR, "SelectedIndex is: %d\n", SelectedIndex));
+          break;
+        case CHAR_BACKSPACE:
+          // back button
+          break;
+        default:
+          break;
+        }
         break;
-      }
-      break;
     }
   }
 }
 
 // Start another app
-void StartApp(CHAR16 *Description)
+void StartApp(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable, CHAR16 *Description)
 {
   EFI_BOOT_MANAGER_LOAD_OPTION *BootOptions;
   UINTN                         BootOptionCount;
@@ -187,6 +184,7 @@ void StartApp(CHAR16 *Description)
   ASSERT(BootOptionCount != -1);
   for (UINTN i = 0; i < BootOptionCount; i++) {
     if (StrCmp(Description, BootOptions[i].Description) == 0) {
+      RestoreInitialConsoleMode(SystemTable->ConOut, &InitialMode);
       EfiBootManagerBoot(&BootOptions[i]);
     }
   }
@@ -194,14 +192,14 @@ void StartApp(CHAR16 *Description)
   EfiBootManagerFreeLoadOptions(BootOptions, BootOptionCount);
 }
 
-void StartShell()
+void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
-  StartApp(SHELL_APP_TITLE);
+  StartApp(ImageHandle, SystemTable, SHELL_APP_TITLE);
 }
 
-void StartTetris()
+void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
-  StartApp(TETRIS_APP_TITLE);
+  StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
 }
 
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
@@ -249,7 +247,6 @@ void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 EFI_STATUS EFIAPI
 ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
-  EFI_SIMPLE_TEXT_OUTPUT_MODE InitialMode;
   EFI_STATUS Status;
   EFI_INPUT_KEY key;
   UINT32 Timeout = 400; //TODO: Get from pcd
