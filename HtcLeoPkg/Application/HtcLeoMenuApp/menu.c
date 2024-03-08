@@ -254,7 +254,8 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   EFI_INPUT_KEY key;
   UINT32 Timeout = 400; //TODO: Get from pcd
 
-  Print(L" Press Home within %d seconds to boot to menu", (Timeout / 100));
+  Print(L" Press Home within %d seconds to boot to menu\n", (Timeout / 100));
+  Print(L" or back key to boot from ESP\n");
 
   do {
     Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
@@ -263,12 +264,15 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
       ASSERT_EFI_ERROR(Status);
 
       switch (key.ScanCode) {
-      case SCAN_HOME:
-        // home button
-        goto menu;
-        break;
-      default:
-        break;
+        case SCAN_HOME:
+          // home button
+          goto menu;
+          break;
+        case CHAR_BACKSPACE:
+          goto boot_esp;
+          break;
+        default:
+          break;
       }
     }
     // TODO: Use events?
@@ -276,7 +280,11 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     Timeout--;
   }while(Timeout);
 
+boot_esp:
   BootDefault(ImageHandle, SystemTable);
+
+  // We should not get here if bootarm.efi is present, inform the user
+  Print(L" Could not boot from ESP, loading menu\n");
 
 menu:
   // Fill main menu
