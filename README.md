@@ -26,6 +26,7 @@ UEFI can be either chainloaded as a kernel from cLK, as well as flashed to boot 
  - ivoszbg for Msm8916Pkg
  - winocm for the iPhone4Pkg
  - feherneoh for all the helpfull ideas and shared knowledge
+ - Krzysztof Łukasz Necel & Tomasz Gajger for a Tetris EFI implementation (based on https://github.com/swmicro/Tetris)
 
 ## License
 All code except drivers in `GplDrivers` directory is licensed under BSD 2-Clause. 
