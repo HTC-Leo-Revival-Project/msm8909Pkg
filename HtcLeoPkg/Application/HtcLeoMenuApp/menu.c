@@ -221,7 +221,8 @@ void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 
 void NullFunction()
 {
-  Print(L"Feature not supported yet!");
+  //Print(L"Feature not supported yet!");
+  DEBUG((EFI_D_ERROR, "Feature not supported yet!"));
 }
 
 void ExitMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
@@ -240,7 +241,8 @@ void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 
   // We shouldn't reach here if the default file is present
   if(Status) {
-    Print(L"Booting default entry failed!");
+    //Print(L"Booting default entry failed!");
+    DEBUG((EFI_D_ERROR, "Booting default entry failed!"));
   }
 }
 
