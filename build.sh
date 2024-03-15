@@ -5,14 +5,14 @@ set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
 . ../edk2/edksetup.sh
-GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p HtcLeoPkg/HtcLeoPkg.dsc
+GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p HtcLeoPkg/Platforms/HtcLeo/HtcLeoPkg.dsc
 
 chmod +x build_boot_shim.sh
 ./build_boot_shim.sh
 
-cat BootShim/BootShim.bin workspace/Build/QSD8250/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Tools/bootpayload.bin
+cat BootShim/BootShim.bin workspace/Build/HtcLeo/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Tools/bootpayload.bin
 
-mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/uefi.img
+mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/uefi_leo.img
 
 # NBH creation
 if [ ! -f ImageResources/Tools/nbgen ]; then

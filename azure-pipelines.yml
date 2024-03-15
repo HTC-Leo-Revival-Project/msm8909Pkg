@@ -46,7 +46,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Htc Leo UEFI kernel'
   inputs: 
-    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/uefi.img
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/uefi_leo.img
     artifactName: Htc Leo UEFI kernel
 
 - task: PublishBuildArtifacts@1
