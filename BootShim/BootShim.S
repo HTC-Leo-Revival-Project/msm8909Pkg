@@ -30,7 +30,7 @@
 _start:
 	b	reset
 	b   prepare_for_linux
-	b   __cpu_early_init
+	//b   __cpu_early_init
 
 //if EDK2 is loaded by wince spl add romhdr
 .org 0x40
@@ -100,6 +100,9 @@ prepare_for_linux:
 	MOV R0, #0
 	DSB
 	ISB
+
+	// TODO: Detect spl boot, branch to __cpu_early_init
+	b   uefi_setup
 .ltorg
 
 .text		
