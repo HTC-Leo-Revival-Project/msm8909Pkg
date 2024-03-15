@@ -16,26 +16,26 @@
 #
 ################################################################################
 [Defines]
-  PLATFORM_NAME                  = HtcLeo
-  PLATFORM_GUID                  = 28f1a3bf-193a-47e3-a7b9-5a435eaab2ee
+  PLATFORM_NAME                  = HtcPassion
+  PLATFORM_GUID                  = 28f1a3bf-193a-47e3-a7b9-5a435eaab2ef
   PLATFORM_VERSION               = 0.1
   DSC_SPECIFICATION              = 0x00010019
   OUTPUT_DIRECTORY               = Build/$(PLATFORM_NAME)
   SUPPORTED_ARCHITECTURES        = ARM
   BUILD_TARGETS                  = DEBUG|RELEASE
   SKUID_IDENTIFIER               = DEFAULT
-  FLASH_DEFINITION               = HtcLeoPkg/Platforms/HtcLeo/HtcLeoPkg.fdf
+  FLASH_DEFINITION               = Platforms/$(PLATFORM_NAME)/$(PLATFORM_NAME)Pkg.fdf
 
   DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
 
 !include HtcLeoPkg/CommonDsc.dsc.inc
 
 [PcdsFixedAtBuild.common]
-  # System Memory (576MB)
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
+  # System Memory (512MB)
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x20000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1B700000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
-  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x03B00000
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800

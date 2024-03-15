@@ -4,7 +4,7 @@ if [ $1 == 'Leo' ]; then
 
     cat BootShim/BootShim.bin workspace/Build/HtcLeo/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Tools/bootpayload.bin
 
-    mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/uefi.img
+    mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/leo_uefi.img
 
     # NBH creation
     if [ ! -f ImageResources/Tools/nbgen ]; then
@@ -21,8 +21,13 @@ if [ $1 == 'Leo' ]; then
     rm *.bin
     rm os.nb
     cd ../../
-    elif [ $1 == 'Passion' ]; then
-        echo "Building leo"
-    else
-        echo "Invalid platform"
-    fi
+elif [ $1 == 'Passion' ]; then
+    echo "Building Passion"
+
+    cat BootShim/BootShim.bin workspace/Build/HtcPassion/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Passion/bootpayload.bin
+
+    mkbootimg --kernel ImageResources/Passion/bootpayload.bin --ramdisk ImageResources/Passion/dummy --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/passion_uefi.img
+
+else
+    echo "Invalid platform"
+fi
