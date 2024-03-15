@@ -141,7 +141,7 @@ APRIORI DXE {
   INF HtcLeoPkg/Drivers/SimpleFbDxe/SimpleFbDxe.inf
 
   # Charging App
-  INF HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
+  # INF HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
   #
   # USB Host Support
