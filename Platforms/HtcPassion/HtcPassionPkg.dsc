@@ -27,8 +27,13 @@
   FLASH_DEFINITION               = Platforms/$(PLATFORM_NAME)/$(PLATFORM_NAME)Pkg.fdf
 
   DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
+  DEFINE USE_UART_FOR_SERIAL_OUTPUT = 1
 
 !include QSD8250Pkg/CommonDsc.dsc.inc
+
+[PcdsFixedAtBuild.common]
+  gQSD8250PkgTokenSpaceGuid.PcdKdUartInstance|1                # UART1
+  gQSD8250PkgTokenSpaceGuid.PcdSerialRegisterBase|0xA9A00000   # UART1 BASE from iomap_qsd8k.h
 
 [PcdsFixedAtBuild.common]
   # System Memory (512MB)

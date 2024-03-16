@@ -23,7 +23,11 @@
 !if $(USE_SCREEN_FOR_SERIAL_OUTPUT) == 1
   SerialPortLib|QSD8250Pkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
 !else
+!if $(USE_UART_FOR_SERIAL_OUTPUT) == 1
+  SerialPortLib|QSD8250Pkg/Library/UartSerialPortLib/UartSerialPortLib.inf
+!else
   SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
+!endif
 !endif
 
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
@@ -406,9 +410,6 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdResetOnMemoryTypeInformationChange|FALSE
 
   gEmbeddedTokenSpaceGuid.PcdMetronomeTickPeriod|1000
-
-  gQSD8250PkgTokenSpaceGuid.PcdSerialRegisterBase|0x02020000   # UART1 on Passion
-  gQSD8250PkgTokenSpaceGuid.PcdKdUartInstance|1  
 
   #
   #
