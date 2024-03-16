@@ -28,7 +28,7 @@
 
   DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
 
-!include HtcLeoPkg/CommonDsc.dsc.inc
+!include QSD8250Pkg/CommonDsc.dsc.inc
 
 [PcdsFixedAtBuild.common]
   # System Memory (512MB)
@@ -36,6 +36,6 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x1B700000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
-  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x03B00000
-  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480
-  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x03B00000
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800

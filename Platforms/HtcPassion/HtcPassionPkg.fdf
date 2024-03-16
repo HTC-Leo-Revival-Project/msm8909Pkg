@@ -56,8 +56,8 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
 
   INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
-  INF HtcLeoPkg/Drivers/InterruptDxe/InterruptDxe.inf
-  INF HtcLeoPkg/Drivers/TimerDxe/TimerDxe.inf
+  INF QSD8250Pkg/Drivers/InterruptDxe/InterruptDxe.inf
+  INF QSD8250Pkg/Drivers/TimerDxe/TimerDxe.inf
 
   INF MdeModulePkg/Core/Dxe/DxeMain.inf
   INF MdeModulePkg/Universal/ReportStatusCodeRouter/RuntimeDxe/ReportStatusCodeRouterRuntimeDxe.inf
@@ -84,8 +84,8 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
 
   INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
-  INF HtcLeoPkg/Drivers/ConSplitterDxe/ConSplitterDxe.inf
-  INF HtcLeoPkg/Drivers/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+  INF QSD8250Pkg/Drivers/ConSplitterDxe/ConSplitterDxe.inf
+  INF QSD8250Pkg/Drivers/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
 
 
   INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf  
@@ -111,37 +111,37 @@ APRIORI DXE {
   # Multiple Console IO support
   #
   INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
-  INF HtcLeoPkg/Drivers/ConSplitterDxe/ConSplitterDxe.inf
-  INF HtcLeoPkg/Drivers/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+  INF QSD8250Pkg/Drivers/ConSplitterDxe/ConSplitterDxe.inf
+  INF QSD8250Pkg/Drivers/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
   INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
 
-  INF HtcLeoPkg/Drivers/InterruptDxe/InterruptDxe.inf
-  INF HtcLeoPkg/Drivers/TimerDxe/TimerDxe.inf
+  INF QSD8250Pkg/Drivers/InterruptDxe/InterruptDxe.inf
+  INF QSD8250Pkg/Drivers/TimerDxe/TimerDxe.inf
 
   INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 
   # SoC Drivers
-  INF HtcLeoPkg/GPLDrivers/ClockDxe/ClockDxe.inf
-  INF HtcLeoPkg/Drivers/SmemDxe/SmemDxe.inf
-  INF HtcLeoPkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
-  INF HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
+  INF QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
+  INF QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
+  INF QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
+  INF QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
   # Remove non-working sd card driver for now
-  # INF HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
-  INF HtcLeoPkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
-  INF HtcLeoPkg/Drivers/KeypadDxe/KeypadDxe.inf
-  INF HtcLeoPkg/GPLDrivers/I2CDxe/I2CDxe.inf
-  INF HtcLeoPkg/Drivers/MicroPDxe/MicroPDxe.inf
+  # INF QSD8250Pkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
+  INF QSD8250Pkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
+  INF QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf
+  INF QSD8250Pkg/GPLDrivers/I2CDxe/I2CDxe.inf
+  INF QSD8250Pkg/Drivers/MicroPDxe/MicroPDxe.inf
 
   #
   # Virtual Keyboard
   #
   INF EmbeddedPkg/Drivers/VirtualKeyboardDxe/VirtualKeyboardDxe.inf
 
-  INF HtcLeoPkg/Drivers/HtcLeoPkgDxe/HtcLeoPkgDxe.inf
-  INF HtcLeoPkg/Drivers/SimpleFbDxe/SimpleFbDxe.inf
+  INF QSD8250Pkg/Drivers/QSD8250PkgDxe/QSD8250PkgDxe.inf
+  INF QSD8250Pkg/Drivers/SimpleFbDxe/SimpleFbDxe.inf
 
   # Charging App
-  # INF HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
+  # INF QSD8250Pkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
   #
   # USB Host Support
@@ -181,19 +181,19 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
   INF MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
   INF MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
-  INF RuleOverride = ACPITABLE HtcLeoPkg/AcpiTables/AcpiTables.inf
+  INF RuleOverride = ACPITABLE QSD8250Pkg/AcpiTables/AcpiTables.inf
 
 
   // Mainline device tree blob
   FILE FREEFORM = 25462CDA-221F-47DF-AC1D-259CFAA4E326 {
-  SECTION RAW = HtcLeoPkg/FdtBlob/qcom-qsd8250-htc-leo.dtb
+  SECTION RAW = QSD8250Pkg/FdtBlob/qcom-qsd8250-htc-leo.dtb
 }
 
 
   #
   # SMBIOS Support
   #
-  INF HtcLeoPkg/Drivers/SmbiosPlatformDxe/SmbiosPlatformDxe.inf
+  INF QSD8250Pkg/Drivers/SmbiosPlatformDxe/SmbiosPlatformDxe.inf
   INF MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
 
   #
@@ -205,7 +205,7 @@ APRIORI DXE {
 !endif #$(INCLUDE_TFTP_COMMAND)
 
   # Tetris App
-  INF HtcLeoPkg/Application/TetrisApp/tetris.inf
+  INF QSD8250Pkg/Application/TetrisApp/tetris.inf
 
   #
   # Bds
@@ -217,8 +217,8 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/DriverHealthManagerDxe/DriverHealthManagerDxe.inf
   INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
   #INF MdeModulePkg/Application/UiApp/UiApp.inf
-  INF HtcLeoPkg/Application/HtcLeoMenuApp/HtcLeoMenuApp.inf
-  INF HtcLeoPkg/Drivers/LogoDxe/LogoDxe.inf
+  INF QSD8250Pkg/Application/HtcLeoMenuApp/HtcLeoMenuApp.inf
+  INF QSD8250Pkg/Drivers/LogoDxe/LogoDxe.inf
 
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 8
@@ -238,7 +238,7 @@ READ_STATUS        = TRUE
 READ_LOCK_CAP      = TRUE
 READ_LOCK_STATUS   = TRUE
 
-  INF HtcLeoPkg/PrePi/PeiUniCore.inf
+  INF QSD8250Pkg/PrePi/PeiUniCore.inf
 
   FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
     SECTION GUIDED EE4E5898-3914-4259-9D6E-DC7BD79403CF PROCESSING_REQUIRED = TRUE {
@@ -246,6 +246,6 @@ READ_LOCK_STATUS   = TRUE
     }
   }
 
-!include HtcLeoPkg/CommonFdf.fdf.inc
+!include QSD8250Pkg/CommonFdf.fdf.inc
 
 
