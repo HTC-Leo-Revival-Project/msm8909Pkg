@@ -64,11 +64,6 @@
   gHtcLeoPkgTokenSpaceGuid.PcdPstoreAddress|0x2FE00000|UINT32|0x0000a406
   gHtcLeoPkgTokenSpaceGuid.PcdPstoreSize|0x200000|UINT32|0x0000a407
 
-  # PcdSerialRegisterBase   - Define a base address of UEFI console UART
-  # PcdKdUartInstance - UART instance that should be used for Windows
-  gHtcLeoPkgTokenSpaceGuid.PcdKdUartInstance|1|UINT32|0x11
-  gHtcLeoPkgTokenSpaceGuid.PcdSerialRegisterBase|0x00000000|UINT32|0x12
-
   # GPT Timer
   gHtcLeoPkgTokenSpaceGuid.PcdMsmGptBase|0xAC100000|UINT32|0x0000a408
   gHtcLeoPkgTokenSpaceGuid.PcdMsmGptMatchValOffset|0x0000|UINT32|0x0000a409

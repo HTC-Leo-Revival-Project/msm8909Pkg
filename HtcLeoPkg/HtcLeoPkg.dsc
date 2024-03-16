@@ -26,7 +26,7 @@
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = HtcLeoPkg/HtcLeoPkg.fdf
 
-  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 1
+  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
 
 !include HtcLeoPkg/CommonDsc.dsc.inc
 
@@ -132,7 +132,6 @@
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
   gHtcLeoPkgTokenSpaceGuid.PcdSerialRegisterBase|0xA9A00000   # UART1BASE from iomap_qsd8k.h
-  gHtcLeoPkgTokenSpaceGuid.PcdKdUartInstance|1                # UART1
 
   # We boot all processors here!!!!!
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1
@@ -235,7 +234,7 @@
   HtcLeoPkg/Drivers/SmemDxe/SmemDxe.inf
   HtcLeoPkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
   HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
-  HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
+  #HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
   HtcLeoPkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
   HtcLeoPkg/Drivers/KeypadDxe/KeypadDxe.inf
   HtcLeoPkg/GPLDrivers/I2CDxe/I2CDxe.inf
