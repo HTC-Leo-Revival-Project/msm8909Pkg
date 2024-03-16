@@ -20,6 +20,8 @@ if [ "$1" = "Leo" ] || [ "$1" = "Passion" ] || [ "$1" = "Bravo" ]; then
     echo "Building uefi for $DEVICE"
 	source "../edk2/edksetup.sh"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
+
+	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE
 elif [ $1 == 'All' ]; then
 	local DEVICE="${1}"
@@ -31,6 +33,7 @@ elif [ $1 == 'All' ]; then
 
 	# Leo
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/HtcLeo/HtcLeoPkg.dsc
+	./build_boot_shim.sh
 	./build_boot_images.sh Leo
 
 	# Passion
