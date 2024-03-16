@@ -11,6 +11,16 @@
 
 #include <Device/Gpio.h>
 
+#if PLATFORM_BRAVO == 1
+
+#include <Device/microp.h>
+#include <Protocol/HtcLeoMicroP.h>
+
+// Cached copy of the MicroP protocol instance
+HTCLEO_MICROP_PROTOCOL *gMicroP = NULL;
+
+#endif
+
 // Cached copy of the Hardware Gpio protocol instance
 TLMM_GPIO *gGpio = NULL;
 
@@ -99,7 +109,11 @@ ExitBootServicesEvent (
   )
 {
   // Make sure the LED is disabled
+#if PLATFORM_BRAVO == 1
+  gMicroP->KpLedSetBrightness(0);
+#else
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
+#endif
 }
 
 RETURN_STATUS
@@ -113,6 +127,12 @@ KeypadDeviceImplConstructor(VOID)
   // Find the gpio controller protocol.  ASSERT if not found.
   Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
   ASSERT_EFI_ERROR (Status);
+
+#if PLATFORM_BRAVO == 1
+  // Find the MicroP protocol. ASSERT if not found.
+  Status = gBS->LocateProtocol(&gHtcLeoMicropProtocolGuid, NULL, (VOID **)&gMicroP);
+  ASSERT_EFI_ERROR(Status);
+#endif
 
   // Reset all keys
   for (Index = 0; Index < (sizeof(KeyList) / sizeof(KeyList[0])); Index++) {
@@ -215,15 +235,20 @@ EFI_STATUS EFIAPI KeypadDeviceImplReset(KEYPAD_DEVICE_PROTOCOL *This)
   return EFI_SUCCESS;
 }
 
-// Callback function to disable the GPIO after a certain time
+// Callback function to turn off the LED after a certain time
 VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
 {
-    // Disable the GPIO
-    gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
-    timerRunning = FALSE;
+#if PLATFORM_BRAVO == 1
+  // Disable keypad LED brightness
+  gMicroP->KpLedSetBrightness(0);
+#else
+  // Disable the GPIO
+  gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
+#endif
+  timerRunning = FALSE;
 }
 
-// Function to enable the GPIO and schedule the callback
+// Function to enable the LED and schedule the callback
 VOID EnableKeypadLedWithTimer(VOID)
 {
     if (timerRunning) {
@@ -231,8 +256,11 @@ VOID EnableKeypadLedWithTimer(VOID)
         gBS->SetTimer(m_CallbackTimer, TimerCancel, 0);
         timerRunning = FALSE;
     }
-
+#if PLATFORM_BRAVO == 1
+    gMicroP->KpLedSetBrightness(255);
+#else
     gGpio->Set(HTCLEO_GPIO_KP_LED, 1);
+#endif
     EFI_STATUS Status;
 
     Status = gBS->CreateEvent(

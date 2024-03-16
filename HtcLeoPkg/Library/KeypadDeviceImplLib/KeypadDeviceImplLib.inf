@@ -21,6 +21,7 @@
 
 [Protocols]
   gTlmmGpioProtocolGuid
+  gHtcLeoMicropProtocolGuid
 
 [Depex]
   gTlmmGpioProtocolGuid

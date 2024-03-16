@@ -27,6 +27,7 @@
   FLASH_DEFINITION               = Platforms/$(PLATFORM_NAME)/$(PLATFORM_NAME)Pkg.fdf
 
   DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
+  DEFINE PLATFORM_BRAVO = 1
 
 !include HtcLeoPkg/CommonDsc.dsc.inc
 

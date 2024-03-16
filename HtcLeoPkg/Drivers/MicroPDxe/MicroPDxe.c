@@ -335,7 +335,50 @@ void microp_i2c_probe(struct microp_platform_data *kpdata)
 	
 	//microp_function_initialize();
 }
+#if PLATFORM_BRAVO == 1
+void htcbravo_led_set_mode(uint8_t mode)
+{
+    /* Mode
+    * 0 => All off
+    * 1 => Solid green
+    * 2 => Solid amber
+    */
+	uint8_t data[7];
+	
+	data[0] = 0x00;         //	 Default
+	data[1] = 0x0;          //	  Bravo
+	data[2] = 0xFF >> 8;    //   	   LED
+	data[3] = 0xFF & 0xFF;  //     	  Config
+	data[4] = 0x00;         //
+	data[5] = 0x00;         //	LEDs are OFF right now!
+	data[6] = 0x00;         //
+	
+	switch(mode) {
+		case 0x01:
+			data[0] = 0x01;
+			break;
+		case 0x02:
+			data[1] = 0x04;
+			break;
+		case 0x00:
+		default:
+			data[1] = 0x00;
+	}
+	microp_i2c_write(MICROP_I2C_WCMD_LED_CTRL, data, 7);
+}
 
+void htcbravo_kp_led_set_brightness(uint8_t brightness)
+{
+        uint8_t data[4];
+
+        data[0] = 5;				//  Timeout
+        data[1] = brightness;	// Brighness
+        data[2] = (1 << 2) >> 8;
+        data[3] = 1 << 2;
+        microp_i2c_write(MICROP_I2C_WCMD_LED_PWM, data, 4);
+}
+
+#else
 void htcleo_led_set_mode(uint8_t mode)
 {
     /* Mode
@@ -363,11 +406,17 @@ void htcleo_led_set_mode(uint8_t mode)
 	}
 	microp_i2c_write(MICROP_I2C_WCMD_LED_CTRL, data, 2);
 }
+#endif
 
 HTCLEO_MICROP_PROTOCOL gHtcLeoMicropProtocol = {
   microp_i2c_write,
   microp_i2c_read,
+#if PLATFORM_BRAVO == 1
+  htcbravo_led_set_mode,
+  htcbravo_kp_led_set_brightness
+#else
   htcleo_led_set_mode
+#endif
 };
 
 EFI_STATUS
