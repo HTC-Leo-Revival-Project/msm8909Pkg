@@ -34,8 +34,5 @@
   # System Memory (512MB)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x20000000
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x1B700000
-  gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
   gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x03B00000
-  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480
-  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800

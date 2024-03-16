@@ -28,6 +28,7 @@
 [Packages]
   MdePkg/MdePkg.dec
   ArmPkg/ArmPkg.dec
+  QSD8250Pkg/QSD8250Pkg.dec
 
 [LibraryClasses]
   UefiLib
@@ -38,6 +39,9 @@
   ArmDisassemblerLib
   SerialPortLib
   UefiBootServicesTableLib
+
+[Pcd]
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress
 
 [Guids]
   gEfiDebugImageInfoTableGuid
