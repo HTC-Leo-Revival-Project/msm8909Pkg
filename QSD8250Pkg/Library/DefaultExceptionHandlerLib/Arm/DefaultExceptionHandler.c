@@ -208,8 +208,11 @@ DefaultExceptionHandler (
   UINT32   PcAdjust;
 
   PcAdjust = 0;
-  //hack clear the framebuffer before printing the exeption
+!if $(USE_SCREEN_FOR_SERIAL_OUTPUT) == 1
+  //hack: clear the framebuffer before printing the exeption
   ZeroMem((void*)(FixedPcdGet32(PcdMipiFrameBufferAddress)), 0x000C0000);
+!endif
+
   CharCount = AsciiSPrint (
                 Buffer,
                 sizeof (Buffer),
