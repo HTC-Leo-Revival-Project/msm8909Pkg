@@ -12,6 +12,7 @@
 [Sources]
   BootApp.c
   menu.c
+  UI.c
 
 [Packages]
   ArmPkg/ArmPkg.dec

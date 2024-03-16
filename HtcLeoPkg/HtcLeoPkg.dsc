@@ -26,7 +26,7 @@
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = HtcLeoPkg/HtcLeoPkg.fdf
 
-  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
+  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 1
 
 !include HtcLeoPkg/CommonDsc.dsc.inc
 
@@ -128,7 +128,7 @@
 
   # System Memory (576MB)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1D000000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
   # We boot all processors here!!!!!

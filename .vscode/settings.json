@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "boot.h": "c",
+        "boot_internal.h": "c",
+        "htcleomicrop.h": "c",
+        "*.inc": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "ranges": "c",
+        "typeindex": "c",
+        "typeinfo": "c",
+        "uefilib.h": "c"
+    }
+}
