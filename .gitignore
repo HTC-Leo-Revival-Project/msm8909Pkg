@@ -6,6 +6,7 @@ ImageResources/Tools/*.bin
 ImageResources/Tools/nbgen
 ImageResources/Tools/yangbin
 ImageResources/Passion/*.bin
+ImageResources/Bravo/*.bin
 ImageResources/*.img
 ImageResources/LEOIMG.nbh
 workspace/Build/
