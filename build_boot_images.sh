@@ -1,7 +1,5 @@
 #!/bin/bash
 if [ $1 == 'Leo' ]; then
-    echo "Building leo"
-
     cat BootShim/BootShim.bin workspace/Build/HtcLeo/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Tools/bootpayload.bin
 
     mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/leo_uefi.img
@@ -22,12 +20,9 @@ if [ $1 == 'Leo' ]; then
     rm os.nb
     cd ../../
 elif [ $1 == 'Passion' ]; then
-    echo "Building Passion"
-
     cat BootShim/BootShim.bin workspace/Build/HtcPassion/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Passion/bootpayload.bin
-
     mkbootimg --kernel ImageResources/Passion/bootpayload.bin --ramdisk ImageResources/Passion/dummy --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/passion_uefi.img
 
 else
-    echo "Invalid platform"
+    echo "Bootimages: Invalid platform"
 fi

@@ -5,22 +5,40 @@ set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
 
-if [ $1 == 'Leo' ]; then
-    echo "Building uefi for Leo"
-	./build_uefi_leo.sh
-	./build_boot_images.sh $1
-elif [ $1 == 'Passion' ]; then
-    echo "Building uefi for Passion"
-	./build_uefi_passion.sh
+while getopts d: flag
+do
+    case "${flag}" in
+        d) device=${OPTARG};;
+    esac
+done
+
+# based on https://github.com/edk2-porting/edk2-msm/blob/master/build.sh#L47 
+function _build(){
+if [ "$1" = "Leo" ] || [ "$1" = "Passion" ]; then
+	local DEVICE="${1}"
+	shift
+    echo "Building uefi for $1"
+	source "../edk2/edksetup.sh"
+	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
 	./build_boot_images.sh $1
 elif [ $1 == 'All' ]; then
-	echo "Building uefi for all platforms"
+	local DEVICE="${1}"
+	shift
+    echo "Building uefi for all platforms"
+	source "../edk2/edksetup.sh"
 
-	./build_uefi_leo.sh
+	# TODO: Improve
+
+	# Leo
+	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/HtcLeo/HtcLeoPkg.dsc
 	./build_boot_images.sh Leo
 
-	./build_uefi_passion.sh
+	# Passion
+	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/HtcPassion/HtcPassionPkg.dsc
 	./build_boot_images.sh Passion
 else
-    echo "Invalid platform"
+    echo "Build: Invalid platform"
 fi
+}
+
+_build "$device"

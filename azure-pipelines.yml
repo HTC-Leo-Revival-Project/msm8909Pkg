@@ -43,7 +43,7 @@ steps:
       chmod a+x *.sh
 
 - script: |
-    ./build.sh All
+    ./build.sh -d All
   displayName: Build uefi for all platforms
 
 - task: PublishBuildArtifacts@1
