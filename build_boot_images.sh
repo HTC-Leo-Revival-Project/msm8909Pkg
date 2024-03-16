@@ -19,7 +19,7 @@ if [ $1 == 'Leo' ]; then
     rm *.bin
     rm os.nb
     cd ../../
-elif [ "$1" = "Passion" ] || [ "$1" = "Bravo" ]; then
+elif [ $1 = "Passion" ] || [ $1 = "Bravo" ]; then
     cat BootShim/BootShim.bin workspace/Build/Htc$1/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/$1/bootpayload.bin
     mkbootimg --kernel ImageResources/$1/bootpayload.bin --ramdisk ImageResources/$1/dummy --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/${1,,}_uefi.img
 else

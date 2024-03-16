@@ -31,9 +31,9 @@
 !include HtcLeoPkg/CommonDsc.dsc.inc
 
 [PcdsFixedAtBuild.common]
-  # System Memory (512MB)
+  # System Memory (576MB)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x20000000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1B700000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x03B00000

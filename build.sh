@@ -17,10 +17,10 @@ function _build(){
 if [ "$1" = "Leo" ] || [ "$1" = "Passion" ] || [ "$1" = "Bravo" ]; then
 	local DEVICE="${1}"
 	shift
-    echo "Building uefi for $1"
+    echo "Building uefi for $DEVICE"
 	source "../edk2/edksetup.sh"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
-	./build_boot_images.sh $1
+	./build_boot_images.sh $DEVICE
 elif [ $1 == 'All' ]; then
 	local DEVICE="${1}"
 	shift
