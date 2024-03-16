@@ -180,7 +180,6 @@
   SmemLib|QSD8250Pkg/Drivers/SmemDxe/SmemImplLib.inf
   KeypadDeviceHelperLib|QSD8250Pkg/Library/KeypadDeviceHelperLib/KeypadDeviceHelperLib.inf
   KeypadDeviceImplLib|QSD8250Pkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
-  DS2746Lib|QSD8250Pkg/Library/DS2746Lib/DS2746.inf
 
 [LibraryClasses.common.SEC]
   ArmGicArchLib|ArmPkg/Library/ArmGicArchSecLib/ArmGicArchSecLib.inf
@@ -565,9 +564,6 @@
 
   # Tetris
   QSD8250Pkg/Application/TetrisApp/tetris.inf
-
-  # Charging
-  QSD8250Pkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
   #
   # FAT filesystem + GPT/MBR partitioning

@@ -30,6 +30,13 @@
 
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
+[LibraryClasses.common]
+  DS2746Lib|QSD8250Pkg/Library/DS2746Lib/DS2746.inf
+
+[Components.common]
+  # Charging
+  QSD8250Pkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
+
 [PcdsFixedAtBuild.common]
   # System Memory (576MB)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
