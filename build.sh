@@ -14,7 +14,7 @@ done
 
 # based on https://github.com/edk2-porting/edk2-msm/blob/master/build.sh#L47 
 function _build(){
-if [ "$1" = "Leo" ] || [ "$1" = "Passion" ]; then
+if [ "$1" = "Leo" ] || [ "$1" = "Passion" ] || [ "$1" = "Bravo" ]; then
 	local DEVICE="${1}"
 	shift
     echo "Building uefi for $1"
@@ -36,6 +36,10 @@ elif [ $1 == 'All' ]; then
 	# Passion
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/HtcPassion/HtcPassionPkg.dsc
 	./build_boot_images.sh Passion
+
+	# Bravo
+	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/HtcBravo/HtcBravoPkg.dsc
+	./build_boot_images.sh Bravo
 else
     echo "Build: Invalid platform"
 fi

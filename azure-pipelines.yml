@@ -63,3 +63,9 @@ steps:
   inputs: 
     pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/passion_uefi.img
     artifactName: Htc Passion UEFI kernel
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Htc Bravo UEFI kernel'
+  inputs: 
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/bravo_uefi.img
+    artifactName: Htc Bravo UEFI kernel
