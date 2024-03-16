@@ -12,7 +12,7 @@
 
 #include <Uefi.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include <Library/UefiHiiServicesLib.h>
+//#include <Library/UefiHiiServicesLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseLib.h>
@@ -20,7 +20,7 @@
 #include <Library/DevicePathLib.h>
 #include <Library/DebugLib.h>
 #include <Library/DxeServicesLib.h>
-#include <Library/HiiLib.h>
+//#include <Library/HiiLib.h>
 #include <Library/PrintLib.h>
 #include <Library/PcdLib.h>
 #include <Protocol/DriverBinding.h>

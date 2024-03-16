@@ -174,6 +174,7 @@ APRIORI DXE {
   INF FatPkg/EnhancedFatDxe/Fat.inf
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   INF MdeModulePkg/Universal/FvSimpleFileSystemDxe/FvSimpleFileSystemDxe.inf
+  # INF MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
   INF MdeModulePkg/Universal/Disk/RamDiskDxe/RamDiskDxe.inf
   INF HtcLeoPkg/Drivers/BootRamdiskHelperDxe/BootRamdiskHelperDxe.inf
 

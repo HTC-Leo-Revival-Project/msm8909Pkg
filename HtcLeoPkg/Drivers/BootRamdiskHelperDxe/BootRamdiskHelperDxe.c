@@ -50,6 +50,7 @@ BootRamdiskHelperDxeInitialize (
     // Before proceeding to RAMDisk creation, check that we're configured to do so
     // and that we have a candidate image with which to create said RAMDisk.
     RamdiskBootConfigured = PcdGetBool(PcdInitializeRamdisk);
+    DEBUG((DEBUG_ERROR, "BootRamdiskHelperDxe enter\n"));
     if(!RamdiskBootConfigured) {
         DEBUG((DEBUG_ERROR, "BootRamdiskHelperDxe - FV not configured for ramdisk boot, exiting\n"));
         return EFI_UNSUPPORTED;
