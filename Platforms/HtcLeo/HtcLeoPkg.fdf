@@ -121,6 +121,7 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 
   # SoC Drivers
+  INF QSD8250Pkg/Drivers/BoardDxe/BoardDxe.inf
   INF QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
   INF QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
   INF QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
