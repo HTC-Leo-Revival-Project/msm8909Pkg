@@ -13,6 +13,7 @@ FillMenu()
   UINTN Index = 0;
   MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
   MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
+  MenuOptions[Index++] = (MenuEntry){Index, L"USB App", TRUE, &StartUsbApp};
   MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
@@ -200,6 +201,11 @@ void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
   StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
+}
+
+void StartUsbApp(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+  StartApp(ImageHandle, SystemTable, USB_APP_TITLE);
 }
 
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)

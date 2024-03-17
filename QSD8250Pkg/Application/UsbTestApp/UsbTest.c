@@ -34,35 +34,26 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
-#include <udc.h>
 
 #include <IndustryStandard/Usb.h>
 #include <Protocol/EFIDroidUsbDevice.h>
 
+USB_DEVICE_PROTOCOL *gUsb = NULL;
+
 EFI_STATUS
 EFIAPI
-UsbEntryPoint (
+UsbTestEntryPoint (
   IN EFI_HANDLE                            ImageHandle,
   IN EFI_SYSTEM_TABLE                      *SystemTable
   )
 {
   EFI_STATUS  Status;
-  EFI_HANDLE  Handle;
 
-  Status = gBS->CreateEvent (
-                  EVT_NOTIFY_SIGNAL,
-                  TPL_CALLBACK,
-                  ReportEvents,
-                  NULL,
-                  &mEventsAvailable
-                  );
+  // Find the usb protocol.  ASSERT if not found.
+  Status = gBS->LocateProtocol (&gEFIDroidUsbDeviceProtocolGuid, NULL, (VOID **)&gUsb);
   ASSERT_EFI_ERROR (Status);
 
-  Handle = NULL;
-  return gBS->LocateProtocolInterface (
-    &Handle,
-    &gEFIDroidUsbDeviceProtocolGuid,
-    EFI_NATIVE_INTERFACE,
-    &mUsbDevice
-    );
+  DEBUG((EFI_D_ERROR, "Locate USB protocol status = %d", Status));
+
+  return Status;
 }

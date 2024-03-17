@@ -132,6 +132,7 @@ APRIORI DXE {
   INF QSD8250Pkg/GPLDrivers/I2CDxe/I2CDxe.inf
   INF QSD8250Pkg/Drivers/MicroPDxe/MicroPDxe.inf
   INF QSD8250Pkg/Drivers/UsbDxe/UsbDxe.inf
+  INF QSD8250Pkg/Application/UsbTestApp/UsbTestApp.inf
 
   #
   # Virtual Keyboard

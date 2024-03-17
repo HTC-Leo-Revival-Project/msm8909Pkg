@@ -1,26 +1,20 @@
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = UsbDxe
-  FILE_GUID                      = b20933aa-0a9f-453d-90f1-c266f8b95f4e
-  MODULE_TYPE                    = DXE_DRIVER
+  BASE_NAME                      = UsbTestDxe
+  FILE_GUID                      = 93be6759-7d1a-4d69-986d-d78e54c9f932
+  MODULE_TYPE                    = UEFI_APPLICATION
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = UsbEntryPoint
+  ENTRY_POINT                    = UsbTestEntryPoint
 
 [Sources.common]
-  #usb30_dwc.c
-  #usb30_dwc_hw.c
-  #usb30_udc.c
-  #usb30_wrapper.c
-
-  hsusb.c
-  Usb.c
+  UsbTest.c
 
 [LibraryClasses]
   DebugLib
   IoLib
   MemoryAllocationLib
   UefiBootServicesTableLib
-  UefiDriverEntryPoint
+  UefiApplicationEntryPoint
   MallocLib
   LcmLib
   StrLib
@@ -45,11 +39,11 @@
   QSD8250Pkg/QSD8250Pkg.dec
 
 [Pcd]
-  #gQcomTokenSpaceGuid.PcdUsb30Ee1Irq
-  #gQcomTokenSpaceGuid.PcdUsb30Base
-  #gQcomTokenSpaceGuid.PcdUsb30ScratchBase
   gQcomTokenSpaceGuid.PcdUsbHsBase
   gQcomTokenSpaceGuid.PcdUsbHsIrq
 
+[Protocols]
+  gEFIDroidUsbDeviceProtocolGuid
+
 [Depex]
-  TRUE
+  gEFIDroidUsbDeviceProtocolGuid
