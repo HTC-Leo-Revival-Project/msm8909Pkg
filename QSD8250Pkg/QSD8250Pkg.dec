@@ -1,0 +1,100 @@
+#
+#  Copyright (c) 2018, Linaro Limited. All rights reserved.
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+
+[Defines]
+  DEC_SPECIFICATION              = 0x0001001a
+  PACKAGE_NAME                   = QSD8250
+  PACKAGE_GUID                   = 7eb1de03-3910-4d1d-84ce-c17b53636b9a
+  PACKAGE_VERSION                = 0.1
+
+################################################################################
+#
+# Include Section - list of Include Paths that are provided by this package.
+#                   Comments are used for Keywords and Module Types.
+#
+# Supported Module Types:
+#  BASE SEC PEI_CORE PEIM DXE_CORE DXE_DRIVER DXE_RUNTIME_DRIVER DXE_SMM_DRIVER DXE_SAL_DRIVER UEFI_DRIVER UEFI_APPLICATION
+#
+################################################################################
+[Includes.common]
+  Include                        # Root include for the package
+
+[Guids.common]
+  gQSD8250PkgTokenSpaceGuid        = { 0x99a14446, 0xaad7, 0xe460, {0xb4, 0xe5, 0x1f, 0x79, 0xaa, 0xa4, 0x93, 0xfd } }
+  gQcomTokenSpaceGuid = { 0x59f58449, 0x99e1, 0x4a19, { 0x86, 0x65, 0x12, 0xd6, 0x37, 0xed, 0xbe, 0x5e } }
+  
+  # BootSplash 93be6759-7d1a-4d69-986d-d78e54c9f930
+  gHtcLeoBootSplashAppGuid = { 0x93be6759, 0x7d1a, 0x4d69, { 0x98, 0x6d, 0xd7, 0x8e, 0x54, 0xc9, 0xf9, 0x30 } }
+  # Tetris 93be6759-7d1a-4d69-986d-d78e54c9f931
+  gTetrisAppGuid = { 0x93be6759, 0x7d1a, 0x4d69, { 0x98, 0x6d, 0xd7, 0x8e, 0x54, 0xc9, 0xf9, 0x31 } }
+[Protocols]
+  gEFIDroidKeypadDeviceProtocolGuid = { 0xb27625b5, 0x0b6c, 0x4614, { 0xaa, 0x3c, 0x33, 0x13, 0xb5, 0x1d, 0x36, 0x46 } }
+  gEFIDroidUsbDeviceProtocolGuid = { 0x040e318f, 0x5388, 0x474c, { 0x9a, 0xc0, 0x1f, 0xa5, 0x03, 0xa4, 0x16, 0x89 } }
+  gQcomBoardProtocolGuid = { 0x470d9ff7, 0x23d0, 0x4f25, { 0x91, 0xaf, 0xe4, 0x5f, 0x3f, 0x6f, 0xe6, 0xb4 } }
+  gQcomSmemProtocolGuid = { 0xe738ff9d, 0x020f, 0x4ecd, { 0x87, 0xfc, 0xd5, 0x82, 0x50, 0x75, 0xaa, 0xcd } }
+  gQcomSmemPtableProtocolGuid = { 0x66075564, 0x7aac, 0x4c93, { 0xb4, 0x62, 0x40, 0xbf, 0xee, 0x1d, 0x59, 0x38 } }
+  gEmbeddedClockProtocolGuid = { 0xb27625b5, 0x0b6c, 0x4614, { 0xaa, 0x3c, 0x33, 0x13, 0xb5, 0x1d, 0x36, 0x48 } }
+  gHtcLeoI2CProtocolGuid = { 0x2c898318, 0x41c1, 0x4309, { 0x89, 0x8a, 0x2f, 0x55, 0xc8, 0xcf, 0x0b, 0x85 } }
+  gHtcLeoMicropProtocolGuid = { 0x2c898318, 0x41c1, 0x4309, { 0x89, 0x8a, 0x2f, 0x55, 0xc8, 0xcf, 0x0b, 0x86 } }
+  gTlmmGpioProtocolGuid = { 0x2c898318, 0x41c1, 0x4309, { 0x89, 0x8a, 0x2f, 0x55, 0xc8, 0xcf, 0x0b, 0x87 } }
+
+[PcdsFixedAtBuild.common]
+  # Simple FrameBuffer
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0|UINT32|0x0000a400
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480|UINT32|0x0000a401
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800|UINT32|0x0000a402
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32|UINT32|0x0000a403
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferVisibleWidth|480|UINT32|0x0000a404
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferVisibleHeight|800|UINT32|0x0000a405
+
+  # Memory serial
+  gQSD8250PkgTokenSpaceGuid.PcdPstoreAddress|0x2FE00000|UINT32|0x0000a406
+  gQSD8250PkgTokenSpaceGuid.PcdPstoreSize|0x200000|UINT32|0x0000a407
+
+  # PcdSerialRegisterBase   - Define a base address of UEFI console UART
+  # PcdKdUartInstance - UART instance that should be used for Windows
+  gQSD8250PkgTokenSpaceGuid.PcdKdUartInstance|1|UINT32|0x11
+  gQSD8250PkgTokenSpaceGuid.PcdSerialRegisterBase|0x00000000|UINT32|0x12
+
+  # GPT Timer
+  gQSD8250PkgTokenSpaceGuid.PcdMsmGptBase|0xAC100000|UINT32|0x0000a408
+  gQSD8250PkgTokenSpaceGuid.PcdMsmGptMatchValOffset|0x0000|UINT32|0x0000a409
+  gQSD8250PkgTokenSpaceGuid.PcdMsmGptCountValOffset|0x0004|UINT32|0x0000a40a
+  gQSD8250PkgTokenSpaceGuid.PcdMsmGptEnableOffset|0x0008|UINT32|0x0000a40b
+  gQSD8250PkgTokenSpaceGuid.PcdMsmGptClearOffset|0x000C|UINT32|0x0000a40c
+
+  gQSD8250PkgTokenSpaceGuid.PcdMsmDgtMatchValOffset|0x0010|UINT32|0x0000a40d
+  gQSD8250PkgTokenSpaceGuid.PcdMsmDgtEnableOffset|0x0018|UINT32|0x0000a40e
+  gQSD8250PkgTokenSpaceGuid.PcdMsmDgtClearOffset|0x001C|UINT32|0x0000a40f
+  gQSD8250PkgTokenSpaceGuid.PcdMsmGptVector|8|UINT32|0x0000a410
+  gQSD8250PkgTokenSpaceGuid.PcdMsmDgtTimerFreq|4800000|UINT32|0x0000a411
+
+  # SMEM
+  gQcomTokenSpaceGuid.PcdMsmSharedBase|0x00100000|UINT64|0x00000001
+  gQcomTokenSpaceGuid.PcdMsmSharedSize|0x00100000|UINT64|0x00000002
+  gQcomTokenSpaceGuid.PcdSmemTargetInfoAddress|0|UINT64|0x0000003
+
+  # UsbDxe
+  gQcomTokenSpaceGuid.PcdUsb30Ee1Irq|0|UINT64|0x00000300
+  gQcomTokenSpaceGuid.PcdUsb30Base|0|UINT64|0x00000301
+  gQcomTokenSpaceGuid.PcdUsb30ScratchBase|0|UINT64|0x00000302
+  gQcomTokenSpaceGuid.PcdUsb30QmpPhyBase|0|UINT64|0x00000303
+  gQcomTokenSpaceGuid.PcdUsb2PhyBase|0|UINT64|0x00000305
+  gQcomTokenSpaceGuid.PcdUsb2GccPhyBcr|0|UINT64|0x00000306
+  gQcomTokenSpaceGuid.PcdUsb2PhyPortPowerDownOffset|0|UINT64|0x00000307
+  gQcomTokenSpaceGuid.PcdUsb2PhyPortUtmiCtrl2Offset|0|UINT64|0x00000308
+  gQcomTokenSpaceGuid.PcdUsb2PhyPortTune1Offset|0|UINT64|0x00000309
+  gQcomTokenSpaceGuid.PcdUsb2PhyPortTune2Offset|0|UINT64|0x0000030a
+  gQcomTokenSpaceGuid.PcdUsb2PhyPortTune3Offset|0|UINT64|0x0000030b
+  gQcomTokenSpaceGuid.PcdUsb2PhyPortTune4Offset|0|UINT64|0x0000030c
+  gQcomTokenSpaceGuid.PcdUsbHsBase|0xA0800000|UINT64|0x0000030d
+  gQcomTokenSpaceGuid.PcdUsbHsIrq|58|UINT64|0x0000030e

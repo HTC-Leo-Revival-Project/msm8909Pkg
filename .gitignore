@@ -4,6 +4,9 @@ ImageResources/Tools/*.nbh
 ImageResources/Tools/*.nb
 ImageResources/Tools/*.bin
 ImageResources/Tools/nbgen
-ImageResources/uefi.img
+ImageResources/Tools/yangbin
+ImageResources/Passion/*.bin
+ImageResources/Bravo/*.bin
+ImageResources/*.img
 ImageResources/LEOIMG.nbh
 workspace/Build/

@@ -1,0 +1,19 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = QcomTargetBoardLib
+  FILE_GUID                      = 22A335BB-9113-44C2-865E-E51052A36FA8
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = QcomTargetBoardLib
+
+
+[Sources.common]
+  QcomTargetBoardLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  QSD8250Pkg/QSD8250Pkg.dec
+
+[LibraryClasses]
+  DebugLib

@@ -10,7 +10,7 @@
 | I2C           | Based on cLK driver                              |   ✅   |
 | Panel         | Driver exists in cLK                             |   ❌   |
 | Touchscreen   | Driver exists in linux                           |   ❌   |
-| Charging      | Supported in cLK since 1.5.x                     |   ❌   |
+| Charging      | Based on cLK code                                |   ✅   |
 | Battery Gauge | Supported in cLK since 1.5.x                     |   ❌   |
 | USB           | Driver exists in cLK                             |   ❌   |
 | Keypad        | Loosely based on cLK driver                      |   ✅   |
@@ -26,6 +26,7 @@ UEFI can be either chainloaded as a kernel from cLK, as well as flashed to boot 
  - ivoszbg for Msm8916Pkg
  - winocm for the iPhone4Pkg
  - feherneoh for all the helpfull ideas and shared knowledge
+ - Krzysztof Łukasz Necel & Tomasz Gajger for a Tetris EFI implementation (based on https://github.com/swmicro/Tetris)
 
 ## License
 All code except drivers in `GplDrivers` directory is licensed under BSD 2-Clause. 
