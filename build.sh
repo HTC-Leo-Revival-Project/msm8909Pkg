@@ -1,6 +1,6 @@
 #!/bin/bash
 # based on the instructions from edk2-platform
-rm -rf ImageResources/*.img ImageResources/Tools/*.bin
+rm -rf ImageResources/*.img ImageResources/Tools/*.bin ImageResources/Bravo/*.bin ImageResources/Passion/*.bin
 set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
