@@ -11,7 +11,7 @@
 
 #include <Device/Gpio.h>
 
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
 
 #include <Device/microp.h>
 #include <Protocol/HtcLeoMicroP.h>
@@ -109,7 +109,7 @@ ExitBootServicesEvent (
   )
 {
   // Make sure the LED is disabled
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
   gMicroP->KpLedSetBrightness(0);
 #else
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
@@ -128,7 +128,7 @@ KeypadDeviceImplConstructor(VOID)
   Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
   ASSERT_EFI_ERROR (Status);
 
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
   // Find the MicroP protocol. ASSERT if not found.
   Status = gBS->LocateProtocol(&gHtcLeoMicropProtocolGuid, NULL, (VOID **)&gMicroP);
   ASSERT_EFI_ERROR(Status);
@@ -238,7 +238,7 @@ EFI_STATUS EFIAPI KeypadDeviceImplReset(KEYPAD_DEVICE_PROTOCOL *This)
 // Callback function to turn off the LED after a certain time
 VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
 {
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
   // Disable keypad LED brightness
   gMicroP->KpLedSetBrightness(0);
 #else
@@ -256,7 +256,7 @@ VOID EnableKeypadLedWithTimer(VOID)
         gBS->SetTimer(m_CallbackTimer, TimerCancel, 0);
         timerRunning = FALSE;
     }
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
     gMicroP->KpLedSetBrightness(255);
 #else
     gGpio->Set(HTCLEO_GPIO_KP_LED, 1);

@@ -31,6 +31,9 @@
 
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
+[BuildOptions.common]
+  GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=3 #i2c
+
 [PcdsFixedAtBuild.common]
   gQSD8250PkgTokenSpaceGuid.PcdKdUartInstance|1                # UART1
   gQSD8250PkgTokenSpaceGuid.PcdSerialRegisterBase|0xA9A00000   # UART1 BASE from iomap_qsd8k.h

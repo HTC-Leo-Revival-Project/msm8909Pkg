@@ -335,7 +335,7 @@ void microp_i2c_probe(struct microp_platform_data *kpdata)
 	
 	//microp_function_initialize();
 }
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
 void htcbravo_led_set_mode(uint8_t mode)
 {
     /* Mode
@@ -411,7 +411,7 @@ void htcleo_led_set_mode(uint8_t mode)
 HTCLEO_MICROP_PROTOCOL gHtcLeoMicropProtocol = {
   microp_i2c_write,
   microp_i2c_read,
-#if PLATFORM_BRAVO == 1
+#if KP_LED_ENABLE_METHOD == 2
   htcbravo_led_set_mode,
   htcbravo_kp_led_set_brightness
 #else
