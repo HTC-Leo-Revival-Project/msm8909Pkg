@@ -33,14 +33,14 @@ function _build(){
 	source "../edk2/edksetup.sh"
 if [ $DEVICE == 'All' ]; then
     echo "Building uefi for all platforms"
-
-	# TODO: Improve
 	for PlatformName in "${AvailablePlatforms[@]}"
 	do
-		# Build
-		GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
-		./build_boot_shim.sh
-		./build_boot_images.sh $PlatformName
+		if [ $PlatformName != 'All' ]; then
+			# Build
+			GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
+			./build_boot_shim.sh
+			./build_boot_images.sh $PlatformName
+		fi
 	done
 else
     echo "Building uefi for $DEVICE"
