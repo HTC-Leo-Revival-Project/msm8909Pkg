@@ -28,20 +28,11 @@ function _check_args(){
 
 # based on https://github.com/edk2-porting/edk2-msm/blob/master/build.sh#L47 
 function _build(){
-if [[ " ${AvailablePlatforms[*]} " == *"$1"* ]]; then
 	local DEVICE="${1}"
 	shift
-    echo "Building uefi for $DEVICE"
 	source "../edk2/edksetup.sh"
-	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
-
-	./build_boot_shim.sh
-	./build_boot_images.sh $DEVICE
-elif [ $1 == 'All' ]; then
-	local DEVICE="${1}"
-	shift
+if [ $DEVICE == 'All' ]; then
     echo "Building uefi for all platforms"
-	source "../edk2/edksetup.sh"
 
 	# TODO: Improve
 	for PlatformName in "${AvailablePlatforms[@]}"
@@ -51,6 +42,12 @@ elif [ $1 == 'All' ]; then
 		./build_boot_shim.sh
 		./build_boot_images.sh $PlatformName
 	done
+else
+    echo "Building uefi for $DEVICE"
+	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
+
+	./build_boot_shim.sh
+	./build_boot_images.sh $DEVICE
 fi
 }
 
