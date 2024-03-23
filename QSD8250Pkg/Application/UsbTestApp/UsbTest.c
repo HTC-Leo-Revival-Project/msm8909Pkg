@@ -39,6 +39,9 @@
 #include <Protocol/EFIDroidUsbDevice.h>
 
 USB_DEVICE_PROTOCOL *gUsb = NULL;
+//USB_DEVICE_DESCRIPTOR   *DeviceDescriptor = NULL;
+//VOID                   **Descriptors = NULL;
+//USB_DEVICE_EVENT_CALLBACK  UsbEventCallback = NULL;
 
 EFI_STATUS
 EFIAPI
@@ -54,6 +57,8 @@ UsbTestEntryPoint (
   ASSERT_EFI_ERROR (Status);
 
   DEBUG((EFI_D_ERROR, "Locate USB protocol status = %d", Status));
+
+  //gUsb->UsbPeriphStart(DeviceDescriptor, Descriptors, UsbEventCallback);
 
   return Status;
 }
