@@ -70,6 +70,7 @@
   gEmbeddedClockProtocolGuid
 
 [Pcd]
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress
 
 [Depex]
   gTlmmGpioProtocolGuid

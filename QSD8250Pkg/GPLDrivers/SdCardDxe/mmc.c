@@ -264,6 +264,7 @@ mmc_legacy_init(int verbose)
     debug("SD - card_identification_selection\n");
 
     // Change SD clock configuration, set PWRSAVE and FLOW_ENA
+    debug("Change SD clock configuration, set PWRSAVE and FLOW_ENA\n");
     IO_WRITE32(sdcn.base + MCI_CLK, IO_READ32(sdcn.base + MCI_CLK) |
                          MCI_CLK__PWRSAVE___M |
                          MCI_CLK__FLOW_ENA___M );
@@ -287,6 +288,7 @@ mmc_legacy_init(int verbose)
        debug("SD - error reading SD status\n\r");
        return rc;
     }
+    debug("SD - reading SD status success!!\n\r");
 
 
     // The card is now in data transfer mode, standby state.
@@ -294,6 +296,7 @@ mmc_legacy_init(int verbose)
 
     // Increase MCLK to 25MHz
     SD_MCLK_set(MCLK_25MHz);
+    debug("SD - MCLK to 25Mhz\n\r");
 
  // Put card in high-speed mode and increase the SD MCLK if supported.
  #ifdef USE_HIGH_SPEED_MODE
@@ -325,6 +328,7 @@ mmc_legacy_init(int verbose)
         debug("SD - Error setting block size\n\r");
         return rc;
     }
+    debug("SD - blocksize set\n\r");
 
     // Read the first block of the SD card as a sanity check.
  #ifdef USE_DM
@@ -997,33 +1001,42 @@ int card_identification_selection(uint32_t cid[],
 
    // CMD0 - put the card in the idle state
    cmd = CMD0 | MCI_CMD__ENABLE___M;
-   if (!sdcc_send_cmd(cmd, 0x00000000, response))
+   if (!sdcc_send_cmd(cmd, 0x00000000, response)) {
+      debug("IdSelection: CMD0 FAIL\n");
       return(FALSE);
-
+   }
    // CMD8 - send interface condition
    // Attempt to init SD v2.0 features
    // voltage range 2.7-3.6V, check pattern AA
    arg = 0x000001AA;
    cmd = CMD8 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M;
-   if (!sdcc_send_cmd(cmd, arg, response))
+   if (!sdcc_send_cmd(cmd, arg, response)) {
       hc_support = 0;          // no response, not high capacity
-   else
+      debug("IdSelection: Card not High Capacity\n");
+   }
+   else {
       hc_support = (1 << 30);  // HCS bit for ACMD41
+      debug("IdSelection: Card is High Capacity\n");
+   }
 
    udelay(1000);
    // CMD55
    // Send before any application specific command
    // Use RCA address = 0 during initialization
    cmd = CMD55 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M;
-   if (!sdcc_send_cmd(cmd, 0x00000000, response))
+   if (!sdcc_send_cmd(cmd, 0x00000000, response)) {
+      debug("IdSelection: CMD55 FAIL\n");
       return(FALSE);
+   }
 
    // ACMD41
    // Reads OCR register contents
    arg = 0x00FF8000 | hc_support;
    cmd = ACMD41 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M;
-   if (!sdcc_send_cmd(cmd, arg, response))
+   if (!sdcc_send_cmd(cmd, arg, response)) {
+      debug("IdSelection: ACMD41 FAIL\n");
       return(FALSE);
+   }
 
    // If stuck in an infinite loop after CMD55 or ACMD41 -
    // the card might have gone into inactive state w/o accepting vdd range
@@ -1037,18 +1050,23 @@ int card_identification_selection(uint32_t cid[],
       udelay(1000);
 
       cmd = CMD55 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M;
-      if (!sdcc_send_cmd(cmd, 0x00000000, response))
+      if (!sdcc_send_cmd(cmd, 0x00000000, response)) {
+         debug("IdSelection: CMD55 (2) FAIL\n");
          return(FALSE);
+      }
 
       cmd = ACMD41 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M;
-      if (!sdcc_send_cmd(cmd, arg, response))
+      if (!sdcc_send_cmd(cmd, arg, response)) {
+         debug("IdSelection: ACMD41 (2) FAIL\n");
          return(FALSE);
+      }
    }
 
    // Check to see if this is a high capacity SD (SDHC) card.
    if ((response[0] & hc_support) != 0)
    {
       high_capacity = TRUE;
+      debug("HC card detected\n");
    }
 
    // A short delay here after the ACMD41 will prevent the next
@@ -1058,15 +1076,20 @@ int card_identification_selection(uint32_t cid[],
    // CMD2
    // Reads CID register contents - long response R2
    cmd = CMD2 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M | MCI_CMD__LONGRSP___M;
-   if (!sdcc_send_cmd(cmd, 0x00000000, response))
+   if (!sdcc_send_cmd(cmd, 0x00000000, response)) {
+      debug("IdSelection: CMD2 FAIL\n");
       return(FALSE);
-   for (i = 0; i < 4; i++)
+   }
+   for (i = 0; i < 4; i++) {
       cid[i] = response[i];
+   }
 
    // CMD3
    cmd = CMD3 | MCI_CMD__ENABLE___M | MCI_CMD__RESPONSE___M;
-   if (!sdcc_send_cmd(cmd, 0x00000000, response))
+   if (!sdcc_send_cmd(cmd, 0x00000000, response)) {
+      debug("IdSelection: CMD3 FAIL\n");
       return(FALSE);
+   }
    *rca = response[0] >> 16;
 
    return(TRUE);

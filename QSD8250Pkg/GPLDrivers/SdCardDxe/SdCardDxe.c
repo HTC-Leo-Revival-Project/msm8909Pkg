@@ -34,6 +34,7 @@
 #include <Library/TimerLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/pcom_clients.h>
 
 #include <Protocol/BlockIo.h>
 #include <Protocol/DevicePath.h>
@@ -296,6 +297,8 @@ SdCardInitialize(
 )
 {
 	EFI_STATUS  Status = EFI_SUCCESS;
+    UINTN SdClkStatus = 0;
+    UINTN SdPclkStatus = 0;
 
     // Find the gpio controller protocol.  ASSERT if not found.
     Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
@@ -307,11 +310,38 @@ SdCardInitialize(
 
     if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
     {
+    #if USE_SCREEN_FOR_SERIAL_OUTPUT == 1
+        //hack: clear the framebuffer before printing SD logs
+        ZeroMem((void*)(FixedPcdGet32(PcdMipiFrameBufferAddress)), 0x00C00000);
+    #endif
+        DEBUG((EFI_D_ERROR, "SDCardDxe: LOG start -------------------------------\n"));
         // Enable the SDC2 clock
+        DEBUG((EFI_D_ERROR, "Enable the SDC2 clock\n"));
         gClock->ClkEnable(SDC2_CLK);
+
+        SdClkStatus = pcom_is_sdcard_clk_enabled(SDC_INSTANCE);
+        SdPclkStatus = pcom_is_sdcard_pclk_enabled(SDC_INSTANCE);
+
+        DEBUG((EFI_D_ERROR, "Pcom: Sdcard clk status = %d\n", SdClkStatus));
+        DEBUG((EFI_D_ERROR, "Pcom: Sdcard pclk status = %d\n", SdPclkStatus));
+
+        if(SdClkStatus) {
+            pcom_enable_sdcard_clk(SDC_INSTANCE);
+            SdClkStatus = pcom_is_sdcard_clk_enabled(SDC_INSTANCE);
+            DEBUG((EFI_D_ERROR, "Pcom: Sdcard clk status AFTER ENABLE = %d\n", SdClkStatus));
+        }
+
+        if(SdPclkStatus) {
+            pcom_enable_sdcard_pclk(SDC_INSTANCE);
+            SdClkStatus = pcom_is_sdcard_pclk_enabled(SDC_INSTANCE);
+            DEBUG((EFI_D_ERROR, "Pcom: Sdcard pclk status AFTER ENABLE = %d\n", SdPclkStatus));
+        }
 
         // Enable SD
         mmc_legacy_init(0);
+        DEBUG((EFI_D_ERROR, "SDC2 initialized\n"));
+        DEBUG((EFI_D_ERROR, "SDCardDxe: LOG end -------------------------------\n"));
+        for(;;) {};
 
         sdc_dev = mmc_get_dev();
 
