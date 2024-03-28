@@ -15,6 +15,13 @@
 | USB           | Driver exists in cLK                             |   ❌   |
 | Keypad        | Loosely based on cLK driver                      |   ✅   |
 
+## OS support notes
+- Currently loading a close-to-mainline kernel is supported (see https://github.com/HTC-Leo-Revival-Project/linux)
+
+- Windows RT isn't supported (the os doesn't have inbox support for interrupt controller and timer found on hd2)
+
+- ReactOS support should be possible once the arm port will be fully bootable
+
 ## Loading
 UEFI can be either chainloaded as a kernel from cLK, as well as flashed to boot directly from HSPL.
 
