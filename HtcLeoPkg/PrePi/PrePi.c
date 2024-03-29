@@ -103,35 +103,6 @@ ReconfigFb()
 }
 
 VOID
-EnableCounter()
-{
-  /* enable cp10 and cp11 */
-	UINT32 val;
-	__asm__ volatile("mrc	p15, 0, %0, c1, c0, 2" : "=r" (val));
-	val |= (3<<22)|(3<<20);
-	__asm__ volatile("mcr	p15, 0, %0, c1, c0, 2" :: "r" (val));
-
-  ArmInstructionSynchronizationBarrier();
-  ArmDataMemoryBarrier();
-
-	/* set enable bit in fpexc */
-	__asm__ volatile("mrc  p10, 7, %0, c8, c0, 0" : "=r" (val));
-	val |= (1<<30);
-	__asm__ volatile("mcr  p10, 7, %0, c8, c0, 0" :: "r" (val));
-
-  /* enable the cycle count register */
-	UINT32 en;
-	__asm__ volatile("mrc	p15, 0, %0, c9, c12, 0" : "=r" (en));
-	en &= ~(1<<3); /* cycle count every cycle */
-	en |= 1; /* enable all performance counters */
-	__asm__ volatile("mcr	p15, 0, %0, c9, c12, 0" :: "r" (en));
-
-	/* enable cycle counter */
-	en = (1<<31);
-	__asm__ volatile("mcr	p15, 0, %0, c9, c12, 1" :: "r" (en));
-}
-
-VOID
 PrePiMain (
   IN  UINTN   UefiMemoryBase,
   IN  UINTN   StacksBase,
@@ -150,9 +121,6 @@ PrePiMain (
 
   // Reconfigure the framebuffer based on PCD
   ReconfigFb();
-
-  // Enable the counter (code from PrimeG2Pkg)
-  EnableCounter();
 
   // Initialize the Serial Port
   SerialPortInitialize ();
