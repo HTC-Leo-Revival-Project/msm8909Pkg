@@ -26,7 +26,7 @@
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = HtcLeoPkg/HtcLeoPkg.fdf
 
-  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
+  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = TRUE
 
 !include HtcLeoPkg/CommonDsc.dsc.inc
 

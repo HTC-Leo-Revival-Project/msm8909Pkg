@@ -18,6 +18,9 @@
   VERSION_STRING                 = 1.0
   LIBRARY_CLASS                  = ArmPlatformLib
 
+[BuildOptions.ARM]
+  GCC:*_*_*_CC_FLAGS = -Wno-dangling-pointer
+
 [Packages]
   ArmPkg/ArmPkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec

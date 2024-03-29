@@ -209,7 +209,7 @@ DefaultExceptionHandler (
 
   PcAdjust = 0;
   //hack clear the framebuffer before printing the exeption
-  ZeroMem((void*)0x02A00000, 0x000C0000);
+  //ZeroMem((void*)0x02A00000, 0x000C0000);
   CharCount = AsciiSPrint (
                 Buffer,
                 sizeof (Buffer),

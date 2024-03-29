@@ -1,7 +1,7 @@
 /** @file
 *
 *  Copyright (c) 2011-2015, ARM Limited. All rights reserved.
-*  Copyright (c), 2017-2018, Andrey Warkentin <andrey.warkentin@gmail.com>
+*  Copyright (c) 2019, RUIKAI LIU and MR TUNNEL. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
@@ -22,136 +22,53 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PcdLib.h>
 
-// See memory map here.
-#include <Configuration/DeviceMemoryMap.h>
-
 extern UINT64 mSystemMemoryEnd;
 
 VOID
-BuildMemoryTypeInformationHob(
-	VOID
+BuildMemoryTypeInformationHob (
+  VOID
 );
 
 STATIC
 VOID
-InitMmu(
-	IN ARM_MEMORY_REGION_DESCRIPTOR  *MemoryTable
+InitMmu (
+  IN ARM_MEMORY_REGION_DESCRIPTOR  *MemoryTable
 )
 {
 
-	VOID                          *TranslationTableBase;
-	UINTN                         TranslationTableSize;
-	RETURN_STATUS                 Status;
+  VOID                          *TranslationTableBase;
+  UINTN                         TranslationTableSize;
+  RETURN_STATUS                 Status;
 
-	// Note: Because we called PeiServicesInstallPeiMemory() before
-    // to call InitMmu() the MMU Page Table resides in
-    // RAM (even at the top of DRAM as it is the first permanent memory
-    // allocation)
-	Status = ArmConfigureMmu(MemoryTable, &TranslationTableBase, &TranslationTableSize);
-
-	if (EFI_ERROR(Status)) {
-		DEBUG((EFI_D_ERROR, "Error: Failed to enable MMU\n"));
-	}
+  //Note: Because we called PeiServicesInstallPeiMemory() before to call InitMmu() the MMU Page Table resides in
+  //      DRAM (even at the top of DRAM as it is the first permanent memory allocation)
+  Status = ArmConfigureMmu (MemoryTable, &TranslationTableBase, &TranslationTableSize);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Error: Failed to enable MMU\n"));
+  }
 }
 
-STATIC
-VOID
-AddHob
-(
-	PARM_MEMORY_REGION_DESCRIPTOR_EX Desc
-)
-{
-	BuildResourceDescriptorHob(
-		Desc->ResourceType,
-		Desc->ResourceAttribute,
-		Desc->Address,
-		Desc->Length
-	);
-
-	if (Desc->ResourceType == EFI_RESOURCE_SYSTEM_MEMORY ||
-      Desc->MemoryType == EfiRuntimeServicesData)
-  	{
-    	BuildMemoryAllocationHob(Desc->Address, Desc->Length, Desc->MemoryType);
-  	}
-}
-
-/*++
-
-Routine Description:
-
-
-
-Arguments:
-
-  FileHandle  - Handle of the file being invoked.
-  PeiServices - Describes the list of possible PEI Services.
-
-Returns:
-
-  Status -  EFI_SUCCESS if the boot mode could be set
-
---*/
 EFI_STATUS
 EFIAPI
-MemoryPeim(
-	IN EFI_PHYSICAL_ADDRESS               UefiMemoryBase,
-	IN UINT64                             UefiMemorySize
-)
+MemoryPeim (
+  IN EFI_PHYSICAL_ADDRESS               UefiMemoryBase,
+  IN UINT64                             UefiMemorySize
+  )
 {
-	PARM_MEMORY_REGION_DESCRIPTOR_EX MemoryDescriptorEx = gDeviceMemoryDescriptorEx;
-	ARM_MEMORY_REGION_DESCRIPTOR MemoryDescriptor[MAX_ARM_MEMORY_REGION_DESCRIPTOR_COUNT];
-	UINTN Index = 0;
+  ARM_MEMORY_REGION_DESCRIPTOR *MemoryTable;
 
-	// Ensure PcdSystemMemorySize has been set
-	ASSERT(PcdGet64(PcdSystemMemorySize) != 0);
+  // Get Virtual Memory Map from the Platform Library
+  ArmPlatformGetVirtualMemoryMap (&MemoryTable);
 
-	// Run through each memory descriptor
-	while (MemoryDescriptorEx->Length != 0)
-	{
-		switch (MemoryDescriptorEx->HobOption)
-		{
-		case AddMem:
-		case AddDev:
-		case HobOnlyNoCacheSetting:
-			AddHob(MemoryDescriptorEx);
-			break;
-		case NoHob:
-		default:
-			goto update;
-		}
+  // Ensure PcdSystemMemorySize has been set
+  ASSERT (PcdGet64 (PcdSystemMemorySize) != 0);
 
-		if (MemoryDescriptorEx->HobOption == HobOnlyNoCacheSetting) {
-			MemoryDescriptorEx++;
-			continue;
-		}
+  InitMmu (MemoryTable);
 
-	update:
-		ASSERT(Index < MAX_ARM_MEMORY_REGION_DESCRIPTOR_COUNT);
+  if (FeaturePcdGet (PcdPrePiProduceMemoryTypeInformationHob)){
+        // Optional feature that helps prevent EFI memory map fragmentation.
+  	BuildMemoryTypeInformationHob();
+  }
 
-		MemoryDescriptor[Index].PhysicalBase = MemoryDescriptorEx->Address;
-		MemoryDescriptor[Index].VirtualBase = MemoryDescriptorEx->Address;
-		MemoryDescriptor[Index].Length = MemoryDescriptorEx->Length;
-		MemoryDescriptor[Index].Attributes = MemoryDescriptorEx->ArmAttributes;
-
-		Index++;
-		MemoryDescriptorEx++;
-	}
-
-	// Last one (terminator)
-	ASSERT(Index < MAX_ARM_MEMORY_REGION_DESCRIPTOR_COUNT);
-	MemoryDescriptor[Index].PhysicalBase = 0;
-	MemoryDescriptor[Index].VirtualBase = 0;
-	MemoryDescriptor[Index].Length = 0;
-	MemoryDescriptor[Index].Attributes = 0;
-
-	// Build Memory Allocation Hob
-	InitMmu(MemoryDescriptor);
-
-	if (FeaturePcdGet(PcdPrePiProduceMemoryTypeInformationHob))
-	{
-		// Optional feature that helps prevent EFI memory map fragmentation.
-		BuildMemoryTypeInformationHob();
-	}
-
-	return EFI_SUCCESS;
+  return EFI_SUCCESS;
 }
