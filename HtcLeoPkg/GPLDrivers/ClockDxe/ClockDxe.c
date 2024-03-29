@@ -274,22 +274,6 @@ int msm_pll_request(unsigned id, unsigned on)
 	return msm_proc_comm(PCOM_CLKCTL_RPC_PLL_REQUEST, &id, &on);
 }
 
-static int ClocksOn[] = {
-	SDC1_CLK,
-	SDC2_CLK,
-	SDC3_CLK,
-	SDC4_CLK,
-};
-
-EFI_STATUS
-MsmClockInit(VOID)
-{
-	for (int i = 0; i < (int)ARRAY_SIZE(ClocksOn); i++)
-		ClkEnable(ClocksOn[i]);
-
-	return EFI_SUCCESS;
-}
-
 /**
  Protocol variable definition
  **/
@@ -315,28 +299,22 @@ ClockDxeInitialize(
 	ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gEmbeddedClockProtocolGuid);
 
 	FillClocksLookup();
-	if (MsmClockInit() == EFI_SUCCESS)
-	{
-		DEBUG((EFI_D_INFO, "Clock init done!\n"));
-		
-		// Install the Embedded Clock Protocol onto a new handle
-		Handle = NULL;
-		Status = gBS->InstallMultipleProtocolInterfaces (
-						&Handle,
-						&gEmbeddedClockProtocolGuid,
-						&gClock,
-						NULL
-						);
 
-		if (EFI_ERROR (Status)) {
-			Status = EFI_OUT_OF_RESOURCES;
-		}
+	// Setup Scorpion PLL
+	msm_acpu_clock_init(11+6);
 
-		// Setup Scorpion PLL
-		msm_acpu_clock_init(11+6);
-		return EFI_SUCCESS;
+	// Install the Embedded Clock Protocol onto a new handle
+	Handle = NULL;
+	Status = gBS->InstallMultipleProtocolInterfaces (
+					&Handle,
+					&gEmbeddedClockProtocolGuid,
+					&gClock,
+					NULL
+					);
+
+	if (EFI_ERROR (Status)) {
+		Status = EFI_OUT_OF_RESOURCES;
 	}
-	else {
-		return EFI_D_ERROR;
-	}
+
+	return EFI_SUCCESS;
 }

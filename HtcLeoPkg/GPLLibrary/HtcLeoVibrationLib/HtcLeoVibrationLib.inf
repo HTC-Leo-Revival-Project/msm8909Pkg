@@ -17,8 +17,6 @@
   IoLib
   TimerLib
   ArmLib
-  TimerLib
-  
 
 [Packages]
   ArmPkg/ArmPkg.dec

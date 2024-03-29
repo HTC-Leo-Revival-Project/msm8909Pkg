@@ -38,6 +38,9 @@
 #include <Protocol/BlockIo.h>
 #include <Protocol/DevicePath.h>
 #include <Protocol/GpioTlmm.h>
+#include <Protocol/EmbeddedClock.h>
+
+#include <Chipset/clock.h>
 
 #include "SdCardDxe.h"
 
@@ -45,6 +48,9 @@ static block_dev_desc_t *sdc_dev;
 
 // Cached copy of the Hardware Gpio protocol instance
 TLMM_GPIO *gGpio = NULL;
+
+// Cached copy of the Embedded Clock protocol instance
+EMBEDDED_CLOCK_PROTOCOL  *gClock = NULL;
 
 EFI_BLOCK_IO_MEDIA gMMCHSMedia = 
 {
@@ -81,7 +87,6 @@ MMCHS_DEVICE_PATH gMmcHsDevicePath = {
     { sizeof (EFI_DEVICE_PATH_PROTOCOL), 0 }
   }
 };
-
 
 
 /**
@@ -296,8 +301,15 @@ SdCardInitialize(
     Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
     ASSERT_EFI_ERROR (Status);
 
+    // Find the clock controller protocol.  ASSERT if not found.
+  	Status = gBS->LocateProtocol (&gEmbeddedClockProtocolGuid, NULL, (VOID **)&gClock);
+  	ASSERT_EFI_ERROR (Status);
+
     if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
     {
+        // Enable the SDC2 clock
+        gClock->ClkEnable(SDC2_CLK);
+
         // Enable SD
         mmc_legacy_init(0);
 

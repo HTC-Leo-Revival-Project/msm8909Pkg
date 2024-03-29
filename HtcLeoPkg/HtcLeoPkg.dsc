@@ -90,6 +90,7 @@
   SmemLib|HtcLeoPkg/Drivers/SmemDxe/SmemImplLib.inf
   KeypadDeviceHelperLib|HtcLeoPkg/Library/KeypadDeviceHelperLib/KeypadDeviceHelperLib.inf
   KeypadDeviceImplLib|HtcLeoPkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
+  DS2746Lib|HtcLeoPkg/Library/DS2746Lib/DS2746.inf
 
 [LibraryClasses.common.SEC]
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
@@ -119,7 +120,9 @@
 [PcdsFixedAtBuild.common]
   gEfiMdePkgTokenSpaceGuid.PcdDefaultTerminalType|4
 
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Testing"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor|L"Htc Leo Revival Project"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"240301"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareRevision|0x00240301
 
   # Memory protection
   gEfiMdeModulePkgTokenSpaceGuid.PcdImageProtectionPolicy|0x00000000
@@ -271,6 +274,9 @@
   # Tetris
   HtcLeoPkg/Application/TetrisApp/tetris.inf
 
+  # Charging
+  HtcLeoPkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
+
   #
   # FAT filesystem + GPT/MBR partitioning
   #
@@ -307,6 +313,7 @@
   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
   MdeModulePkg/Universal/DriverHealthManagerDxe/DriverHealthManagerDxe.inf
   MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+  HtcLeoPkg/Application/HtcLeoMenuApp/HtcLeoMenuApp.inf
   MdeModulePkg/Application/UiApp/UiApp.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
