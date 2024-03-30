@@ -1,3 +1,6 @@
 Code inspired by:
 * https://github.com/WOA-Project/SurfaceDuoPkg/tree/main/BootShim
 * https://github.com/idaviden/kaikidan/blob/linaro-release/iPhone4Pkg/bl.s
+
+Arch init code from:
+* https://github.com/qsd8k-legacy/android_kernel_htc_htcleo/blob/lineage-15.1/arch/arm/mach-msm/arch-init-scorpion.S
