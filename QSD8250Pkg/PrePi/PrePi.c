@@ -94,6 +94,9 @@ ReconfigFb()
   // Stride
   MmioWrite32(MDP_DMA_P_BUF_Y_STRIDE, (Bpp / 8) * Width);
 
+  // Write fb addr (relocates fb to 0x02A00000 on schubert)
+  MmioWrite32(MDP_DMA_P_BUF_ADDR, FixedPcdGet32(PcdMipiFrameBufferAddress));
+
   // Ensure all transfers finished
   ArmInstructionSynchronizationBarrier();
   ArmDataMemoryBarrier();
