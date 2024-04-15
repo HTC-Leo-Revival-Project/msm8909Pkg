@@ -69,3 +69,9 @@ steps:
   inputs: 
     pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/bravo_uefi.img
     artifactName: Htc Bravo UEFI kernel
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Htc Schubert UEFI payload'
+  inputs: 
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Tools/bootpayload_schubert.bin
+    artifactName: Htc Schubert UEFI payload
