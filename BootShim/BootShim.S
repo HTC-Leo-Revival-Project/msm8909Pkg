@@ -28,6 +28,8 @@
 .text
 .globl _start
 _start:
+        //schubert hack: jump straight to uefi_setup for now
+        b   uefi_setup
 	b   reset
 	b   prepare_for_linux
 	//b   __cpu_early_init
