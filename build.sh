@@ -1,31 +1,64 @@
 #!/bin/bash
 # based on the instructions from edk2-platform
-rm -rf ImageResources/*.img ImageResources/Tools/*.bin
+rm -rf ImageResources/*.img ImageResources/Tools/*.bin ImageResources/Bravo/*.bin ImageResources/Passion/*.bin
 set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
-. ../edk2/edksetup.sh
-GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p HtcLeoPkg/HtcLeoPkg.dsc
 
-chmod +x build_boot_shim.sh
-./build_boot_shim.sh
+AvailablePlatforms=("Leo" "Passion" "Bravo" "All")
+IsValid=0
 
-cat BootShim/BootShim.bin workspace/Build/QSD8250/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Tools/bootpayload.bin
+while getopts d: flag
+do
+    case "${flag}" in
+        d) device=${OPTARG};;
+    esac
+done
 
-mkbootimg --kernel ImageResources/Tools/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/uefi.img
+function _check_args(){
+	local DEVICE="${1}"
+	for Name in "${AvailablePlatforms[@]}"
+	do
+		if [[ $DEVICE == "$Name" ]]; then
+			IsValid=1
+			break;
+		fi
+	done
+}
 
-# NBH creation
-if [ ! -f ImageResources/Tools/nbgen ]; then
-	gcc -std=c99 ImageResources/Tools/nbgen.c -o ImageResources/Tools/nbgen
+# based on https://github.com/edk2-porting/edk2-msm/blob/master/build.sh#L47 
+function _build(){
+	local DEVICE="${1}"
+	shift
+	source "../edk2/edksetup.sh"
+if [ $DEVICE == 'All' ]; then
+    echo "Building uefi for all platforms"
+	for PlatformName in "${AvailablePlatforms[@]}"
+	do
+		if [ $PlatformName != 'All' ]; then
+			# Build
+			GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
+			./build_boot_shim.sh
+			./build_boot_images.sh $PlatformName
+		fi
+	done
+else
+    echo "Building uefi for $DEVICE"
+	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
+
+	./build_boot_shim.sh
+	./build_boot_images.sh $DEVICE
 fi
-# We're using a prebuild yang binary for now, since the compiled version doesn't seem to produce a valid NBH for Leo
-if [ ! -f ImageResources/Tools/yang ]; then
-	gcc ImageResources/Tools/yang/nbh.c ImageResources/Tools/yang/nbhextract.c ImageResources/Tools/yang/yang.c -o ImageResources/Tools/yangbin
-fi
+}
 
-cd ImageResources/Tools
-./nbgen os.nb
-./yang -F ../LEOIMG.nbh -f logo.nb,os.nb -t 0x600,0x400 -s 64 -d PB8110000 -c 11111111 -v EDK2 -l WWE
-rm *.bin
-rm os.nb
-cd ../../
+_check_args "$device"
+if [ $IsValid == 1 ]; then
+	_build "$device"
+else
+	echo "Build: Invalid platform"
+	echo "Available targets: "
+	for Name in "${AvailablePlatforms[@]}"
+	do
+		echo " - "$Name
+	done
+fi
