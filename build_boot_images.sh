@@ -29,7 +29,7 @@ elif [ $1 == 'Schubert' ]; then
     #cd ImageResources/Tools
     #./nbgen os.nb
     #mv ./os.nb ./os_schubert.nb
-    #./yang -F ../SCHUBERTIMG.nbh -f os_schubert.nb -t 0x400 -s 64 -d PB8110000 -c 11111111 -v EDK2 -l WWE
+    #./yang -F ../SCHUIMG.nbh -f os_schubert.nb -t 0x400 -s 64 -d PB8110000 -c 11111111 -v EDK2 -l WWE
     #cd ../../
 elif [ $1 = "Passion" ] || [ $1 = "Bravo" ]; then
     cat BootShim/BootShim.bin workspace/Build/Htc$1/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/$1/bootpayload.bin
