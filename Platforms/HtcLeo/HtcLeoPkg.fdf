@@ -121,6 +121,7 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 
   # SoC Drivers
+  INF QSD8250Pkg/Drivers/BoardDxe/BoardDxe.inf
   INF QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
   INF QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
   INF QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
@@ -130,6 +131,8 @@ APRIORI DXE {
   INF QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf
   INF QSD8250Pkg/GPLDrivers/I2CDxe/I2CDxe.inf
   INF QSD8250Pkg/Drivers/MicroPDxe/MicroPDxe.inf
+  INF QSD8250Pkg/Drivers/UsbDxe/UsbDxe.inf
+  INF QSD8250Pkg/Application/UsbTestApp/UsbTestApp.inf
 
   #
   # Virtual Keyboard

@@ -28,6 +28,7 @@
  * SUCH DAMAGE.
  */
 
+#include <Library/IoLib.h>
 #include <Library/LKEnvLib.h>
 
 #include <Chipset/smem.h>

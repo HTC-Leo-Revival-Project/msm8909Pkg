@@ -1,0 +1,2 @@
+URL:    https://source.codeaurora.org/quic/la/kernel/lk
+BRANCH: LA.BF.1.1.2-03510-8x10.0

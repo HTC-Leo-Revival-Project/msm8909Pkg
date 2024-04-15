@@ -266,6 +266,7 @@ VOID PlatformRegisterOptionsAndKeys(VOID)
   INTN          ShellOption;
   INTN          SplashOption;
   INTN          TetrisOption;
+  INTN          UsbOption;
   EFI_INPUT_KEY VolUpBtn;
   EFI_STATUS    Status;
 
@@ -287,6 +288,11 @@ VOID PlatformRegisterOptionsAndKeys(VOID)
   TetrisOption = PlatformRegisterFvBootOption(
       &gTetrisAppGuid, TETRIS_APP_TITLE, LOAD_OPTION_ACTIVE);
   ASSERT(TetrisOption != -1);
+  
+  UsbOption = PlatformRegisterFvBootOption(
+      &gUsbTestAppGuid, USB_APP_TITLE, LOAD_OPTION_ACTIVE);
+  ASSERT(TetrisOption != -1);
+
 }
 
 STATIC

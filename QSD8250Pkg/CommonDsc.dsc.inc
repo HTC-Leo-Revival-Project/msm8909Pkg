@@ -179,11 +179,17 @@
   HtcLeoVibrationLib|QSD8250Pkg/GPLLibrary/HtcLeoVibrationLib/HtcLeoVibrationLib.inf
 
   # SoC Drivers libraries
+  BoardLib|QSD8250Pkg/Drivers/BoardDxe/BoardImplLib.inf
   StrLib|QSD8250Pkg/Library/StrLib/StrLib.inf
   PTableLib|QSD8250Pkg/Library/PTableLib/PTableLib.inf
   SmemLib|QSD8250Pkg/Drivers/SmemDxe/SmemImplLib.inf
   KeypadDeviceHelperLib|QSD8250Pkg/Library/KeypadDeviceHelperLib/KeypadDeviceHelperLib.inf
   KeypadDeviceImplLib|QSD8250Pkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
+  QcomUsbPhyLib|QSD8250Pkg/Library/QcomUsbPhyLib/QcomUsbPhyLib.inf
+  QcomPlatformUsbLib|QSD8250Pkg/Library/QcomPlatformUsbLib/QcomPlatformUsbLib.inf
+  QcomTargetBoardLib|QSD8250Pkg/Library/QcomTargetBoardLib/QcomTargetBoardLib.inf
+  MallocLib|QSD8250Pkg/Library/MallocLib/MallocLib.inf
+  LcmLib|QSD8250Pkg/Library/LcmLib/LcmLib.inf
 
 [LibraryClasses.common.SEC]
   ArmGicArchLib|ArmPkg/Library/ArmGicArchSecLib/ArmGicArchSecLib.inf
@@ -521,6 +527,7 @@
   MdeModulePkg/Universal/StatusCodeHandler/RuntimeDxe/StatusCodeHandlerRuntimeDxe.inf
 
   # SoC Drivers
+  QSD8250Pkg/Drivers/BoardDxe/BoardDxe.inf
   QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
   QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
   QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
@@ -530,6 +537,8 @@
   QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf
   QSD8250Pkg/GPLDrivers/I2CDxe/I2CDxe.inf
   QSD8250Pkg/Drivers/MicroPDxe/MicroPDxe.inf
+  QSD8250Pkg/Drivers/UsbDxe/UsbDxe.inf
+  QSD8250Pkg/Application/UsbTestApp/UsbTestApp.inf
 
   #
   # Virtual Keyboard
