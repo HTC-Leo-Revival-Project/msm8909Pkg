@@ -43,16 +43,22 @@ romhdr:
 .code 32
 .text
 paint_fb:
-	LDR R0, =0xAA290008     @ Load the memory address to read from into R0
-   	LDR R1, [R0]            @ Load the value at the memory address into R1
+	ldr r0, =0xAA290008     @ Load the memory address to read from into R0
+   	ldr r1, [R0]            @ Load the value at the memory address into R1
 
-   	MOV R2, #0x07E0         @ Load the fill value into R2
-   	MOV R3, #0x00C00000     @ Load the fill length into R3
+   	ldr r2, =0x07E0         @ Load the fill value into R2
+   	ldr r3, FbSize     	@ Load the fill length into R3
 
 fill_loop:
-   	STR R2, [R1], #4        @ Store the fill value to memory address pointed by R1, and increment R1 by 4 (assuming each memory location is 4 bytes)
-   	SUBS R3, R3, #4         @ Subtract 4 from R3 to track the remaining fill length
-   	BNE fill_loop           @ Branch back to fill_loop if R3 is not zero
+   	str r2, [r1], #4        @ Store the fill value to memory address pointed by R1, and increment R1 by 4 (assuming each memory location is 4 bytes)
+   	subs r3, r3, #4         @ Subtract 4 from R3 to track the remaining fill length
+   	bne fill_loop           @ Branch back to fill_loop if R3 is not zero
+
+FbBase:
+	.word 0x02A00000
+
+FbSize:
+	.word 0x00C00000
 
 .ltorg
 
