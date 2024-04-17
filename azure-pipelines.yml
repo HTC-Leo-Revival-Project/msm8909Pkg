@@ -75,3 +75,9 @@ steps:
   inputs: 
     pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Tools/bootpayload_schubert.bin
     artifactName: Htc Schubert UEFI payload
+
+- task: PusblishBuildArtifacts@1
+  displayName: 'Publish Htc Shubert UEFI FD'
+  inputs:
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/workspace/Build/HtcSchubert/DEBUG_GCC/FV/QSD8250_UEFI.fd
+    artifactName: Htc Schubert UEFI FD
