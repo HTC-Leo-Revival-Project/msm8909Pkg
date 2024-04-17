@@ -152,7 +152,13 @@ PrePiMain (
   ArchInitialize ();
 
   // Reconfigure the framebuffer based on PCD
-  ReconfigFb();
+  if(FixedPcdGetBool(PcdMipiFrameBufferReconfig)) {
+    ReconfigFb();
+  }
+  else {
+    // Just clear screen to black for edk2 logs to be visible
+    PaintScreen(0);
+  }
 
   // Enable the counter (code from PrimeG2Pkg)
   EnableCounter();

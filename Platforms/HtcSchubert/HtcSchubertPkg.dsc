@@ -39,3 +39,6 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
 
   gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2E744000
+  # Disable reconfig for now
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferReconfig|1
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|16
