@@ -38,4 +38,4 @@
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
 
-  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2E744000
