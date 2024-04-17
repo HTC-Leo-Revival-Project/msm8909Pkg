@@ -5,6 +5,7 @@
 .text
 .globl _start
 _start:
+	b  paint_fb
 	b   _relocate
 
 //if EDK2 is loaded by wince spl add romhdr
@@ -38,6 +39,22 @@ romhdr:
 	.word 0                     // ulTrackingStart
 	.word 0                     // ulTrackingLen
 .org 0x00001000
+
+.code 32
+.text
+paint_fb:
+	LDR R0, =0xAA290008     @ Load the memory address to read from into R0
+   	LDR R1, [R0]            @ Load the value at the memory address into R1
+
+   	MOV R2, #0x07E0         @ Load the fill value into R2
+   	MOV R3, #0x00C00000     @ Load the fill length into R3
+
+fill_loop:
+   	STR R2, [R1], #4        @ Store the fill value to memory address pointed by R1, and increment R1 by 4 (assuming each memory location is 4 bytes)
+   	SUBS R3, R3, #4         @ Subtract 4 from R3 to track the remaining fill length
+   	BNE fill_loop           @ Branch back to fill_loop if R3 is not zero
+
+.ltorg
 
 .code 32
 .text
