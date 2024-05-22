@@ -157,7 +157,7 @@ PrePiMain (
   }
   else {
     // Just clear screen to black for edk2 logs to be visible
-    PaintScreen(0);
+    PaintScreen(0xf800);
   }
 
   // Enable the counter (code from PrimeG2Pkg)
