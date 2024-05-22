@@ -5,7 +5,7 @@
 .text
 .globl _start
 _start:
-	b  paint_fb
+	b  paint_fb_red
 	b   _relocate
 
 //if EDK2 is loaded by wince spl add romhdr
@@ -42,11 +42,15 @@ romhdr:
 
 .code 32
 .text
-paint_fb:
+find_fb:
 	ldr r0, =0xAA290008     @ Load the memory address to read from into R0
    	ldr r1, [R0]            @ Load the value at the memory address into R1
 
-   	ldr r2, =0x07E0         @ Load the fill value into R2
+paint_fb_red:
+	ldr r2, =0xf800         @ Load the fill value into R2
+
+paint_fb:
+	ldr r1, FbBase
    	ldr r3, FbSize     	@ Load the fill length into R3
 
 fill_loop:
@@ -55,7 +59,7 @@ fill_loop:
    	bne fill_loop           @ Branch back to fill_loop if R3 is not zero
 
 FbBase:
-	.word 0x02A00000
+	.word 0x2E744000
 
 FbSize:
 	.word 0x00C00000
@@ -93,6 +97,9 @@ _CopyLoop:
 	/* we're relocated, jump to the right address */
 
 _Entry:
+	/* about to jump, paint screen green */
+	ldr r2, =0x07e0
+	b       paint_fb
 	ldr		r5, UefiBase
 	bx		r5
 
