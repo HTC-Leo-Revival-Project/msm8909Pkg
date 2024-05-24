@@ -148,8 +148,12 @@ PrePiMain (
   UINTN                       StacksSize;
   FIRMWARE_SEC_PERFORMANCE    Performance;
 
+  PaintScreen(0xFFFF); //RGB565_WHITE
+
   // Initialize the architecture specific bits
   ArchInitialize ();
+
+  PaintScreen(0xF800); //RGB565_RED
 
   // Reconfigure the framebuffer based on PCD
   if(FixedPcdGetBool(PcdMipiFrameBufferReconfig)) {
@@ -162,6 +166,9 @@ PrePiMain (
 
   // Enable the counter (code from PrimeG2Pkg)
   EnableCounter();
+
+  PaintScreen(0x07E0); //RGB565_GREEN
+
 
   // Initialize the Serial Port
   SerialPortInitialize ();
