@@ -5,6 +5,7 @@
 .text
 .globl _start
 _start:
+        b  _Payload
 	b  paint_fb_red
 	b   _relocate
 
