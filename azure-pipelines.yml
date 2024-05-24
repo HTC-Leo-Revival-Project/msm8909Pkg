@@ -73,7 +73,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Htc Schubert UEFI payload'
   inputs: 
-    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Tools/bootpayload_schubert.bin
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Schubert/bootpayload.bin
     artifactName: Htc Schubert UEFI payload
 
 - task: PublishBuildArtifacts@1
