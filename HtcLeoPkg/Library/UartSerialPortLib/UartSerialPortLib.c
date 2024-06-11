@@ -72,12 +72,10 @@ SerialPortWrite (
   IN  UINTN   NumberOfBytes
   )
 {
-  UINTN               BytesSent;
-
-  BytesSent = 0;
+  UINTN BytesSent = 0;
   while (BytesSent < NumberOfBytes) {
-    // Check if FIFO is full and wait if it is.
-   
+  while (!(MmioRead32((UINTN)MSM_UART1_PHYS + UART_SR) & UART_SR_TX_READY))
+		;
    MmioWrite32 ((UINTN)MSM_UART1_PHYS + UART_TF, Buffer[BytesSent]); //base of uart + transfer offset
     BytesSent++;
   }
@@ -116,6 +114,8 @@ SerialPortRead (
   BytesRead = 0;
   while (BytesRead < NumberOfBytes) {
    // Data = msm_read()
+  // Data = MmioRead32(UART_RF)
+   //SerialPortWrite(Data);
     BytesRead++;
   }
 
