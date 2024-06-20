@@ -11,9 +11,9 @@ void
 FillMenu()
 {
   UINTN Index = 0;
-  MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
+  MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell};
   MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
-  MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
+  MenuOptions[Index++] = (MenuEntry){Index, L"Boot Default", TRUE, &BootDefault},
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
