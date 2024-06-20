@@ -234,7 +234,7 @@
   HtcLeoPkg/Drivers/SmemDxe/SmemDxe.inf
   HtcLeoPkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
   HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
-  #HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
+  HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
   HtcLeoPkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
   HtcLeoPkg/Drivers/KeypadDxe/KeypadDxe.inf
   HtcLeoPkg/GPLDrivers/I2CDxe/I2CDxe.inf

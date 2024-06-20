@@ -125,7 +125,7 @@ APRIORI DXE {
   INF HtcLeoPkg/Drivers/SmemDxe/SmemDxe.inf
   INF HtcLeoPkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
   INF HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
-  #INF HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
+  INF HtcLeoPkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
   INF HtcLeoPkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
   INF HtcLeoPkg/Drivers/KeypadDxe/KeypadDxe.inf
   INF HtcLeoPkg/GPLDrivers/I2CDxe/I2CDxe.inf
