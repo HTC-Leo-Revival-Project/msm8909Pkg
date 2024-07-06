@@ -1,0 +1,38 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = UsbDxe
+  FILE_GUID                      = b20933aa-0a9f-453d-90f1-c266f8b95f4e
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UsbEntryPoint
+
+[Sources.common]
+  # hsusb.c
+  UsbDxe.c
+
+[LibraryClasses]
+  DebugLib
+  IoLib
+  MemoryAllocationLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  TimerLib
+  CacheMaintenanceLib
+  UefiLib
+
+[Protocols]
+  gHardwareInterruptProtocolGuid
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  HtcLeoPkg/HtcLeoPkg.dec
+
+[Pcd]
+  #gQcomTokenSpaceGuid.PcdUsbHsBase
+  #gQcomTokenSpaceGuid.PcdUsbHsIrq
+
+[Depex]
+  TRUE
