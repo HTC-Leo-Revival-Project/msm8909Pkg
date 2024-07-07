@@ -12,14 +12,19 @@
 
 #include <Chipset/irqs.h>
 #include <Chipset/iomap.h>
+#include <Chipset/clock.h>
 
 #include <Protocol/UsbDevice.h>
 #include <Protocol/HardwareInterrupt.h>
+#include <Protocol/EmbeddedClock.h>
 
 #include "UsbDxe.h"
 
 // Cached copy of the Hardware Interrupt protocol instance
 EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
+
+// Cached copy of the Embedded Clock protocol instance
+EMBEDDED_CLOCK_PROTOCOL  *gClock = NULL;
 
 // Cached interrupt vector
 volatile UINTN  gVector;
@@ -397,12 +402,52 @@ UsbDeviceSend (
   IN CONST VOID   *Buffer
 )
 {
+  DEBUG((EFI_D_ERROR, "UsbDeviceSend()\n"));
     return EFI_SUCCESS;/*WriteEndpointBuffer (
           EndpointIndex,
           MAX_PACKET_SIZE_BULK,
           Size,
           Buffer
           );*/
+}
+
+static inline void OtgXceivReset()
+{
+	gClock->ClkDisable(USB_HS_CLK);
+	gClock->ClkDisable(USB_HS_PCLK);
+	MicroSecondDelay(20);
+
+	gClock->ClkEnable(USB_HS_PCLK);
+	gClock->ClkEnable(USB_HS_CLK);
+	MicroSecondDelay(20);
+}
+
+VOID
+UdcReset() 
+{
+	OtgXceivReset();
+	//ulpi_set_power(true);
+	MicroSecondDelay(100);
+	OtgXceivReset();
+	
+	/* disable usb interrupts and otg */
+	MmioWrite32(USB_OTGSC, 0);
+	MicroSecondDelay(5);
+	
+	/* select ULPI phy */
+	MmioWrite32(USB_PORTSC, 0x81000000);
+	
+	/* RESET */
+	MmioWrite32(USB_USBCMD, 0x80002);
+	MicroSecondDelay(20);
+
+	MmioWrite32(USB_ENDPOINTLISTADDR, (unsigned) mEndpointDescriptors);
+	
+	/* select DEVICE mode */
+  MmioWrite32(USB_USBMODE, 0x02);
+
+  MmioWrite32(USB_ENDPTFLUSH, 0xffffffff);
+  MicroSecondDelay(20);
 }
 
 /*
@@ -445,30 +490,13 @@ UsbDeviceStart (
   ASSERT (RxCallback != NULL);
   ASSERT (TxCallback != NULL);
 
+  // Find the clock controller protocol.  ASSERT if not found.
+  Status = gBS->LocateProtocol (&gEmbeddedClockProtocolGuid, NULL, (VOID **)&gClock);
+  ASSERT_EFI_ERROR (Status);
+
   // ------------------- UDC_INIT ------------------
 
-  // Init usb clock
-  // pcom_clock_enable(PCOM_USB_HS_CLK);
-
-  // Reset phy
-  pcom_usb_reset_phy();
-  DEBUG ((EFI_D_INFO, "USB: Software reset done\n"));
-
-  /* select ULPI phy */
-  MmioWrite32(USB_PORTSC, 0x81000000);
-  
-  /* RESET */
-  MmioWrite32(USB_USBCMD, 0x00080002);
-  MicroSecondDelay(20);
-
-  /* set endpoint list addr */
-  MmioWrite32(USB_ENDPOINTLISTADDR, (unsigned) mEndpointDescriptors);
-
-  /* select DEVICE mode */
-  MmioWrite32(USB_USBMODE, 0x02);
-
-  MmioWrite32(USB_ENDPTFLUSH, 0xffffffff);
-  MicroSecondDelay(20);
+  UdcReset();
 
   if (IsUsbConnected == 0) {
     DEBUG ((EFI_D_ERROR, "USB: Session not valid.\n"));
