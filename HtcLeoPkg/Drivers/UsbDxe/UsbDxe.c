@@ -305,10 +305,13 @@ UdcInterruptHandler (
   n &= (STS_SLI | STS_URI | STS_PCI | STS_UI | STS_UEI);
 
   if (n == 0) {
+    DEBUG((EFI_D_ERROR, "Ouch, this shouldn't be like that....\n"));
     goto end;
   }
 
   if (n & STS_URI) {
+    DEBUG((EFI_D_ERROR, "1\n"));
+
     MmioWrite32(USB_ENDPTCOMPLETE, MmioRead32(USB_ENDPTCOMPLETE));
     MmioWrite32(USB_ENDPTSETUPSTAT, MmioRead32(USB_ENDPTSETUPSTAT));
     MmioWrite32(USB_ENDPTFLUSH, 0xffffffff);
@@ -336,6 +339,7 @@ UdcInterruptHandler (
     }*/
   }
   if ((n & STS_UI) || (n & STS_UEI)) {
+    DEBUG((EFI_D_ERROR, "2\n"));
     n = MmioRead32(USB_ENDPTSETUPSTAT);
     if (n & EPT_RX(0)) {
 			//handle_setup(ep0out);//0
@@ -352,10 +356,12 @@ UdcInterruptHandler (
 
     n = MmioRead32(USB_ENDPTCOMPLETE);
     if(n != 0) {
+      DEBUG((EFI_D_ERROR, "3\n"));
       MmioWrite32(USB_ENDPTCOMPLETE, n);
     }
 
     StatusAcknowledge();
+    DEBUG((EFI_D_ERROR, "4\n"));
   }
   end:
   DEBUG((EFI_D_ERROR, "USB INTERRUPT END\n"));
