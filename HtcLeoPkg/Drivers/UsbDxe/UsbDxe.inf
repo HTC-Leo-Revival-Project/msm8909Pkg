@@ -4,7 +4,7 @@
   FILE_GUID                      = b20933aa-0a9f-453d-90f1-c266f8b95f4e
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = UsbEntryPoint
+  ENTRY_POINT                    = UsbDxeInitialize
 
 [Sources.common]
   # hsusb.c
@@ -24,6 +24,8 @@
 
 [Protocols]
   gHardwareInterruptProtocolGuid
+  gEfiDriverBindingProtocolGuid
+  gUsbDeviceProtocolGuid
 
 [Packages]
   MdePkg/MdePkg.dec

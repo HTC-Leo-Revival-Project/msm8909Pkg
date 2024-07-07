@@ -11,6 +11,7 @@
 #include <Library/pcom_clients.h>
 
 #include <Chipset/irqs.h>
+#include <Chipset/iomap.h>
 
 #include <Protocol/UsbDevice.h>
 #include <Protocol/HardwareInterrupt.h>
@@ -40,7 +41,7 @@ STATIC USB_DEVICE_TX_CALLBACK   mDataSentCallback;
 STATIC UINTN EndpointBit; // Endpoint bit
 STATIC UINTN EndpointIn;  // Endpoint direction; in = 1
 STATIC UINT8 EndpointIndex = 1;
-STATIC UsbHighspeed; //HS = 1
+STATIC UINTN UsbHighspeed; //HS = 1
 
 //https://relay.vvl.me:4443/acrn-edk2/ovmf-acrn-v1.2/source/EmbeddedPkg/Drivers/Isp1761UsbDxe/Isp1761UsbDxe.c
 
@@ -64,7 +65,7 @@ StatusAcknowledge ()
 // If *Size is less than the number of bytes in the FIFO, return EFI_BUFFER_TOO_SMALL
 //
 // Update *Size with the number of bytes of data in the FIFO.
-STATIC
+/*STATIC
 EFI_STATUS
 ReadEndpointBuffer (
   IN      UINT8   Endpoint,
@@ -72,7 +73,8 @@ ReadEndpointBuffer (
   IN OUT  VOID   *Buffer
   )
 {
-}
+  return EFI_SUCCESS;
+}*/
 
 /*
   Write an endpoint buffer. Parameters:
@@ -84,6 +86,7 @@ ReadEndpointBuffer (
   Assumes MaxPacketSize is a multiple of 4.
   (It seems that all valid values for MaxPacketSize _are_ multiples of 4)
 */
+/*
 STATIC
 EFI_STATUS
 WriteEndpointBuffer (
@@ -93,8 +96,8 @@ WriteEndpointBuffer (
   IN CONST VOID   *Buffer
   )
 {
-
-}
+  return EFI_SUCCESS;
+}*/
 
 STATIC
 EFI_STATUS
@@ -292,7 +295,7 @@ UdcInterruptHandler (
 )
 {
   UINTN n, speed;
-  //USB_DEVICE_REQUEST Request;
+  USB_DEVICE_REQUEST Request;
 
   n = MmioRead32(USB_USBSTS);
   MmioWrite32(USB_USBSTS, n);
@@ -300,7 +303,7 @@ UdcInterruptHandler (
   n &= (STS_SLI | STS_URI | STS_PCI | STS_UI | STS_UEI);
 
   if (n == 0) {
-    return 0;
+    goto end;
   }
 
   if (n & STS_URI) {
@@ -309,7 +312,7 @@ UdcInterruptHandler (
     MmioWrite32(USB_ENDPTFLUSH, 0xffffffff);
     MmioWrite32(USB_ENDPTCTRL(1), 0);
 
-    DEBUG((EFI_D_INFO), "Reset\n");
+    DEBUG((EFI_D_INFO, "Reset\n"));
     StatusAcknowledge();
   }
   /*
@@ -320,7 +323,7 @@ UdcInterruptHandler (
   */
   if (n & STS_PCI) {
     speed = (MmioRead32(USB_PORTSC) >> 26) & 3;
-    if (speed = 2) {
+    if (speed == 2) {
       UsbHighspeed = 1;
     }
     else {
@@ -342,7 +345,7 @@ UdcInterruptHandler (
       UINT16    Length;
       */
 
-      //HandleDeviceRequest(&Request);
+      HandleDeviceRequest(&Request);
 		}
 
     n = MmioRead32(USB_ENDPTCOMPLETE);
@@ -352,6 +355,7 @@ UdcInterruptHandler (
 
     StatusAcknowledge();
   }
+  end:
 }
 
 /*
@@ -373,12 +377,12 @@ UsbDeviceSend (
   IN CONST VOID   *Buffer
 )
 {
-    return WriteEndpointBuffer (
+    return EFI_SUCCESS;/*WriteEndpointBuffer (
           EndpointIndex,
           MAX_PACKET_SIZE_BULK,
           Size,
           Buffer
-          );
+          );*/
 }
 
 /*
@@ -413,6 +417,9 @@ UsbDeviceStart (
   IN USB_DEVICE_TX_CALLBACK  TxCallback
 )
 {
+  UINT8                    *Ptr;
+  EFI_STATUS                Status;
+
   ASSERT (DeviceDescriptor != NULL);
   ASSERT (Descriptors[0] != NULL);
   ASSERT (RxCallback != NULL);
@@ -509,14 +516,16 @@ UsbDxeInitialize (
   )
 {
   EFI_STATUS  Status = EFI_SUCCESS;
+  EFI_HANDLE  Handle = NULL;
 
   // Install the USB Device Protocol onto a new handle
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &Handle,
                   &gUsbDeviceProtocolGuid,      
-                  &gUsb,
+                  &mUsbDevice,
                   NULL
                   );
+
   ASSERT_EFI_ERROR(Status);
 
   return Status;
