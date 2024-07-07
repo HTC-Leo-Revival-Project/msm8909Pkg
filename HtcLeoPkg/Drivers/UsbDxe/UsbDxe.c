@@ -287,6 +287,10 @@ IsUsbConnected ()
     }
 }
 
+
+/* Saved for reference
+https://github.com/u-boot/u-boot/blob/master/drivers/usb/gadget/ci_udc.c#L840
+*/
 VOID
 EFIAPI
 UdcInterruptHandler (
@@ -310,34 +314,41 @@ UdcInterruptHandler (
   }
 
   if (n & STS_URI) {
-    DEBUG((EFI_D_ERROR, "1\n"));
+    DEBUG((EFI_D_ERROR, "Reset\n"));
 
     MmioWrite32(USB_ENDPTCOMPLETE, MmioRead32(USB_ENDPTCOMPLETE));
     MmioWrite32(USB_ENDPTSETUPSTAT, MmioRead32(USB_ENDPTSETUPSTAT));
     MmioWrite32(USB_ENDPTFLUSH, 0xffffffff);
     MmioWrite32(USB_ENDPTCTRL(1), 0);
 
-    DEBUG((EFI_D_INFO, "Reset\n"));
     StatusAcknowledge();
   }
-  /*
+
   if (n & STS_SLI) {
-		if (is_usb_connected())
-			set_charger_state(CHG_USB_HIGH);
+    DEBUG((EFI_D_ERROR, "Suspend\n"));
 	}
-  */
+
   if (n & STS_PCI) {
+    DEBUG((EFI_D_ERROR, "Portchange\n"));
     speed = (MmioRead32(USB_PORTSC) >> 26) & 3;
     if (speed == 2) {
       UsbHighspeed = 1;
+      DEBUG((EFI_D_ERROR, "Usb is HS\n"));
     }
     else {
       UsbHighspeed = 0;
+      DEBUG((EFI_D_ERROR, "Usb is not HS\n"));
     }
     /*if(IsUsbConnected()) {
       set_charger_state(usb_config_value ? CHG_USB_HIGH : CHG_USB_LOW);
     }*/
   }
+
+  if (n & STS_UEI) {
+    DEBUG((EFI_D_ERROR, "UEI\n"));
+	}
+
+  // TODO: Make this code actually usefull
   if ((n & STS_UI) || (n & STS_UEI)) {
     DEBUG((EFI_D_ERROR, "2\n"));
     n = MmioRead32(USB_ENDPTSETUPSTAT);
