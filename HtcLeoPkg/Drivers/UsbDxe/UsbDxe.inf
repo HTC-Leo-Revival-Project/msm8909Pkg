@@ -19,6 +19,8 @@
   TimerLib
   CacheMaintenanceLib
   UefiLib
+  MsmPcomLib
+  MsmPcomClientLib
 
 [Protocols]
   gHardwareInterruptProtocolGuid
@@ -35,4 +37,4 @@
   #gQcomTokenSpaceGuid.PcdUsbHsIrq
 
 [Depex]
-  TRUE
+  gHardwareInterruptProtocolGuid
