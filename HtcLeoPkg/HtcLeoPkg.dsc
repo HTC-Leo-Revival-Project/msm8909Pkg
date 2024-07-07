@@ -239,6 +239,8 @@
   HtcLeoPkg/Drivers/MicroPDxe/MicroPDxe.inf
   HtcLeoPkg/Drivers/UsbDxe/UsbDxe.inf
 
+  HtcLeoPkg/Drivers/ArmFastBootDxe/ArmFastBootDxe.inf
+
   #
   # Virtual Keyboard
   #

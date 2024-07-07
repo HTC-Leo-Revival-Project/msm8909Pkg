@@ -297,6 +297,8 @@ UdcInterruptHandler (
   UINTN n, speed;
   USB_DEVICE_REQUEST Request;
 
+  DEBUG((EFI_D_ERROR, "USB INTERRUPT\n"));
+
   n = MmioRead32(USB_USBSTS);
   MmioWrite32(USB_USBSTS, n);
 
@@ -344,7 +346,7 @@ UdcInterruptHandler (
       UINT16    Index;
       UINT16    Length;
       */
-
+      DEBUG((EFI_D_ERROR, "READ DESCRIPTOR!!!!"));
       HandleDeviceRequest(&Request);
 		}
 
@@ -356,6 +358,7 @@ UdcInterruptHandler (
     StatusAcknowledge();
   }
   end:
+  DEBUG((EFI_D_ERROR, "USB INTERRUPT END\n"));
 }
 
 /*

@@ -202,7 +202,8 @@ void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 
 void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
-  StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
+  //StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
+  StartApp(ImageHandle, SystemTable, FASTBOOT_APP_TITLE);
 }
 
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
