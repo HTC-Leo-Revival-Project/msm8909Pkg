@@ -11,9 +11,10 @@ void
 FillMenu()
 {
   UINTN Index = 0;
-  MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
   MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
+  MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Fastboot App", TRUE, &StartFastbootApp};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
@@ -202,7 +203,11 @@ void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 
 void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
-  //StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
+  StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
+}
+
+void StartFastbootApp(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
   StartApp(ImageHandle, SystemTable, FASTBOOT_APP_TITLE);
 }
 
@@ -214,7 +219,8 @@ void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   
   Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
   ASSERT_EFI_ERROR(Status);
-  MenuOptions[Index++] = (MenuEntry){Index, L"Reboot to CLK", TRUE, &NullFunction};
+  // Disabled until the code to actually handle it is added
+  //MenuOptions[Index++] = (MenuEntry){Index, L"Reboot to CLK", TRUE, &NullFunction};
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot", TRUE, &ResetCold};
   MenuOptions[Index++] = (MenuEntry){Index, L"Shutdown", TRUE, &htcleo_shutdown};
   // Fill disabled options
