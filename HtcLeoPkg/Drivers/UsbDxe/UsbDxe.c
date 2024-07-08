@@ -326,6 +326,10 @@ UdcInterruptHandler (
     MmioWrite32(USB_ENDPTFLUSH, 0xffffffff);
     MmioWrite32(USB_ENDPTCTRL(1), 0);
 
+    /* TODO: */
+    /* Notify gadget of offline */
+    /* error out any pending reqs */
+
     StatusAcknowledge();
   }
 
