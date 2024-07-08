@@ -271,7 +271,7 @@
   #
   # Fastboot
   #
-  EmbeddedPkg/Application/AndroidFastboot/AndroidFastbootApp.inf
+  HtcLeoPkg/Application/AndroidFastboot/AndroidFastbootApp.inf
 
   # Tetris
   HtcLeoPkg/Application/TetrisApp/tetris.inf
