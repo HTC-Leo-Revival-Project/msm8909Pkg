@@ -847,7 +847,6 @@ int udc_start(void)
 
 	// Find the interrupt controller protocol.  ASSERT if not found.
   	gBS->LocateProtocol (&gHardwareInterruptProtocolGuid, NULL, (VOID **)&gInterrupt);
-  	//ASSERT_EFI_ERROR (Status);
 
 	if (!the_device) {
 		dprintf(CRITICAL, "udc cannot start before init\n");
@@ -888,10 +887,6 @@ int udc_start(void)
 
 	udc_descriptor_register(desc);
 
-	/*register_int_handler(INT_USB_HS, udc_interrupt, (void *)0);
-	writel(STS_URI | STS_SLI | STS_UI | STS_PCI, USB_USBINTR);
-	unmask_interrupt(INT_USB_HS);*/
-
 	writel(STS_URI | STS_SLI | STS_UI | STS_PCI, USB_USBINTR);
 
 	gInterrupt->RegisterInterruptSource(gInterrupt, INT_USB_HS, UdcInterrupt);
@@ -917,7 +912,6 @@ int udc_stop(void)
 	/* Mask the interrupts. */
 	writel(0, USB_USBINTR);
 	gInterrupt->DisableInterruptSource(gInterrupt, INT_USB_HS);
-  	//ASSERT_EFI_ERROR (Status);
 
 	/* Perform any target specific clean up. */
 	if (the_device->t_usb_if->usb_stop)

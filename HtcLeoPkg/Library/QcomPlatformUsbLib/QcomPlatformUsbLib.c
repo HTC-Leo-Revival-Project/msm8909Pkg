@@ -1,9 +1,7 @@
 #include <Base.h>
 #include <Library/LKEnvLib.h>
-//#include <Library/QcomBoardLib.h>
 #include <Library/QcomPlatformUsbLib.h>
 #include <Library/pcom_clients.h>
-//#include <Target/board.h>
 
 /* Do target specific usb initialization */
 STATIC VOID target_usb_init(target_usb_iface_t *iface)
