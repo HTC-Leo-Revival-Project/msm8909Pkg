@@ -18,13 +18,13 @@
   MemoryAllocationLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
-  # MallocLib
-  # LcmLib
+  MallocLib
+  LcmLib
   # StrLib
   # BoardLib
   # InterruptsLib
   # PlatformIdLib TBD
-  # QcomPlatformUsbLib
+  QcomPlatformUsbLib
   TimerLib
   CacheMaintenanceLib
   UefiLib

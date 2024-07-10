@@ -31,10 +31,9 @@
  */
 
 #include <Library/LKEnvLib.h>
-//#include <Library/MallocLib.h>
-//#include <Library/InterruptsLib.h>
+#include <Library/MallocLib.h>
 #include <Library/TimerLib.h>
-//#include <Library/LcmLib.h>
+#include <Library/LcmLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <udc.h>
 #include <hsusb.h>
@@ -63,153 +62,6 @@ struct udc_descriptor {
 	unsigned short len;	/* total length */
 	unsigned char data[0];
 };
-
-/* MallocLib HACK */
-#define CPOOL_HEAD_SIGNATURE   SIGNATURE_32('C','p','h','d')
-
-typedef enum {
-  ALLOCTYPE_POOL,
-  ALLOCTYPE_ALIGNED_PAGES,
-} ALLOCATION_TYPE;
-
-typedef struct {
-  UINT32                Signature;
-  UINTN                 Size;
-  UINTN                 Boundary;
-  ALLOCATION_TYPE       Type;
-
-  UINT8 Data[0];
-} CPOOL_HEAD;
-
-VOID *memalign(UINTN Boundary, UINTN Size)
-{
-  VOID         *BaseMemory;
-  CPOOL_HEAD   *Head;
-  VOID         *RetVal;
-  UINTN         HeadSize;
-  UINTN         NodeSize;
-  ALLOCATION_TYPE Type;
-
-  if (Size == 0) {
-    DEBUG((DEBUG_ERROR, "ERROR memalign: Zero Size\n"));
-    return NULL;
-  }
-
-  if (Boundary == 8)
-    Type = ALLOCTYPE_POOL;
-  else
-    Type = ALLOCTYPE_ALIGNED_PAGES;
-
-  HeadSize = ALIGN_VALUE(sizeof(CPOOL_HEAD), Boundary);
-  NodeSize = HeadSize + Size;
-
-  DEBUG((DEBUG_POOL, "memalign(%d): NodeSz: %d", Size, NodeSize));
-
-  if (Type == ALLOCTYPE_POOL)
-    BaseMemory = AllocatePool(NodeSize);
-  else if (Type == ALLOCTYPE_ALIGNED_PAGES)
-    BaseMemory = AllocateAlignedPages(EFI_SIZE_TO_PAGES(NodeSize), Boundary);
-  else
-    ASSERT(FALSE);
-  if (BaseMemory == NULL) {
-    RetVal  = NULL;
-    DEBUG((DEBUG_ERROR, "\nERROR memalign: alloc failed\n"));
-  }
-  else {
-    ASSERT(BaseMemory != NULL);
-
-    Head = BaseMemory + HeadSize - sizeof(CPOOL_HEAD);
-
-    // Fill out the pool header
-    Head->Signature = CPOOL_HEAD_SIGNATURE;
-    Head->Size      = Size;
-    Head->Boundary  = Boundary;
-    Head->Type      = Type;
-
-    // Return a pointer to the data
-    RetVal          = (VOID*) Head->Data;
-    DEBUG((DEBUG_POOL, " Head: %p, Returns %p\n", Head, RetVal));
-  }
-
-  return RetVal;
-}
-
-// hack
-VOID *malloc(UINTN Size)
-{
-  return memalign(8, Size);
-}
-
-VOID free(VOID *Ptr)
-{
-  CPOOL_HEAD   *Head;
-  UINTN        HeadSize;
-  UINTN        NodeSize;
-  VOID         *BaseMemory;
-
-  if (Ptr != NULL) {
-    Head = BASE_CR(Ptr, CPOOL_HEAD, Data);
-    ASSERT(Head != NULL);
-    DEBUG((DEBUG_POOL, "free(%p): Head: %p\n", Ptr, Head));
-
-    if (Head->Signature == CPOOL_HEAD_SIGNATURE) {
-      HeadSize = ALIGN_VALUE(sizeof(CPOOL_HEAD), Head->Boundary);
-      NodeSize = HeadSize + Head->Size;
-      BaseMemory = Ptr - HeadSize;
-
-      if (Head->Type == ALLOCTYPE_POOL)
-        FreePool (BaseMemory);
-      else if (Head->Type == ALLOCTYPE_ALIGNED_PAGES)
-        FreeAlignedPages (BaseMemory, EFI_SIZE_TO_PAGES(NodeSize));
-      else
-        ASSERT(FALSE);
-    }
-    else {
-      DEBUG((DEBUG_ERROR, "ERROR free(0x%p): Signature is 0x%8X, expected 0x%8X\n",
-             Ptr, Head->Signature, CPOOL_HEAD_SIGNATURE));
-    }
-  }
-  DEBUG((DEBUG_POOL, "free Done\n"));
-}
-
-/* LcmLib hack */
-STATIC VOID swap(UINTN *x, UINTN *y)
-{
-  UINTN temp;
-
-  temp = *x;
-  *x   = *y;
-  *y   = temp;
-}
-
-/* Function to calculate gcd of two positive numbers. */
-UINTN gcd(UINTN m, UINTN n)
-{
-  UINTN x;
-
-  if (m < n)
-    swap(&m, &n);
-
-  while (n != 0)
-  {
-    x = m % n;
-    m = n;
-    n = x;
-  }
-
-  return m;
-}
-
-/* Function to calculate lcm of two positive numbers. */
-UINTN lcm(UINTN m, UINTN n)
-{
-  UINTN lcm;
-
-  lcm = (m * n) / gcd(m, n);
-
-  return lcm;
-}
-/* hack end */
 
 struct udc_descriptor *udc_descriptor_alloc(unsigned type, unsigned num,
 					    unsigned len)

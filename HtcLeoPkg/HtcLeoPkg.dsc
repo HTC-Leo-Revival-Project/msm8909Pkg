@@ -91,6 +91,9 @@
   KeypadDeviceHelperLib|HtcLeoPkg/Library/KeypadDeviceHelperLib/KeypadDeviceHelperLib.inf
   KeypadDeviceImplLib|HtcLeoPkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
   DS2746Lib|HtcLeoPkg/Library/DS2746Lib/DS2746.inf
+  MallocLib|HtcLeoPkg/Library/MallocLib/MallocLib.inf
+  LcmLib|HtcLeoPkg/Library/LcmLib/LcmLib.inf
+  QcomPlatformUsbLib|HtcLeoPkg/Library/QcomPlatformUsbLib/QcomPlatformUsbLib.inf
 
 [LibraryClasses.common.SEC]
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf

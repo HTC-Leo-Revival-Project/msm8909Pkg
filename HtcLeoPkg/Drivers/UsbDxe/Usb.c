@@ -29,18 +29,15 @@
  */
 
 #include <Library/LKEnvLib.h>
-//#include <Library/MallocLib.h>
+#include <Library/MallocLib.h>
 //#include <Library/StrLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
 #include <udc.h>
 
-#include <Library/pcom_clients.h>
-
 #include <IndustryStandard/Usb.h>
 #include <Protocol/UsbDevice.h>
-//#include <Protocol/EFIDroidUsbDevice.h>
 
 #include <hsusb.h>
 #include "Usb.h"
@@ -290,27 +287,6 @@ STATIC VOID gadget_notify(struct udc_gadget *gadget, unsigned event)
     gBS->SignalEvent (mEventsAvailable);
   }
 }
-/*
-EFI_STATUS QcomPlatformUsbGetInterface(target_usb_iface_t *iface)
-{
-  iface->controller = L"ci";
-  iface->usb_init   = target_usb_init;
-  iface->clock_init = hsusb_clock_init;
-
-  return EFI_SUCCESS;
-}
-*/
-
-/* Do target specific usb initialization */
-STATIC VOID target_usb_init(target_usb_iface_t *iface)
-{
-  //msm_hsusb_init(&htcleo_hsusb_pdata);
-}
-
-STATIC VOID hsusb_clock_init(target_usb_iface_t *iface)
-{
-  pcom_enable_hsusb_clk();
-}
 
 STATIC EFI_STATUS usb_init(VOID)
 {
@@ -326,17 +302,10 @@ STATIC EFI_STATUS usb_init(VOID)
     return EFI_OUT_OF_RESOURCES;
   }
 
-  /*Status = LibQcomPlatformUsbGetInterface(mUdcDevice.t_usb_if);
+  Status = LibQcomPlatformUsbGetInterface(mUdcDevice.t_usb_if);
   if (EFI_ERROR(Status)) {
     goto fail_get_interface;
-  }*/
-  /*
-  iface->controller = L"ci";
-  iface->usb_init   = target_usb_init;
-  iface->clock_init = hsusb_clock_init;*/
-  mUdcDevice.t_usb_if->controller = L"ci";
-  mUdcDevice.t_usb_if->usb_init = target_usb_init;
-  mUdcDevice.t_usb_if->clock_init = hsusb_clock_init;
+  }
 
   if (!StrCmp(mUdcDevice.t_usb_if->controller, L"ci"))
   {
@@ -422,6 +391,7 @@ fail_iept_alloc:
 fail_ept_alloc:
 fail_udc_init:
 fail_unsupported_controller:
+fail_get_interface:
   FreePool (mUdcDevice.t_usb_if);
   return Status;
 }
