@@ -85,3 +85,10 @@
   # USB 
   gQcomTokenSpaceGuid.PcdUsbHsBase|0xA0800000|UINT32|0x0000a412
   gQcomTokenSpaceGuid.PcdUsbHsIrq|58|UINT32|0x0000a413
+
+  # Fastboot
+  #
+  # Device path of block device on which Fastboot will flash partitions
+  #
+  gQcomTokenSpaceGuid.PcdAndroidFastbootNvmDevicePath|""|VOID*|0x00000006
+  gQcomTokenSpaceGuid.PcdAndroidFastbootProductName|"HTC HD2"|VOID*|0x00000007

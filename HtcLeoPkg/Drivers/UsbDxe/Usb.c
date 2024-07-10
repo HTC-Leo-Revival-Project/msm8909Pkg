@@ -30,7 +30,6 @@
 
 #include <Library/LKEnvLib.h>
 #include <Library/MallocLib.h>
-//#include <Library/StrLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>

@@ -9,7 +9,7 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = ArmVExpressFastBootDxe
+  BASE_NAME                      = ArmFastBootDxe
   FILE_GUID                      = 4004e454-89a0-11e3-89aa-97ef9d942abc
   MODULE_TYPE                    = UEFI_DRIVER
   VERSION_STRING                 = 1.0
@@ -42,5 +42,5 @@
   HtcLeoPkg/HtcLeoPkg.dec
 
 [Pcd]
-  #gArmVExpressTokenSpaceGuid.PcdAndroidFastbootNvmDevicePath
-  #gArmVExpressTokenSpaceGuid.PcdAndroidFastbootProductName
+  gQcomTokenSpaceGuid.PcdAndroidFastbootNvmDevicePath
+  gQcomTokenSpaceGuid.PcdAndroidFastbootProductName

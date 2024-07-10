@@ -167,8 +167,7 @@ ArmFastbootPlatformInit (
   // that don't represent partitions on the flash device.
   //
 
-  //FlashDevicePath = ConvertTextToDevicePath ((CHAR16*)FixedPcdGetPtr (PcdAndroidFastbootNvmDevicePath));
-  FlashDevicePath = NULL; // HACK
+  FlashDevicePath = ConvertTextToDevicePath ((CHAR16*)FixedPcdGetPtr (PcdAndroidFastbootNvmDevicePath));
   //
   // Open the Disk IO protocol on the flash device - this will be used to read
   // partition names out of the GPT entries
@@ -440,8 +439,7 @@ ArmFastbootPlatformGetVar (
   )
 {
   if (AsciiStrCmp (Name, "product")) {
-    //AsciiStrCpyS (Value, 61, FixedPcdGetPtr (PcdAndroidFastbootProductName));
-    AsciiStrCpyS (Value, 61, "PLATFORM");// HACK
+    AsciiStrCpyS (Value, 61, FixedPcdGetPtr (PcdAndroidFastbootProductName));
   } else {
     *Value = '\0';
   }
