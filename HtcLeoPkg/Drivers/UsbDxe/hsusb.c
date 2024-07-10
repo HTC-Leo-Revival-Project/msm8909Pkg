@@ -48,7 +48,7 @@
 // Cached copy of the Hardware Interrupt protocol instance
 EFI_HARDWARE_INTERRUPT_PROTOCOL *gInterrupt = NULL;
 
-//#define DEBUG_USB
+#define DEBUG_USB
 
 #define MAX_TD_XFER_SIZE  (16 * 1024)
 #define INT_USB_HS PcdGet32(PcdUsbHsIrq)
