@@ -163,7 +163,7 @@ APRIORI DXE {
   #
   # Fastboot
   #
-  INF HtcLeoPkg/Application/AndroidFastboot/AndroidFastbootApp.inf
+  INF EmbeddedPkg/Application/AndroidFastboot/AndroidFastbootApp.inf
 
   #
   # FAT filesystem + GPT/MBR partitioning
