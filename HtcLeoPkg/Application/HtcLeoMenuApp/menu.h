@@ -7,6 +7,8 @@
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
 #include <Library/ArmLib.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Guid/FileInfo.h>
 
 #include <Library/HtcLeoPlatformResetLib.h>
 #include <Library/MemoryAllocationLib.h>
@@ -51,5 +53,7 @@ void NullFunction();
 void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+void DumpDmesg(void);
+EFI_STATUS ReadMemoryAndWriteToFile(EFI_PHYSICAL_ADDRESS MemoryAddress, UINTN Length, CHAR16 *FilePath);
 
 #endif

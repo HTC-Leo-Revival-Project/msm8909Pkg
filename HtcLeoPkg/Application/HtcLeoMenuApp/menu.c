@@ -14,6 +14,7 @@ FillMenu()
   MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
   MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
   MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
+  MenuOptions[Index++] = (MenuEntry){Index, L"Dump DMESG to sdcard", TRUE, &DumpDmesg},
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
@@ -204,6 +205,127 @@ void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
   StartApp(ImageHandle, SystemTable, TETRIS_APP_TITLE);
 }
+
+EFI_STATUS
+ReadMemoryAndWriteToFile(
+    EFI_PHYSICAL_ADDRESS MemoryAddress,
+    UINTN Length,
+    CHAR16 *FilePath
+)
+{
+    EFI_STATUS Status;
+    EFI_FILE_PROTOCOL *Root = NULL;
+    EFI_FILE_PROTOCOL *FileHandle = NULL;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SimpleFileSystem = NULL;
+    CHAR8 *Buffer = NULL;
+    CHAR16 *UnicodeBuffer = NULL;
+    UINTN UnicodeBufferSize;
+    UINTN Index;
+
+    // Allocate buffer to read the memory
+    Buffer = AllocatePool(Length);
+    if (Buffer == NULL) {
+        DEBUG((EFI_D_ERROR, "Failed to allocate buffer\n"));
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Copy memory to buffer
+    CopyMem(Buffer, (VOID *)(UINTN)MemoryAddress, Length);
+
+    // Allocate buffer for Unicode conversion
+    UnicodeBufferSize = Length * sizeof(CHAR16) + sizeof(CHAR16); // +1 for null terminator
+    UnicodeBuffer = AllocatePool(UnicodeBufferSize);
+    if (UnicodeBuffer == NULL) {
+        DEBUG((EFI_D_ERROR, "Failed to allocate Unicode buffer\n"));
+        FreePool(Buffer);
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Convert ASCII to Unicode
+    for (Index = 0; Index < Length; Index++) {
+        UnicodeBuffer[Index] = (CHAR16)Buffer[Index];
+    }
+    UnicodeBuffer[Length] = L'\0';
+
+    // Locate Simple File System Protocol
+    Status = gBS->LocateProtocol(
+        &gEfiSimpleFileSystemProtocolGuid,
+        NULL,
+        (VOID **)&SimpleFileSystem
+    );
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to locate Simple File System Protocol: %r\n", Status));
+        FreePool(Buffer);
+        FreePool(UnicodeBuffer);
+        return Status;
+    }
+
+    // Open file system volume
+    Status = SimpleFileSystem->OpenVolume(
+        SimpleFileSystem,
+        &Root
+    );
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to open volume: %r\n", Status));
+        FreePool(Buffer);
+        FreePool(UnicodeBuffer);
+        return Status;
+    }
+
+    // Open file using absolute path
+    Status = Root->Open(
+        Root,
+        &FileHandle,
+        FilePath,
+        EFI_FILE_MODE_CREATE | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_READ,
+        0
+    );
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to open file: %r\n", Status));
+        Root->Close(Root);
+        FreePool(Buffer);
+        FreePool(UnicodeBuffer);
+        return Status;
+    }
+
+    // Write to file
+    UINTN BufferSize = StrLen(UnicodeBuffer) * sizeof(CHAR16);
+    Status = FileHandle->Write(
+        FileHandle,
+        &BufferSize,
+        UnicodeBuffer
+    );
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to write to file: %r\n", Status));
+    }
+
+    // Close file handles
+    FileHandle->Close(FileHandle);
+    Root->Close(Root);
+
+    // Free allocated memory
+    FreePool(Buffer);
+    FreePool(UnicodeBuffer);
+
+    return Status;
+}
+
+void DumpDmesg(void)
+{
+    EFI_PHYSICAL_ADDRESS MemoryAddress = 0x2FFC0000; // Memory address provided
+    UINTN Length = 0x40000; // Length provided
+    CHAR16 *FilePath = L"\\dmesg.txt"; // Adjust the file path accordingly
+
+    DEBUG((EFI_D_ERROR, "Starting DumpDmesg\n"));
+    EFI_STATUS Status = ReadMemoryAndWriteToFile(MemoryAddress, Length, FilePath);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to write memory to file: %r\n", Status));
+    } else {
+        DEBUG((EFI_D_ERROR, "Memory written to %s successfully\n", FilePath));
+    }
+    DEBUG((EFI_D_ERROR, "DumpDmesg completed\n"));
+}
+
 
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
