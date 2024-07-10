@@ -81,3 +81,7 @@
   gQcomTokenSpaceGuid.PcdMsmSharedBase|0x00100000|UINT64|0x00000001
   gQcomTokenSpaceGuid.PcdMsmSharedSize|0x00100000|UINT64|0x00000002
   gQcomTokenSpaceGuid.PcdSmemTargetInfoAddress|0|UINT64|0x0000003
+
+  # USB 
+  gQcomTokenSpaceGuid.PcdUsbHsBase|0xA0800000|UINT32|0x0000a412
+  gQcomTokenSpaceGuid.PcdUsbHsIrq|58|UINT32|0x0000a413

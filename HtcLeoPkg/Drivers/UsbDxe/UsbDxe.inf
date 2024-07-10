@@ -4,25 +4,36 @@
   FILE_GUID                      = b20933aa-0a9f-453d-90f1-c266f8b95f4e
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = UsbDxeInitialize
+  ENTRY_POINT                    = UsbEntryPoint
 
 [Sources.common]
-  # hsusb.c
-  UsbDxe.c
+  hsusb.c
+  Usb.c
 
 [LibraryClasses]
   DebugLib
   IoLib
+  BaseMemoryLib
+  BaseLib
   MemoryAllocationLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
+  # MallocLib
+  # LcmLib
+  # StrLib
+  # BoardLib
+  # InterruptsLib
+  # PlatformIdLib TBD
+  # QcomPlatformUsbLib
   TimerLib
   CacheMaintenanceLib
   UefiLib
+  # QcomUsbPhyLib
   MsmPcomLib
   MsmPcomClientLib
 
 [Protocols]
+  # gEFIDroidUsbDeviceProtocolGuid
   gHardwareInterruptProtocolGuid
   gEfiDriverBindingProtocolGuid
   gUsbDeviceProtocolGuid
@@ -36,8 +47,8 @@
   HtcLeoPkg/HtcLeoPkg.dec
 
 [Pcd]
-  #gQcomTokenSpaceGuid.PcdUsbHsBase
-  #gQcomTokenSpaceGuid.PcdUsbHsIrq
+  gQcomTokenSpaceGuid.PcdUsbHsBase
+  gQcomTokenSpaceGuid.PcdUsbHsIrq
 
 [Depex]
   gHardwareInterruptProtocolGuid
