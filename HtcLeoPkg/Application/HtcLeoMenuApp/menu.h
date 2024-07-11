@@ -54,6 +54,6 @@ void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void DumpDmesg(void);
-EFI_STATUS ReadMemoryAndWriteToFile(EFI_PHYSICAL_ADDRESS MemoryAddress, UINTN Length, CHAR16 *FilePath);
+EFI_STATUS ReadMemoryAndWriteToFile(UINTN* MemoryAddress,UINTN Length, CHAR16 *FilePath);
 
 #endif
