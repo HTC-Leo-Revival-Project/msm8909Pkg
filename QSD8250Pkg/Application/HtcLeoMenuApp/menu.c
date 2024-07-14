@@ -15,6 +15,7 @@ FillMenu()
   MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
   MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
   MenuOptions[Index++] = (MenuEntry){Index, L"Dump DMESG to sdcard", TRUE, &DumpDmesg},
+  MenuOptions[Index++] = (MenuEntry){Index, L"Dump Memory to sdcard", TRUE, &DumpMemory2Sdcard},
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
@@ -283,6 +284,27 @@ void DumpDmesg(void)
         DEBUG((EFI_D_ERROR, "Memory written to %s successfully\n", FilePath));
     }
     DEBUG((EFI_D_ERROR, "DumpDmesg completed\n"));
+}
+
+void DumpMemory2Sdcard(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable){
+    CHAR16 *hexstring;
+    UINTN hexval;
+     
+    GetHexInput(&hexval, &hexstring,SystemTable);
+    UINTN filepath_length = StrLen(L"\\") + StrLen(hexstring) + StrLen(L".bin") + 1;
+    CHAR16 *FilePath = AllocatePool(filepath_length * sizeof(CHAR16));
+    if (FilePath == NULL) {
+        Print(L"Memory allocation failed\n");
+    }
+    UnicodeSPrint(FilePath, filepath_length * sizeof(CHAR16), L"\\%s.bin", hexstring);
+    DEBUG((EFI_D_ERROR, "Starting Memory Dump at 0x%x\n", hexval));
+    EFI_STATUS Status = ReadMemoryAndWriteToFile((UINTN*)hexval,0x500, FilePath);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to write memory to file: %r\n", Status));
+    } else {
+        DEBUG((EFI_D_ERROR, "Memory written to %s successfully\n", FilePath));
+    }
+    DEBUG((EFI_D_ERROR, "Memory Dump completed\n"));
 }
 
 

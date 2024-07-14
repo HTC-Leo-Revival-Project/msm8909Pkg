@@ -11,6 +11,7 @@
 
 [Sources]
   BootApp.c
+  HexInput.c
   menu.c
 
 [Packages]
