@@ -5,13 +5,15 @@ CHAR16 HexBuffer[HEX_LENGTH + 1] = L"00000000";
 CHAR16* GetHexInput(EFI_SYSTEM_TABLE *SystemTable, CHAR16* message)
 {
   CHAR16 HexChars[] = L"0123456789ABCDEF";
-  
   EFI_INPUT_KEY Key;
   UINTN Index = 0;
   UINTN HexCharIndex = 0;
   UINTN OldHexCharIndex[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   BOOLEAN InputComplete = FALSE;
-
+  CHAR16 EmptyHexBuffer[HEX_LENGTH + 1] = L"00000000";
+  for (int i = 0; i < HEX_LENGTH + 1; i++){
+    HexBuffer[i] = EmptyHexBuffer[i];
+  }
   // Clear the screen
   SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
 
