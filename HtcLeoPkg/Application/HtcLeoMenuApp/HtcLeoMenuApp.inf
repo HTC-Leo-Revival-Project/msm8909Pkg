@@ -12,6 +12,7 @@
 [Sources]
   BootApp.c
   HexInput.c
+  MemoryTools.c
   menu.c
 
 [Packages]
