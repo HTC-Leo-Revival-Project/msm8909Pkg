@@ -10,4 +10,7 @@ ImageResources/Bravo/*.bin
 ImageResources/*.img
 ImageResources/LEOIMG.nbh
 ImageResources/SCHUBERTIMG.nbh
+ImageResources/Schubert
+WpShim/*elf
+WpShim/*.bin
 workspace/Build/
