@@ -1,11 +1,11 @@
 #!/bin/bash
 # based on the instructions from edk2-platform
-rm -rf ImageResources/*.img ImageResources/Tools/*.bin ImageResources/Bravo/*.bin ImageResources/Passion/*.bin
+#rm -rf ImageResources/*.img ImageResources/Leo/*.bin ImageResources/Bravo/*.bin ImageResources/Passion/*.bin ImageResources/Schubert/*.bin
 set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
 
-AvailablePlatforms=("Leo" "Passion" "Bravo" "All")
+AvailablePlatforms=("Leo" "Passion" "Bravo" "Schubert" "All")
 IsValid=0
 
 while getopts d: flag
@@ -26,11 +26,32 @@ function _check_args(){
 	done
 }
 
+function _clean() {
+	for PlatformName in "${AvailablePlatforms[@]}"
+		do
+			if [ $PlatformName != 'All' ]; then
+				if [ -f ImageResources/$DEVICE/bootpayload.bin ]; then
+					rm ImageResources/$DEVICE/bootpayload.bin
+				fi
+			fi
+		if [ -f WpShim/BootShim.bin ]; then
+			rm WpShim/BootShim.bin
+		fi
+		if [ -f BootShim/BootShim.bin ]; then
+			rm BootShim/BootShim.bin
+		fi
+	done
+}
+
 # based on https://github.com/edk2-porting/edk2-msm/blob/master/build.sh#L47 
 function _build(){
 	local DEVICE="${1}"
 	shift
 	source "../edk2/edksetup.sh"
+
+	# Clean artifacts if needed
+	_clean
+	echo "Artifacts removed"
 if [ $DEVICE == 'All' ]; then
     echo "Building uefi for all platforms"
 	for PlatformName in "${AvailablePlatforms[@]}"
@@ -38,7 +59,7 @@ if [ $DEVICE == 'All' ]; then
 		if [ $PlatformName != 'All' ]; then
 			# Build
 			GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
-			./build_boot_shim.sh
+			./build_boot_shim.sh $PlatformName
 			./build_boot_images.sh $PlatformName
 		fi
 	done
@@ -46,7 +67,7 @@ else
     echo "Building uefi for $DEVICE"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
 
-	./build_boot_shim.sh
+	./build_boot_shim.sh $DEVICE
 	./build_boot_images.sh $DEVICE
 fi
 }

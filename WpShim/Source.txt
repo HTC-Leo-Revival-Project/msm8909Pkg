@@ -1,0 +1,3 @@
+Code inspired by:
+* https://github.com/WOA-Project/SurfaceDuoPkg/tree/main/BootShim
+* https://github.com/idaviden/kaikidan/blob/linaro-release/iPhone4Pkg/bl.s
