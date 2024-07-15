@@ -17,7 +17,7 @@
 ASM_FUNC(ArmPlatformPeiBootAction)
   ldr   r2, =0xF81F         // Load the fill value into R2 (RGB565_MAGENTA)
   ldr   r1, =0x2E744000     // Load fb base into R1
-  ldr   r3, =0x00266666     // Load the fill length into R3 (1/4 of the screen)
+  ldr   r3, =0x0026678     // Load the fill length into R3 (1/4 of the screen)
 
 fill_loop:
   str   r2, [r1], #4       // Store the fill value to memory address pointed by R1, and increment R1 by 4 (assuming each memory location is 4 bytes)

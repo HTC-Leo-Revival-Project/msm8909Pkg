@@ -112,13 +112,16 @@ _PrepareArguments:
 
   // Move sec startup address into a data register
   // Ensure we're jumping to FV version of the code (not boot remapped alias)
-  ldr   r4, =ASM_PFX(CEntryPoint)
+  //SCHUBERT HACK
+  //ldr   r4, =ASM_PFX(CEntryPoint)
 
   // Jump to PrePiCore C code
   //    r0 = MpId
   //    r1 = UefiMemoryBase
   //    r2 = StacksBase
-  blx   r4
+  //SCHUBERT HACK
+  //blx   r4
+  bl CEntryPoint
 
 _NeverReturn:
   b _NeverReturn

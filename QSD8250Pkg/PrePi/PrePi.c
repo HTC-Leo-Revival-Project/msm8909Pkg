@@ -36,22 +36,17 @@ PaintScreen(
 )
 {
   // Code from FramebufferSerialPortLib
-	char* Pixels = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
+      // Pointer to the framebuffer base address
+    volatile UINT32* framebuffer = (UINT32*)0x2E744000;
+    
+    // Fill length (in bytes)
+    UINT32 fill_length = 0x0026678;
+    
 
-	// Set color.
-	for (UINTN i = 0; i < Width; i++)
-	{
-		for (UINTN j = 0; j < Height; j++)
-		{
-			// Set pixel bit
-			for (UINTN p = 0; p < (Bpp / 8); p++)
-			{
-				*Pixels = (unsigned char)BgColor;
-				BgColor = BgColor >> 8;
-				Pixels++;
-			}
-		}
-	}
+    // Fill the framebuffer with the blue color
+    for (UINT32 i = 0; i < fill_length; i++) {
+        framebuffer[i] = BgColor; // RGB565 blue color
+    }
 }
 
 VOID
@@ -148,27 +143,33 @@ PrePiMain (
   UINTN                       StacksSize;
   FIRMWARE_SEC_PERFORMANCE    Performance;
 
-  PaintScreen(0xFFFF); //RGB565_WHITE
+  PaintScreen(0xF81F); //RGB565_WHITE
 
   // Initialize the architecture specific bits
   ArchInitialize ();
 
   PaintScreen(0xF800); //RGB565_RED
+   
 
   // Reconfigure the framebuffer based on PCD
   if(FixedPcdGetBool(PcdMipiFrameBufferReconfig)) {
     ReconfigFb();
+    // PaintScreen(0xFF0000FF);
+    // for(;;);
   }
   else {
     // Just clear screen to black for edk2 logs to be visible
     PaintScreen(0x0000);
   }
+ 
 
   // Enable the counter (code from PrimeG2Pkg)
   EnableCounter();
 
   PaintScreen(0x07E0); //RGB565_GREEN
 
+
+ //SCHUBERT dies here
 
   // Initialize the Serial Port
   SerialPortInitialize ();

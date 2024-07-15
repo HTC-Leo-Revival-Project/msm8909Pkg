@@ -20,6 +20,7 @@ if [ $1 == 'Leo' ]; then
     cd ../../
 elif [ $1 == 'Schubert' ]; then
     cd WpShim && make UEFI_BASE=0x24000000 UEFI_SIZE=0x00100000 && cd ../
+    rm ImageResources/Schubert/bootpayload.bin
     cat WpShim/BootShim.bin workspace/Build/HtcSchubert/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Schubert/bootpayload.bin
 
     # NBH creation
