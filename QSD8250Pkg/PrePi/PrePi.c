@@ -30,11 +30,14 @@ UINTN Height = FixedPcdGet32(PcdMipiFrameBufferHeight);
 UINTN Bpp = FixedPcdGet32(PcdMipiFrameBufferPixelBpp);
 UINTN FbAddr = FixedPcdGet32(PcdMipiFrameBufferAddress);
 
+UINTN FbSize = 480 * 800 * (32 / 8);
+
 VOID
 PaintScreen(
   IN  UINTN   BgColor
 )
 {
+#if 0
   // Code from FramebufferSerialPortLib
 	char* Pixels = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
 
@@ -52,6 +55,13 @@ PaintScreen(
 			}
 		}
 	}
+#endif
+      // Pointer to the framebuffer base address
+    volatile UINTN* framebuffer = (UINTN*)FbAddr;
+    // Fill the framebuffer with color
+    for (UINT32 i = 0; i < FbSize; i++) {
+        framebuffer[i] = BgColor; // RGB565 blue color
+    }
 }
 
 VOID
@@ -154,6 +164,9 @@ PrePiMain (
   // Reconfigure the framebuffer based on PCD
   ReconfigFb();
 
+  // Paint screen to red
+  PaintScreen(FB_BGRA8888_RED);
+
   // Enable the counter (code from PrimeG2Pkg)
   EnableCounter();
 
@@ -168,6 +181,8 @@ PrePiMain (
                 __DATE__
                 );
   SerialPortWrite ((UINT8 *)Buffer, CharCount);
+
+  // Loop was here
 
   DEBUG((
         EFI_D_INFO | EFI_D_LOAD,
