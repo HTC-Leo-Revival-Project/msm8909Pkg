@@ -1,6 +1,5 @@
 #!/bin/bash
 # based on the instructions from edk2-platform
-#rm -rf ImageResources/*.img ImageResources/Leo/*.bin ImageResources/Bravo/*.bin ImageResources/Passion/*.bin ImageResources/Schubert/*.bin
 set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
@@ -32,6 +31,12 @@ function _clean() {
 			if [ $PlatformName != 'All' ]; then
 				if [ -f ImageResources/$DEVICE/bootpayload.bin ]; then
 					rm ImageResources/$DEVICE/bootpayload.bin
+				fi
+				if [ -f ImageResources/$DEVICE/os.nb ]; then
+					rm ImageResources/$DEVICE/os.nb
+				fi
+				if [ -f ImageResources/$DEVICE/*.img ]; then
+					rm ImageResources/$DEVICE/*.img
 				fi
 			fi
 		if [ -f WpShim/BootShim.bin ]; then
