@@ -29,7 +29,7 @@ UINTN Width = FixedPcdGet32(PcdMipiFrameBufferWidth);
 UINTN Height = FixedPcdGet32(PcdMipiFrameBufferHeight);
 UINTN Bpp = FixedPcdGet32(PcdMipiFrameBufferPixelBpp);
 UINTN FbAddr = FixedPcdGet32(PcdMipiFrameBufferAddress);
-
+#define FB_SIZE1 FixedPcdGet32(PcdMipiFrameBufferWidth)*FixedPcdGet32(PcdMipiFrameBufferHeight)*(FixedPcdGet32(PcdMipiFrameBufferPixelBpp) / 8)
 VOID
 PaintScreen(
   IN  UINTN   BgColor
@@ -38,13 +38,8 @@ PaintScreen(
   // Code from FramebufferSerialPortLib
       // Pointer to the framebuffer base address
     volatile UINT32* framebuffer = (UINT32*)0x2E744000;
-    
-    // Fill length (in bytes)
-    UINT32 fill_length = 0x0026678;
-    
-
     // Fill the framebuffer with the blue color
-    for (UINT32 i = 0; i < fill_length; i++) {
+    for (UINT32 i = 0; i < FB_SIZE1; i++) {
         framebuffer[i] = BgColor; // RGB565 blue color
     }
 }
@@ -143,19 +138,14 @@ PrePiMain (
   UINTN                       StacksSize;
   FIRMWARE_SEC_PERFORMANCE    Performance;
 
-  PaintScreen(0xF81F); //RGB565_WHITE
-
   // Initialize the architecture specific bits
   ArchInitialize ();
-
-  PaintScreen(0xF800); //RGB565_RED
    
 
   // Reconfigure the framebuffer based on PCD
   if(FixedPcdGetBool(PcdMipiFrameBufferReconfig)) {
     ReconfigFb();
-    // PaintScreen(0xFF0000FF);
-    // for(;;);
+    PaintScreen(0xff000000);
   }
   else {
     // Just clear screen to black for edk2 logs to be visible
@@ -166,10 +156,8 @@ PrePiMain (
   // Enable the counter (code from PrimeG2Pkg)
   EnableCounter();
 
-  PaintScreen(0x07E0); //RGB565_GREEN
 
 
- //SCHUBERT dies here
 
   // Initialize the Serial Port
   SerialPortInitialize ();
@@ -183,13 +171,14 @@ PrePiMain (
                 );
   SerialPortWrite ((UINT8 *)Buffer, CharCount);
 
+   //SCHUBERT dies here
+
   DEBUG((
         EFI_D_INFO | EFI_D_LOAD,
         "UEFI Memory Base = 0x%p, Stack Base = 0x%p\n",
         UefiMemoryBase,
         StacksBase
     ));
-
   // Initialize the Debug Agent for Source Level Debugging
   InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
   SaveAndSetDebugTimerInterrupt (TRUE);
@@ -256,6 +245,8 @@ CEntryPoint (
   )
 {
   UINT64  StartTimeStamp;
+
+  PaintScreen(0xF800);
 
   // Initialize the platform specific controllers
   ArmPlatformInitialize (MpId);

@@ -5,8 +5,6 @@
 .text
 .globl _start
 _start:
-        b  _Payload
-	b  paint_fb_red
 	b   _relocate
 
 //if EDK2 is loaded by wince spl add romhdr
@@ -99,8 +97,6 @@ _CopyLoop:
 
 _Entry:
 	/* about to jump, paint screen green */
-	ldr r2, =0x07e0
-	b       paint_fb
 	ldr		r5, UefiBase
 	bx		r5
 
