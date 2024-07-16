@@ -59,18 +59,6 @@ steps:
     artifactName: Htc Leo UEFI NBH
 
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Htc Passion UEFI kernel'
-  inputs: 
-    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Passion/uefi.img
-    artifactName: Htc Passion UEFI kernel
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Htc Bravo UEFI kernel'
-  inputs: 
-    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Bravo/uefi.img
-    artifactName: Htc Bravo UEFI kernel
-
-- task: PublishBuildArtifacts@1
   displayName: 'Publish Htc Schubert UEFI payload'
   inputs: 
     pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Schubert/bootpayload.bin

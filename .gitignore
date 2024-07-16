@@ -1,20 +1,11 @@
 BootShim/BootShim.bin
-
-ImageResources/Leo/*.nbh
-ImageResources/Leo/os.nb
-
 ImageResources/Leo/nbgen
 ImageResources/Leo/yangbin
 
-ImageResources/Passion/*.bin
-ImageResources/Bravo/*.bin
-ImageResources/Schubert/*.bin
-ImageResources/Leo/*.bin
-
-ImageResources/Leo/*.img
-ImageResources/Passion/*.img
-ImageResources/Bravo/*.img
-
+ImageResources/Leo/*.nbh
+ImageResources/Leo/os.nb
 ImageResources/Leo/LEOIMG.nbh
-ImageResources/SCHUBERTIMG.nbh
+ImageResources/Leo/*.bin
+ImageResources/Leo/*.img
+ImageResources/Schubert/*.bin
 workspace/Build/
