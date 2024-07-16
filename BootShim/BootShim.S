@@ -29,7 +29,7 @@
 .globl _start
 _start:
 	b	reset
-
+        
 //if EDK2 is loaded by wince spl add romhdr
 .org 0x40
 	.word 0x43454345
@@ -82,7 +82,7 @@ prepare_for_linux:
 
 	// Disable VFP
 	MOV R0, #0
-	//FMXR FPEXC, r0
+	FMXR FPEXC, r0
 
     // disable mmu
 	MRC p15, 0, r0, c1, c0, 0
@@ -102,11 +102,12 @@ prepare_for_linux:
 uefi_setup:
 	// From PrimeG2Pkg
 	// Disable Strict alignment checking & Enable Instruction cache
+  	mrc     p15, 0, r0, c1, c0, 0
   	bic     r0, r0, #0x00002300     /* clear bits 13, 9:8 (--V- --RS) */
   	bic     r0, r0, #0x00000005     /* clear bits 0, 2 (---- -C-M) */
   	bic     r0, r0, #0x00000002     /* Clear bit 1 (Alignment faults) */
   	orr     r0, r0, #0x00001000     /* set bit 12 (I) enable I-Cache */
-	mcr		p15, 0, r0, c1, c0, 0
+  	mcr     p15, 0, r0, c1, c0, 0
 
 _relocate:
 	/* see if we need to relocate */
