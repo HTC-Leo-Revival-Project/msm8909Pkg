@@ -357,6 +357,7 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         } else if (Context->DeviceType == KEY_DEVICE_TYPE_KEYMATRIX) {
             gGpio->Set(Context->GpioOut, 0);
             GpioStatus = gGpio->Get(Context->GpioIn);
+            gGpio->Set(Context->GpioOut, 1);
         } else {
             continue;
         }
@@ -367,10 +368,7 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         if (IsPressed && Context->EnableKeyPadLed) {
             EnableKeypadLedWithTimer();
         }
-
-        if (Context->DeviceType == KEY_DEVICE_TYPE_KEYMATRIX) {
-            gGpio->Set(Context->GpioOut, 1);
-        }
+        
 
         LibKeyUpdateKeyStatus(
             &Context->EfiKeyContext, KeypadReturnApi, IsPressed, Delta);
