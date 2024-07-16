@@ -305,8 +305,8 @@ SdCardInitialize(
   	Status = gBS->LocateProtocol (&gEmbeddedClockProtocolGuid, NULL, (VOID **)&gClock);
   	ASSERT_EFI_ERROR (Status);
 
-    if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
-    {
+    //if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
+    //{
         // Enable the SDC2 clock
         gClock->ClkEnable(SDC2_CLK);
 
@@ -349,11 +349,11 @@ SdCardInitialize(
 			&gEfiDevicePathProtocolGuid, &gMmcHsDevicePath,
 			NULL
 			);
-    }
+    /*}
     else {
         // TODO: Defer installing protocol until card is found
         DEBUG((EFI_D_ERROR, "SD Card NOT inserted!\n"));
         return EFI_DEVICE_ERROR;
-    }
+    }*/
 	return Status;
 }
