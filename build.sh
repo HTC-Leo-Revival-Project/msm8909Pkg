@@ -61,7 +61,7 @@ if [ $DEVICE == 'All' ]; then
 		if [ $PlatformName != 'All' ]; then
 			# Build
 			GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
-			./build_boot_shim.sh $PlatformName
+			./build_boot_shim.sh
 			./build_boot_images.sh $PlatformName
 		fi
 	done
@@ -69,7 +69,7 @@ else
     echo "Building uefi for $DEVICE"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
 
-	./build_boot_shim.sh $DEVICE
+	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE
 fi
 }
