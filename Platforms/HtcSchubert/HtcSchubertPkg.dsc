@@ -36,7 +36,7 @@
 [PcdsFixedAtBuild.common]
   # System Memory (576MB)
   # TODO: Check
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x20000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x0E800000
 
   gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
