@@ -29,8 +29,6 @@
 .globl _start
 _start:
 	b	reset
-	b   prepare_for_linux
-	//b   __cpu_early_init
 
 //if EDK2 is loaded by wince spl add romhdr
 .org 0x40

@@ -39,9 +39,6 @@ function _clean() {
 					rm ImageResources/$DEVICE/*.img
 				fi
 			fi
-		if [ -f WpShim/BootShim.bin ]; then
-			rm WpShim/BootShim.bin
-		fi
 		if [ -f BootShim/BootShim.bin ]; then
 			rm BootShim/BootShim.bin
 		fi
