@@ -38,6 +38,13 @@ typedef enum {
   KEY_DEVICE_TYPE_PM8X41_PON,
 } KEY_DEVICE_TYPE;
 
+typedef enum {
+    LEO,
+    SCHUBERT,
+    BRAVO,
+    PASSION
+} DeviceType;
+
 typedef struct {
   KEY_CONTEXT     EfiKeyContext;
   BOOLEAN         IsValid;
@@ -52,7 +59,7 @@ typedef struct {
   UINT8 GpioOut;
 
   // pon
-  BOOLEAN IsVolumeKey;
+  BOOLEAN EnableKeyPadLed;
 } KEY_CONTEXT_PRIVATE;
 
 STATIC KEY_CONTEXT_PRIVATE KeyContextPower;
@@ -77,7 +84,7 @@ VOID KeypadInitializeKeyContextPrivate(KEY_CONTEXT_PRIVATE *Context)
   Context->GpioIn      = 0;
   Context->DeviceType  = KEY_DEVICE_TYPE_UNKNOWN;
   Context->ActiveLow   = FALSE;
-  Context->IsVolumeKey = FALSE;
+  Context->EnableKeyPadLed = FALSE;
 }
 
 STATIC
@@ -123,11 +130,23 @@ KeypadDeviceImplConstructor(VOID)
   UINTN                Index;
   EFI_STATUS           Status = EFI_SUCCESS;
   KEY_CONTEXT_PRIVATE *StaticContext;
+  DeviceType           Device;
 
   // Find the gpio controller protocol.  ASSERT if not found.
   Status = gBS->LocateProtocol (&gTlmmGpioProtocolGuid, NULL, (VOID **)&gGpio);
   ASSERT_EFI_ERROR (Status);
-
+#if DEVICETYPE == 1
+  Device = LEO;
+#endif
+#if DEVICETYPE == 2
+  Device = SCHUBERT;
+#endif
+#if DEVICETYPE == 3
+  Device = BRAVO;
+#endif
+#if DEVICETYPE== 4
+  DEVICE = PASSION;
+#endif
 #if KP_LED_ENABLE_METHOD == 2
   // Find the MicroP protocol. ASSERT if not found.
   Status = gBS->LocateProtocol(&gHtcLeoMicropProtocolGuid, NULL, (VOID **)&gMicroP);
@@ -139,64 +158,103 @@ KeypadDeviceImplConstructor(VOID)
     KeypadInitializeKeyContextPrivate(KeyList[Index]);
   }
 
-  // Configure keys
-
-  // power button
-  StaticContext             = KeypadKeyCodeToKeyContext(116);
-  StaticContext->DeviceType = KEY_DEVICE_TYPE_LEGACY;
-  StaticContext->Gpio       = 94;
-  StaticContext->ActiveLow  = 0x1 & 0x1;
-  StaticContext->IsValid    = TRUE;
-
+switch(Device){
+  case SCHUBERT:
   // volume up button
-  StaticContext              = KeypadKeyCodeToKeyContext(115);
-  StaticContext->DeviceType  = KEY_DEVICE_TYPE_KEYMATRIX;
-  StaticContext->GpioOut     = 33;
-  StaticContext->GpioIn      = 42;
-  StaticContext->ActiveLow   = 0x1 & 0x1;
-  StaticContext->IsVolumeKey = TRUE;
-  StaticContext->IsValid     = TRUE;
+    StaticContext                  = KeypadKeyCodeToKeyContext(115);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
+    StaticContext->Gpio            = 94;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
 
   // volume down button
-  StaticContext              = KeypadKeyCodeToKeyContext(114);
-  StaticContext->DeviceType  = KEY_DEVICE_TYPE_KEYMATRIX;
-  StaticContext->GpioOut     = 33;
-  StaticContext->GpioIn      = 41;
-  StaticContext->ActiveLow   = 0x1 & 0x1;
-  StaticContext->IsVolumeKey = TRUE;
-  StaticContext->IsValid     = TRUE;
+    StaticContext                  = KeypadKeyCodeToKeyContext(114);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
+    StaticContext->Gpio            = 41;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
 
-  // back button
-  StaticContext             = KeypadKeyCodeToKeyContext(117);
-  StaticContext->DeviceType = KEY_DEVICE_TYPE_KEYMATRIX;
-  StaticContext->GpioOut    = 31;
-  StaticContext->GpioIn     = 42;
-  StaticContext->ActiveLow  = 0x1 & 0x1;
-  StaticContext->IsValid    = TRUE;
+    // dial button
+    StaticContext                  = KeypadKeyCodeToKeyContext(120);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
+    StaticContext->Gpio            = 90;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
+    break;
+  case LEO:
+  // power button
+    StaticContext                  = KeypadKeyCodeToKeyContext(116);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
+    StaticContext->Gpio            = 94;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = TRUE;
+    StaticContext->IsValid         = TRUE;
+
+    // back button
+    StaticContext                  = KeypadKeyCodeToKeyContext(117);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
+    StaticContext->GpioOut         = 31;
+    StaticContext->GpioIn          = 42;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = TRUE;
+    StaticContext->IsValid         = TRUE;
 
   // windows button
-  StaticContext             = KeypadKeyCodeToKeyContext(118);
-  StaticContext->DeviceType = KEY_DEVICE_TYPE_KEYMATRIX;
-  StaticContext->GpioOut    = 32;
-  StaticContext->GpioIn     = 42;
-  StaticContext->ActiveLow  = 0x1 & 0x1;
-  StaticContext->IsValid    = TRUE;
+    StaticContext                  = KeypadKeyCodeToKeyContext(118);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
+    StaticContext->GpioOut         = 33;
+    StaticContext->GpioIn          = 42;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = TRUE;
+    StaticContext->IsValid         = TRUE;
 
-  // home button
-  StaticContext             = KeypadKeyCodeToKeyContext(119);
-  StaticContext->DeviceType = KEY_DEVICE_TYPE_KEYMATRIX;
-  StaticContext->GpioOut    = 31;
-  StaticContext->GpioIn     = 41;
-  StaticContext->ActiveLow  = 0x1 & 0x1;
-  StaticContext->IsValid    = TRUE;
+    // home button
+    StaticContext                  = KeypadKeyCodeToKeyContext(119);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
+    StaticContext->GpioOut         = 31;
+    StaticContext->GpioIn          = 41;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = TRUE;
+    StaticContext->IsValid         = TRUE;
+  case BRAVO:
+    //bravo has no support for its capative touch buttons yet
+    break;
+  case PASSION:
+    //passion has no support for its capative touch buttons yet
+    break;
+}
+if (Device == LEO || Device == BRAVO || Device == PASSION){
+          // Common "Enter" Button (trackball/pad on passion/bravo and dial button on leo)
+          StaticContext             = KeypadKeyCodeToKeyContext(120);
+          StaticContext->DeviceType = KEY_DEVICE_TYPE_KEYMATRIX;
+          StaticContext->GpioOut    = 32;
+          StaticContext->GpioIn     = 41;
+          StaticContext->ActiveLow  = 0x1 & 0x1;
+          StaticContext->EnableKeyPadLed = TRUE;
+          StaticContext->IsValid    = TRUE;
 
-  // dial button
-  StaticContext             = KeypadKeyCodeToKeyContext(120);
-  StaticContext->DeviceType = KEY_DEVICE_TYPE_KEYMATRIX;
-  StaticContext->GpioOut    = 32;
-  StaticContext->GpioIn     = 41;
-  StaticContext->ActiveLow  = 0x1 & 0x1;
-  StaticContext->IsValid    = TRUE;
+            // volume up button
+          StaticContext              = KeypadKeyCodeToKeyContext(115);
+          StaticContext->DeviceType  = KEY_DEVICE_TYPE_KEYMATRIX;
+          StaticContext->GpioOut     = 33;
+          StaticContext->GpioIn      = 42;
+          StaticContext->ActiveLow   = 0x1 & 0x1;
+          StaticContext->EnableKeyPadLed = FALSE;
+          StaticContext->IsValid     = TRUE;
+
+          // volume down button
+          StaticContext              = KeypadKeyCodeToKeyContext(114);
+          StaticContext->DeviceType  = KEY_DEVICE_TYPE_KEYMATRIX;
+          StaticContext->GpioOut     = 33;
+          StaticContext->GpioIn      = 41;
+          StaticContext->ActiveLow   = 0x1 & 0x1;
+          StaticContext->EnableKeyPadLed = FALSE;
+          StaticContext->IsValid     = TRUE;
+          break;
+}
 
   // Register for ExitBootServicesEvent
   Status = gBS->CreateEvent (
@@ -306,7 +364,7 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         // update key status
         IsPressed = (GpioStatus ? 1 : 0) ^ Context->ActiveLow;
 
-        if (IsPressed && !Context->IsVolumeKey) {
+        if (IsPressed && Context->EnableKeyPadLed) {
             EnableKeypadLedWithTimer();
         }
 
