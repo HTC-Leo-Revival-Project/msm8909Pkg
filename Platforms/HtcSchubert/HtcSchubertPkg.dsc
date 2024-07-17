@@ -34,9 +34,12 @@
   GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=1 # Gpio
 
 [PcdsFixedAtBuild.common]
-  # System Memory (576MB)
-  # TODO: Check
+  # System Memory (243MB for now)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x20000000
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x0E800000
 
   gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
+
+  # SMBIOS
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"HTC HD7"
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"HTC SCHUBERT"

@@ -46,3 +46,7 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
 
   gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
+
+  # SMBIOS
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"HTC HD2"
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"HTC LEO"
