@@ -16,7 +16,7 @@ static inline void htcleo_boot_s() {
 
         // Disable VFP
         "MOV r0, #0\n"
-        "FMXR FPEXC, r0\n"
+       "FMXR FPEXC, r0\n"
 
         // ICIALL to invalidate entire I-Cache
         "MCR p15, 0, r0, c7, c5, 0\n"       // ICIALLU
@@ -200,6 +200,8 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
     if (Status != EFI_BUFFER_TOO_SMALL) {
         Print(L"Failed to get memory map size: %r\n", Status);
     }
+
+	MemoryMapSize += 2 * DescriptorSize;
 
     // Allocate enough memory for the memory map
     Status = SystemTable->BootServices->AllocatePool(EfiLoaderData, MemoryMapSize, (void **)&MemoryMap);
