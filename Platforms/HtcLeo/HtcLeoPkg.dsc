@@ -31,7 +31,7 @@
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
 [BuildOptions.common]
-  GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=1 #Gpio
+  GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=1 -DDEVICETYPE=1 #Gpio
 
 [LibraryClasses.common]
   DS2746Lib|QSD8250Pkg/Library/DS2746Lib/DS2746.inf
