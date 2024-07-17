@@ -28,7 +28,7 @@
 .text
 .globl _start
 _start:
-	b	_Reset
+	b	reset
         
 //if EDK2 is loaded by wince spl add romhdr
 .org 0x40
@@ -62,15 +62,18 @@ romhdr:
 	.word 0                     // ulTrackingLen
 .org 0x00001000
 
-_Reset:
-	/* Do some cpu setup */
+reset:
+	/* do some cpu setup */
 	mrc		p15, 0, r0, c1, c0, 0
 	bic		r0, r0, #(1<<15| 1<<13 | 1<<12)
 	bic		r0, r0, #(1<<2 | 1<<0)
 	orr		r0, r0, #(1<<1)
 	mcr		p15, 0, r0, c1, c0, 0
+.ltorg
 
-_PrepareForLinux:
+.text		
+.code 32
+prepare_for_linux:
 	// Martijn Stolk's code so kernel will not crash. aux control register
 	MRC p15, 0, r0, c1, c0, 1
 	BIC r0, r0, #0x40
@@ -81,7 +84,7 @@ _PrepareForLinux:
 	MOV R0, #0
 	FMXR FPEXC, r0
 
-        // Disable mmu
+    // disable mmu
 	MRC p15, 0, r0, c1, c0, 0
 	BIC r0, r0, #(1<<0)
 	MCR p15, 0, r0, c1, c0, 0
@@ -96,7 +99,7 @@ _PrepareForLinux:
 	DSB
 	ISB
 
-_UefiSetup:
+uefi_setup:
 	// From PrimeG2Pkg
 	// Disable Strict alignment checking & Enable Instruction cache
   	mrc     p15, 0, r0, c1, c0, 0
@@ -106,7 +109,7 @@ _UefiSetup:
   	orr     r0, r0, #0x00001000     /* set bit 12 (I) enable I-Cache */
   	mcr     p15, 0, r0, c1, c0, 0
 
-_Relocate:
+_relocate:
 	/* see if we need to relocate */
 	adr	r0, _Payload 	// load the payload adress into r0
 
