@@ -208,7 +208,7 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 	//we are ready to boot the freshly loaded kernel
 	htcleo_disable_interrupts();
 	Print(L"Preparing... \n");
-	htcleo_prepare_for_linux();
+	//htcleo_prepare_for_linux();
 	Print(L"Jumping now... \n");
 	entry(0, machtype, tags);
 	Print(L"Failed to boot Linux, jump did not happen were still in uefiland \n");
@@ -368,7 +368,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     if (EFI_ERROR(Status)) {
         Print(L"Failed to load kernel: %r\n", Status);
     } else {
-        Print(L"Kernel loaded successfully at address %p. Size: %d bytes\n", KernelLoadAddress, KernelSize);
+        Print(L"Kernel loaded successfully at address %p. Size: %d bytes\n", KernelBuffer, KernelSize);
         
         Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
         if (EFI_ERROR(Status)) {
