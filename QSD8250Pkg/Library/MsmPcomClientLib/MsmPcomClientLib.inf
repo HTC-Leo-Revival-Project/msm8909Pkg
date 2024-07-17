@@ -1,0 +1,27 @@
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = MsmPcomClientLib
+  FILE_GUID                      = A9BBFDB5-108A-4989-9668-4901007083DB
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = MsmPcomClientLib
+
+#
+#  VALID_ARCHITECTURES           = ARM IA32 X64 IPF EBC
+#
+  
+[Sources.common]
+  pcom_clients.c
+
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  QSD8250Pkg/QSD8250Pkg.dec
+  
+[LibraryClasses]
+  DebugLib
+  IoLib
+  ArmLib
+

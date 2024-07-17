@@ -1,0 +1,57 @@
+#/** @file
+#
+#  Copyright (c) 2008 - 2010, Apple Inc. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = MicroPDxe
+  FILE_GUID                      = 4e766dcb-a2a5-4d2b-8364-c2ef8f99b0cc
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = MicroPDxeInitialize
+
+[Sources.common]
+  MicroPDxe.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  QSD8250Pkg/QSD8250Pkg.dec
+
+[LibraryClasses]
+  PcdLib
+  UefiLib
+  UefiDriverEntryPoint
+  MemoryAllocationLib
+  BaseMemoryLib
+  IoLib
+  ArmLib
+  BaseLib
+  DebugLib
+  UefiBootServicesTableLib
+  TimerLib
+  
+[Guids]
+
+[Protocols]
+  gEfiCpuArchProtocolGuid
+  gEfiDevicePathProtocolGuid
+  gHtcLeoMicropProtocolGuid
+  gHtcLeoI2CProtocolGuid
+
+[Pcd]
+
+[Depex]
+  gHtcLeoI2CProtocolGuid

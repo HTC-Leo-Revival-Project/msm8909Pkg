@@ -1,0 +1,52 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SmBiosTableDxe
+  FILE_GUID                      = 50A15B6F-E3A9-4192-9640-369CB367C4DE
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = SmBiosTableDxeInitialize
+
+[Sources.common]
+  SmbiosPlatformDxe.c
+
+[FixedPcd]
+  gArmPlatformTokenSpaceGuid.PcdCoreCount
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosProcessorModel
+  
+[Packages]
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  MdePkg/MdePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  QSD8250Pkg/QSD8250Pkg.dec
+
+[LibraryClasses]
+  BaseLib
+  ReportStatusCodeLib
+  UefiLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  BaseMemoryLib
+  DebugLib
+  CompilerIntrinsicsLib
+
+[Guids.common]
+  gQcomTokenSpaceGuid
+  
+[Protocols]
+  gEfiSmbiosProtocolGuid
+  # gQcomBoardProtocolGuid
+  
+[Depex]
+  gEfiSmbiosProtocolGuid 
+  #AND gQcomBoardProtocolGuid
+
+[BuildOptions.ARM]
+  GCC:*_*_*_CC_FLAGS = -Wno-missing-brace -Wno-error
