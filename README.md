@@ -1,19 +1,19 @@
-# EDK2 UEFI Firmware For HTC HD2
+# EDK2 UEFI Firmware for HTC HD2 (Leo) and HTC HD7 (Schubert)
 
 ## Status 
 
-| Function      | Notes                                            | Status |
-|---------------|--------------------------------------------------|--------|
-| GPIO          | Based on cLK driver                              |   ✅   |
-| SD Card       | Based on cLK driver                              |   ✅   |
-| NAND          | Driver exists in cLK (probably won't be added)   |   ❌   |
-| I2C           | Based on cLK driver                              |   ✅   |
-| Panel         | Driver exists in cLK                             |   ❌   |
-| Touchscreen   | Driver exists in linux                           |   ❌   |
-| Charging      | Based on cLK code                                |   ✅   |
-| Battery Gauge | Supported in cLK since 1.5.x                     |   ❌   |
-| USB           | Driver exists in cLK                             |   ❌   |
-| Keypad        | Loosely based on cLK driver                      |   ✅   |
+| Function      | Notes                                            |  LEO   | SCHUBERT |
+|---------------|--------------------------------------------------|--------|-----------
+| GPIO          | Based on cLK driver                              |   ✅   |    ✅    |
+| SD Card       | Based on cLK driver                              |   ✅   |    ✅    |
+| NAND          | Driver exists in cLK (probably won't be added)   |   ❌   |    ❌    |
+| I2C           | Based on cLK driver                              |   ✅   |    ✅    |
+| Panel         | Driver exists in cLK                             |   ❌   |    ❌    |
+| Touchscreen   | Driver exists in linux                           |   ❌   |    ❌    |
+| Charging      | Based on cLK code                                |   ✅   |    ❌    |
+| Battery Gauge | Supported in cLK since 1.5.x                     |   ❌   |    ❌    |
+| USB           | Driver exists in cLK                             |   ❌   |    ❌    |
+| Keypad        | Loosely based on cLK driver                      |   ✅   |    ✅    |
 
 ## OS support notes
 - Currently loading a close-to-mainline kernel is supported (see https://github.com/HTC-Leo-Revival-Project/linux)
@@ -24,6 +24,7 @@
 
 ## Loading
 UEFI can be either chainloaded as a kernel from cLK, as well as flashed to boot directly from HSPL.
+However flashing as a HSPL image on HD7 is more complicated
 
 ## Credits
  - Cotulla and DFT for the work on HD2
