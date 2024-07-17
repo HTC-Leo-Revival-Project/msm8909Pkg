@@ -95,12 +95,16 @@ unsigned* target_atag_mem(unsigned* ptr)
 	return ptr;
 }
 
-
-
-void boot_linux(void *kernel, unsigned *tags, 
+void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void *kernel, unsigned *tags, 
 		const char *cmdline, unsigned machtype,
 		void *ramdisk, unsigned ramdisk_size)
 {
+	EFI_STATUS Status;
+    UINTN MemoryMapSize = 0;
+	EFI_MEMORY_DESCRIPTOR *MemoryMap = NULL;
+    UINTN MapKey;
+    UINTN DescriptorSize;
+    UINT32 DescriptorVersion;
 	unsigned *ptr = tags;
 	unsigned pcount = 0;
 	void (*entry)(unsigned,unsigned,unsigned*) = kernel;
@@ -180,7 +184,7 @@ void boot_linux(void *kernel, unsigned *tags,
     DEBUG((EFI_D_INFO, "booting linux @ %p, ramdisk @ %p (%d)\n",kernel, ramdisk, ramdisk_size));
 	if (cmdline)
 	   DEBUG((EFI_D_INFO, "cmdline: %s\n", cmdline));
-    /*J0SH1X disable interrupts here ?! timer uninit should be done by exitbs
+    /*J0SH1X disable interrupts and timer uninit are done by exitbs
 	enter_critical_section();
 	platform_uninit_timer();
     */
@@ -195,9 +199,33 @@ void boot_linux(void *kernel, unsigned *tags,
 // 	display_shutdown();
 // #endif
 
-    //toDo: call exit bs here
+
+    // Get the size of the memory map
+    Status = SystemTable->BootServices->GetMemoryMap(&MemoryMapSize, MemoryMap, &MapKey, &DescriptorSize, &DescriptorVersion);
+    if (Status != EFI_BUFFER_TOO_SMALL) {
+        Print(L"Failed to get memory map size: %r\n", Status);
+    }
+
+    // Allocate enough memory for the memory map
+    Status = SystemTable->BootServices->AllocatePool(EfiLoaderData, MemoryMapSize, (void **)&MemoryMap);
+    if (EFI_ERROR(Status)) {
+        Print(L"Failed to allocate memory for memory map: %r\n", Status);
+    }
+
+    // Get the actual memory map
+    Status = SystemTable->BootServices->GetMemoryMap(&MemoryMapSize, MemoryMap, &MapKey, &DescriptorSize, &DescriptorVersion);
+    if (EFI_ERROR(Status)) {
+        Print(L"Failed to get memory map: %r\n", Status);
+    }
+
+    // Exit Boot Services
+    Status = SystemTable->BootServices->ExitBootServices(ImageHandle, MapKey);
+    if (EFI_ERROR(Status)) {
+        Print(L"Failed to exit boot services: %r\n", Status);
+    }
+
+	//we are ready to boot the freshly loaded kernel
 	htcleo_boot(kernel, machtype, tags);
-	//entry(0, machtype, tags);
 }
 
 
