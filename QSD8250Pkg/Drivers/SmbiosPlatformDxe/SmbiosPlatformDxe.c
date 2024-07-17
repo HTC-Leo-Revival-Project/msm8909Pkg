@@ -1,596 +1,803 @@
 /** @file
-  This driver installs SMBIOS information for HTC LEO platform
+  SMBIOS Table for Qualcomm ARM platform
+  Derived from EmulatorPkg package
 
-  Copyright (c) 2015, ARM Limited. All rights reserved.
+  Note SMBIOS 2.7.1 Required structures:
+    BIOS Information (Type 0)
+    System Information (Type 1)
+    Board Information (Type 2)
+    System Enclosure (Type 3)
+    Processor Information (Type 4) - CPU Driver
+    Cache Information (Type 7) - For cache that is external to processor
+    System Slots (Type 9) - If system has slots
+    Physical Memory Array (Type 16)
+    Memory Device (Type 17) - For each socketed system-memory Device
+    Memory Array Mapped Address (Type 19) - One per contiguous block per
+Physical Memroy Array System Boot Information (Type 32)
+
+
+  Copyright (c), 2017, Andrey Warkentin <andrey.warkentin@gmail.com>
+  Copyright (c), 2018, Bingxing Wang <uefi-oss-projects@imbushuo.net>
+  Copyright (c), Microsoft Corporation. All rights reserved.
 
   This program and the accompanying materials
-  are licensed and made available under the terms and conditions of the BSD License
-  which accompanies this distribution.  The full text of the license may be found at
-  http://opensource.org/licenses/bsd-license.php
+  are licensed and made available under the terms and conditions of the BSD
+License which accompanies this distribution.  The full text of the license may
+be found at http://opensource.org/licenses/bsd-license.php
+
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+
+  Copyright (c) 2012, Apple Inc. All rights reserved.<BR>
+  Copyright (c) 2013 Linaro.org
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD
+License which accompanies this distribution.  The full text of the license may
+be found at http://opensource.org/licenses/bsd-license.php
 
   THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
-#include <ArmPlatform.h>
+
+#include <Base.h>
+
+#include <Guid/SmBios.h>
 #include <IndustryStandard/SmBios.h>
-#include <Library/ArmLib.h>
+#include <Protocol/Smbios.h>
+
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
-#include <Library/IoLib.h>
 #include <Library/MemoryAllocationLib.h>
-#include <Library/PcdLib.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include <Library/UefiRuntimeServicesTableLib.h>
-#include <PiDxe.h>
-#include <Protocol/Smbios.h>
+#include <Library/UefiDriverEntryPoint.h>
+#include <Library/UefiLib.h>
 
-#define TYPE0_STRINGS                                    \
-  "Htc Leo Revival Project\0"         /* Vendor */      \
-  "EDK II\0"                          /* BiosVersion */ \
-  __DATE__"\0"                        /* BiosReleaseDate */
+/* Used to read chip serial number */
+//#include <Library/LKEnvLib.h>
 
-#define TYPE1_STRINGS                                   \
-  "HTC\0"                            /* Manufacturer */ \
-  "LEO\0"                            /* Product Name */ \
-  "None\0"                           /* Version */      \
-  "                    \0"           /* 20 character buffer */
+/* Build-time generated ReleaseInfo.h will override the default one */
+//#include <Resources/ReleaseStampStub.h>
+// Must come in order
+//#include <Resources/ReleaseInfo.h>
 
-#define TYPE2_STRINGS                                     \
-  "HTC\0"                            /* Manufacturer */   \
-  "LEO\0"                            /* Product Name */   \
-  "R0\0"                             /* Version */        \
-  "Serial Not Set\0"                 /* Serial */         \
-  "Base of Chassis\0"                /* board location */ \
-  "R1\0"                             /* Version */        \
-  "R2\0"                             /* Version */
-
-#define TYPE3_STRINGS                                   \
-  "ARM LTD\0"                        /* Manufacturer */ \
-  "None\0"                           /* Version */      \
-  "Serial Not Set\0"                 /* Serial  */
-
-#define TYPE4_STRINGS                                               \
-  "UNKNOWN\0"                        /* socket type */              \
-  "ARM LTD\0"                        /* manufactuer */              \
-  "Cortex-A8\0"                      /* processor 1 description */  \
-  "0x0\0"                            /* A8 part number */
-
-#define TYPE7_STRINGS                              \
-  "L1 Instruction\0"                 /* L1I  */    \
-  "L1 Data\0"                        /* L1D  */    \
-  "L2\0"                             /* L2   */
-
-#define TYPE9_STRINGS                              \
-  "\0"                               /* nothing */
-
-#define TYPE16_STRINGS                             \
-  "\0"                               /* nothing */
-
-#define TYPE17_STRINGS                                       \
-  "RIGHT SIDE\0"                     /* location */          \
-  "BANK 0\0"                         /* bank description */
-
-#define TYPE19_STRINGS                             \
-  "\0"                               /* nothing */
-
-#define TYPE32_STRINGS                             \
-  "\0"                               /* nothing */
-
-
-//
-// Type definition and contents of the default SMBIOS table.
-// This table covers only the minimum structures required by
-// the SMBIOS specification (section 6.2, version 3.0)
-//
-#pragma pack(1)
-typedef struct {
-    SMBIOS_TABLE_TYPE0 Base;
-    INT8              Strings[sizeof(TYPE0_STRINGS)];
-} ARM_TYPE0;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE1 Base;
-    UINT8              Strings[sizeof(TYPE1_STRINGS)];
-} ARM_TYPE1;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE2 Base;
-    UINT8              Strings[sizeof(TYPE2_STRINGS)];
-} ARM_TYPE2;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE3 Base;
-    UINT8              Strings[sizeof(TYPE3_STRINGS)];
-} ARM_TYPE3;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE4 Base;
-    UINT8              Strings[sizeof(TYPE4_STRINGS)];
-} ARM_TYPE4;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE7 Base;
-    UINT8              Strings[sizeof(TYPE7_STRINGS)];
-} ARM_TYPE7;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE9 Base;
-    UINT8              Strings[sizeof(TYPE9_STRINGS)];
-} ARM_TYPE9;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE16 Base;
-    UINT8              Strings[sizeof(TYPE16_STRINGS)];
-} ARM_TYPE16;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE17 Base;
-    UINT8              Strings[sizeof(TYPE17_STRINGS)];
-} ARM_TYPE17;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE19 Base;
-    UINT8              Strings[sizeof(TYPE19_STRINGS)];
-} ARM_TYPE19;
-
-typedef struct {
-    SMBIOS_TABLE_TYPE32 Base;
-    UINT8              Strings[sizeof(TYPE32_STRINGS)];
-} ARM_TYPE32;
-
-// SMBIOS tables often reference each other using
-// fixed constants, define a list of these constants
-// for our hardcoded tables
-enum SMBIOS_REFRENCE_HANDLES {
-    SMBIOS_HANDLE_A8_L1I,
-    SMBIOS_HANDLE_A8_L1D,
-    SMBIOS_HANDLE_A8_L2,
-    SMBIOS_HANDLE_MOTHERBOARD,
-    SMBIOS_HANDLE_CHASSIS,
-    SMBIOS_HANDLE_A8_CLUSTER,
-    SMBIOS_HANDLE_MEMORY,
-    SMBIOS_HANDLE_DIMM
-};
-
-#define SERIAL_LEN 10  //this must be less than the buffer len allocated in the type1 structure
-
-#pragma pack()
-
-// BIOS information (section 7.1)
-STATIC ARM_TYPE0 mArmDefaultType0 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE0  BIOS Information
+************************************************************************/
+SMBIOS_TABLE_TYPE0 mBIOSInfoType0 = {
+    {EFI_SMBIOS_TYPE_BIOS_INFORMATION, sizeof(SMBIOS_TABLE_TYPE0), 0},
+    1,      // Vendor String
+    2,      // BiosVersion String
+    0xE000, // BiosSegment
+    3,      // BiosReleaseDate String
+    0x7F,   // BiosSize
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_BIOS_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE0),      // UINT8 Length
-            SMBIOS_HANDLE_PI_RESERVED,
-        },
-        1,     // SMBIOS_TABLE_STRING       Vendor
-        2,     // SMBIOS_TABLE_STRING       BiosVersion
-        0xE800,// UINT16                    BiosSegment
-        3,     // SMBIOS_TABLE_STRING       BiosReleaseDate
-        0,     // UINT8                     BiosSize
-        {
-            0, 0, 0, 0, 0, 0,
-            0, //PCI supported
-            0,
-            1, //PNP supported
-            0,
-            1, //BIOS upgradable
-            0, 0, 0,
-            1, //Boot from CD
-            1, //selectable boot
-        },  // MISC_BIOS_CHARACTERISTICS BiosCharacteristics
-        {
-            // BIOSCharacteristicsExtensionBytes[2]
-            0x3,
-            0xC,
-        },
-        0,     // UINT8                     SystemBiosMajorRelease
-        0,     // UINT8                     SystemBiosMinorRelease
-        0xFF,  // UINT8                     EmbeddedControllerFirmwareMajorRelease
-        0xFF   // UINT8                     EmbeddedControllerFirmwareMinorRelease
+        // BiosCharacteristics
+        0, //  Reserved                          :2;  ///< Bits 0-1.
+        0, //  Unknown                           :1;
+        0, //  BiosCharacteristicsNotSupported   :1;
+        0, //  IsaIsSupported                    :1;
+        0, //  McaIsSupported                    :1;
+        0, //  EisaIsSupported                   :1;
+        0, //  PciIsSupported                    :1;
+        0, //  PcmciaIsSupported                 :1;
+        0, //  PlugAndPlayIsSupported            :1;
+        0, //  ApmIsSupported                    :1;
+        1, //  BiosIsUpgradable                  :1;
+        1, //  BiosShadowingAllowed              :1;
+        0, //  VlVesaIsSupported                 :1;
+        0, //  EscdSupportIsAvailable            :1;
+        0, //  BootFromCdIsSupported             :1;
+        1, //  SelectableBootIsSupported         :1;
+        0, //  RomBiosIsSocketed                 :1;
+        0, //  BootFromPcmciaIsSupported         :1;
+        0, //  EDDSpecificationIsSupported       :1;
+        0, //  JapaneseNecFloppyIsSupported      :1;
+        0, //  JapaneseToshibaFloppyIsSupported  :1;
+        0, //  Floppy525_360IsSupported          :1;
+        0, //  Floppy525_12IsSupported           :1;
+        0, //  Floppy35_720IsSupported           :1;
+        0, //  Floppy35_288IsSupported           :1;
+        0, //  PrintScreenIsSupported            :1;
+        0, //  Keyboard8042IsSupported           :1;
+        0, //  SerialIsSupported                 :1;
+        0, //  PrinterIsSupported                :1;
+        0, //  CgaMonoIsSupported                :1;
+        0, //  NecPc98                           :1;
+        0 //  ReservedForVendor                 :32; ///< Bits 32-63. Bits 32-47
+          //  reserved for BIOS vendor
+          ///< and bits 48-63 reserved for System Vendor.
     },
-    // Text strings (unformatted area)
-    TYPE0_STRINGS
-};
-
-// System information (section 7.2)
-STATIC CONST ARM_TYPE1 mArmDefaultType1 = {
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_SYSTEM_INFORMATION,
-            sizeof(SMBIOS_TABLE_TYPE1),
-            SMBIOS_HANDLE_PI_RESERVED,
-        },
-        1,     //Manufacturer
-        2,     //Product Name
-        3,     //Version
-        4,     //Serial
-        { 0x8a95d198, 0x7f46, 0x11e5, { 0xbf, 0x8b, 0x08, 0x00, 0x27, 0x04, 0xd4, 0x8e }}, //UUID
-        6,     //Wakeup type
-        0,     //SKU
-        0,     //Family
+        // BIOSCharacteristicsExtensionBytes[]
+        0x81, //  AcpiIsSupported                   :1;
+              //  UsbLegacyIsSupported              :1;
+              //  AgpIsSupported                    :1;
+              //  I2OBootIsSupported                :1;
+              //  Ls120BootIsSupported              :1;
+              //  AtapiZipDriveBootIsSupported      :1;
+              //  Boot1394IsSupported               :1;
+              //  SmartBatteryIsSupported           :1;
+              //  BIOSCharacteristicsExtensionBytes[1]
+        0x0e, //  BiosBootSpecIsSupported              :1;
+              //  FunctionKeyNetworkBootIsSupported    :1;
+              //  TargetContentDistributionEnabled     :1;
+              //  UefiSpecificationSupported           :1;
+              //  VirtualMachineSupported              :1;
+              //  ExtensionByte2Reserved               :3;
     },
-    // Text strings (unformatted)
-    TYPE1_STRINGS
+    0x01, // SystemBiosMajorRelease
+    0x05, // SystemBiosMinorRelease
+    0xFF, // EmbeddedControllerFirmwareMajorRelease
+    0xFF, // EmbeddedControllerFirmwareMinorRelease
 };
+/*
+CHAR8 *mBIOSInfoType0Strings[] = {"HTC Leo Revival Project", // Vendor String
+                                  __IMPL_COMMIT_ID__ " (EDK2 "__EDK2_RELEASE__
+                                                     ")", // BiosVersion String
+                                  __RELEASE_DATE__, // BiosReleaseDate String
+                                  NULL};
+*/
+CHAR8 *mBIOSInfoType0Strings[] = {"HTC Leo Revival Project", // Vendor String
+                                  "EDK2", // BiosVersion String
+                                  NULL, // BiosReleaseDate String
+                                  NULL};
 
-// Baseboard (section 7.3)
-STATIC ARM_TYPE2 mArmDefaultType2 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE1  System Information
+************************************************************************/
+SMBIOS_TABLE_TYPE1 mSysInfoType1 = {
+    {EFI_SMBIOS_TYPE_SYSTEM_INFORMATION, sizeof(SMBIOS_TABLE_TYPE1), 0},
+    1, // Manufacturer String
+    2, // ProductName String
+    3, // Version String
+    4, // SerialNumber String
     {
+        0xc08ac5fb,
+        0x2a54,
+        0x4369,
         {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_BASEBOARD_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE2),           // UINT8 Length
-            SMBIOS_HANDLE_MOTHERBOARD,
+            0x8c,
+            0x51,
+            0xaf,
+            0x7d,
+            0x06,
+            0x0a,
+            0x93,
+            0xcc,
         },
-        1,    //Manufacturer
-        2,    //Product Name
-        3,    //Version
-        4,    //Serial
-        0,    //Asset tag
-        {1},  //motherboard, not replaceable
-        5,    //location of board
-        SMBIOS_HANDLE_CHASSIS,
-        BaseBoardTypeMotherBoard,
-        1,
-        {SMBIOS_HANDLE_A8_CLUSTER}, //,SMBIOS_HANDLE_A8_CLUSTER,SMBIOS_HANDLE_MEMORY},
     },
-    TYPE2_STRINGS
+    SystemWakeupTypePowerSwitch,
+    5, // SKUNumber String
+    6, // Family String
 };
+CHAR8 *mSysInfoType1Strings[] = {
+    "HTC", "HTC HD2", "HTC LEO", "Not Specified",
+    "HTC LEO",      "Phone",        NULL};
 
-// Enclosure
-STATIC CONST ARM_TYPE3 mArmDefaultType3 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE2  Board Information
+************************************************************************/
+SMBIOS_TABLE_TYPE2 mBoardInfoType2 = {
+    {EFI_SMBIOS_TYPE_BASEBOARD_INFORMATION, sizeof(SMBIOS_TABLE_TYPE2), 0},
+    1, // Manufacturer String
+    2, // ProductName String
+    3, // Version String
+    4, // SerialNumber String
+    5, // AssetTag String
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_SYSTEM_ENCLOSURE, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE3),      // UINT8 Length
-            SMBIOS_HANDLE_CHASSIS,
-        },
-        1,   //Manufacturer
-        4,   //enclosure type (low profile desktop)
-        2,   //version
-        3,   //serial
-        0,   //asset tag
-        ChassisStateUnknown,   //boot chassis state
-        ChassisStateSafe,      //power supply state
-        ChassisStateSafe,      //thermal state
-        ChassisSecurityStatusNone,   //security state
-        {0, 0, 0, 0,}, //OEM defined
-        1,  //1U height
-        1,  //number of power cords
-        0,  //no contained elements
+        // FeatureFlag
+        1, //  Motherboard           :1;
+        0, //  RequiresDaughterCard  :1;
+        0, //  Removable             :1;
+        0, //  Replaceable           :1;
+        0, //  HotSwappable          :1;
+        0, //  Reserved              :3;
     },
-    TYPE3_STRINGS
+    6,                        // LocationInChassis String
+    0,                        // ChassisHandle;
+    BaseBoardTypeMotherBoard, // BoardType;
+    0,                        // NumberOfContainedObjectHandles;
+    {0}                       // ContainedObjectHandles[1];
 };
+CHAR8 *mBoardInfoType2Strings[] = {
+    "HTC", "HTC HD2", "HTC LEO", "Not Specified", "Not Specified", "Not Specified", NULL};
 
-// Processor
-STATIC CONST ARM_TYPE4 mArmDefaultType4_a8 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE3  Enclosure Information
+************************************************************************/
+SMBIOS_TABLE_TYPE3 mEnclosureInfoType3 = {
+    {EFI_SMBIOS_TYPE_SYSTEM_ENCLOSURE, sizeof(SMBIOS_TABLE_TYPE3), 0},
+    1,                         // Manufacturer String
+    MiscChassisTypePortable,   // Type;
+    2,                         // Version String
+    3,                         // SerialNumber String
+    4,                         // AssetTag String
+    ChassisStateSafe,          // BootupState;
+    ChassisStateSafe,          // PowerSupplyState;
+    ChassisStateSafe,          // ThermalState;
+    ChassisSecurityStatusNone, // SecurityStatus;
+    {0, 0, 0, 0},              // OemDefined[4];
+    0,                         // Height;
+    0,                         // NumberofPowerCords;
+    0,                         // ContainedElementCount;
+    0,                         // ContainedElementRecordLength;
+    {{0}},                     // ContainedElements[1];
+};
+CHAR8 *mEnclosureInfoType3Strings[] = {"HTC HD2", "Not Specified", "Not Specified", "Not Specified",
+                                       NULL};
+
+/***********************************************************************
+        SMBIOS data definition  TYPE4  Processor Information
+************************************************************************/
+SMBIOS_TABLE_TYPE4 mProcessorInfoType4 = {
+    {EFI_SMBIOS_TYPE_PROCESSOR_INFORMATION, sizeof(SMBIOS_TABLE_TYPE4), 0},
+    1,                // Socket String
+    CentralProcessor, // ProcessorType;				      ///< The
+                      // enumeration value from PROCESSOR_TYPE_DATA.
+    ProcessorFamilyIndicatorFamily2, // ProcessorFamily;        ///< The
+                                     // enumeration value from
+                                     // PROCESSOR_FAMILY2_DATA.
+    2,                               // ProcessorManufacture String;
+    {                                // ProcessorId;
+     {
+         // PROCESSOR_SIGNATURE
+         0, //  ProcessorSteppingId:4;
+         0, //  ProcessorModel:     4;
+         0, //  ProcessorFamily:    4;
+         0, //  ProcessorType:      2;
+         0, //  ProcessorReserved1: 2;
+         0, //  ProcessorXModel:    4;
+         0, //  ProcessorXFamily:   8;
+         0, //  ProcessorReserved2: 4;
+     },
+
+     {
+         // PROCESSOR_FEATURE_FLAGS
+         0, //  ProcessorFpu       :1;
+         0, //  ProcessorVme       :1;
+         0, //  ProcessorDe        :1;
+         0, //  ProcessorPse       :1;
+         0, //  ProcessorTsc       :1;
+         0, //  ProcessorMsr       :1;
+         0, //  ProcessorPae       :1;
+         0, //  ProcessorMce       :1;
+         0, //  ProcessorCx8       :1;
+         0, //  ProcessorApic      :1;
+         0, //  ProcessorReserved1 :1;
+         0, //  ProcessorSep       :1;
+         0, //  ProcessorMtrr      :1;
+         0, //  ProcessorPge       :1;
+         0, //  ProcessorMca       :1;
+         0, //  ProcessorCmov      :1;
+         0, //  ProcessorPat       :1;
+         0, //  ProcessorPse36     :1;
+         0, //  ProcessorPsn       :1;
+         0, //  ProcessorClfsh     :1;
+         0, //  ProcessorReserved2 :1;
+         0, //  ProcessorDs        :1;
+         0, //  ProcessorAcpi      :1;
+         0, //  ProcessorMmx       :1;
+         0, //  ProcessorFxsr      :1;
+         0, //  ProcessorSse       :1;
+         0, //  ProcessorSse2      :1;
+         0, //  ProcessorSs        :1;
+         0, //  ProcessorReserved3 :1;
+         0, //  ProcessorTm        :1;
+         0, //  ProcessorReserved4 :2;
+     }},
+    3, // ProcessorVersion String;
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_PROCESSOR_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE4),           // UINT8 Length
-            SMBIOS_HANDLE_A8_CLUSTER,
-        },
-        1, //socket type
-        3, //processor type CPU
-        ProcessorFamilyIndicatorFamily2, //processor family, acquire from field2
-        2, //manufactuer
-        {{0,}, {0.}}, //processor id
-        4, //version
-        {0, 0, 0, 0, 0, 1}, //voltage
-        0, //external clock
-        1024, //max speed
-        1024, //current speed
-        0x41, //status
-        ProcessorUpgradeOther,
-        SMBIOS_HANDLE_A8_L1I, //l1 cache handle
-        SMBIOS_HANDLE_A8_L2, //l2 cache handle
-        0, //l3 cache handle
-        0, //serial not set
-        0, //asset not set
-        6, //part number
-        1, //core count in socket
-        1, //enabled core count in socket
-        0, //threads per socket
-        0xEC, // processor characteristics
-        ProcessorFamilyARM, //ARM core
+        // Voltage;
+        1, // ProcessorVoltageCapability5V        :1;
+        1, // ProcessorVoltageCapability3_3V      :1;
+        1, // ProcessorVoltageCapability2_9V      :1;
+        0, // ProcessorVoltageCapabilityReserved  :1; ///< Bit 3, must be zero.
+        0, // ProcessorVoltageReserved            :3; ///< Bits 4-6, must be
+           // zero.
+        0  // ProcessorVoltageIndicateLegacy      :1;
     },
-    TYPE4_STRINGS
+    0,                     // ExternalClock;
+    2000,                  // MaxSpeed;
+    2000,                  // CurrentSpeed;
+    0x41,                  // Status;
+    ProcessorUpgradeOther, // ProcessorUpgrade;      ///< The enumeration value
+                           // from PROCESSOR_UPGRADE.
+    0xFFFF,                // L1CacheHandle;
+    0xFFFF,                // L2CacheHandle;
+    0xFFFF,                // L3CacheHandle;
+    0,                     // SerialNumber;
+    0,                     // AssetTag;
+    4,                     // PartNumber;
+    FixedPcdGet32(PcdCoreCount), // CoreCount;
+    FixedPcdGet32(PcdCoreCount), // EnabledCoreCount;
+    FixedPcdGet32(PcdCoreCount), // ThreadCount;
+    0xAC,                        // ProcessorCharacteristics;
+    ProcessorFamilyARM,          // ARM Processor Family;
 };
 
-// Cache
-STATIC CONST ARM_TYPE7 mArmDefaultType7_a8_l1i = {
+CHAR8 *mProcessorInfoType4Strings[] = {
+    "Socket", "Qualcomm Inc.", "Qualcomm Snapdragon S1 Processor (QSD8250)",
+    "QSD8250", NULL};
+
+/***********************************************************************
+        SMBIOS data definition  TYPE7  Cache Information
+************************************************************************/
+SMBIOS_TABLE_TYPE7 mCacheInfoType7 = {
+    {EFI_SMBIOS_TYPE_CACHE_INFORMATION, sizeof(SMBIOS_TABLE_TYPE7), 0},
+    1,      // SocketDesignation String
+    0x0201, // Cache Configuration
+    0x8008, // Maximum Size 256k
+    0x8008, // Install Size 256k
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_CACHE_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE7),       // UINT8 Length
-            SMBIOS_HANDLE_A8_L1I,
-        },
-        1,
-        0x380, //L1 enabled, unknown WB
-        32, //32k i cache max
-        32, //32k installed
-        {0, 1}, //SRAM type
-        {0, 1}, //SRAM type
-        0, //unkown speed
-        CacheErrorParity, //parity checking
-        CacheTypeInstruction, //instruction cache
-        CacheAssociativity2Way, //two way
+        // Supported SRAM Type
+        0, // Other             :1
+        0, // Unknown           :1
+        0, // NonBurst          :1
+        0, // Burst             :1
+        0, // PiplelineBurst    :1
+        0, // Synchronous       :1
+        0, // Asynchronous      :1
+        0  // Reserved          :9
     },
-    TYPE7_STRINGS
-};
-
-STATIC CONST ARM_TYPE7 mArmDefaultType7_a8_l1d = {
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_CACHE_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE7),       // UINT8 Length
-            SMBIOS_HANDLE_A8_L1D,
-        },
-        2,
-        0x180, //L1 enabled, WB
-        32, //32k d cache max
-        32, //32k installed
-        {0, 1}, //SRAM type
-        {0, 1}, //SRAM type
-        0, //unkown speed
-        CacheErrorSingleBit, //ECC checking
-        CacheTypeData, //instruction cache
-        CacheAssociativity4Way, //four way associative
+        // Current SRAM Type
+        0, // Other             :1
+        0, // Unknown           :1
+        0, // NonBurst          :1
+        0, // Burst             :1
+        0, // PiplelineBurst    :1
+        0, // Synchronous       :1
+        0, // Asynchronous      :1
+        0  // Reserved          :9
     },
-    TYPE7_STRINGS
+    0,                     // Cache Speed unknown
+    CacheErrorParity,      // Error Correction Multi
+    CacheTypeUnified,      // System Cache Type
+    CacheAssociativity8Way // Associativity
 };
+CHAR8 *mCacheInfoType7Strings[] = {"L2 Cache", NULL};
 
-STATIC CONST ARM_TYPE7 mArmDefaultType7_a8_l2 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE9  System Slot Information
+************************************************************************/
+SMBIOS_TABLE_TYPE9 mSysSlotInfoType9 = {
+    {EFI_SMBIOS_TYPE_SYSTEM_SLOTS, sizeof(SMBIOS_TABLE_TYPE9), 0},
+    1,             // SlotDesignation String
+    SlotTypeOther, // SlotType;                 ///< The enumeration value from
+                   // MISC_SLOT_TYPE.
+    SlotDataBusWidthOther, // SlotDataBusWidth;         ///< The enumeration
+                           // value from MISC_SLOT_DATA_BUS_WIDTH.
+    SlotUsageAvailable, // CurrentUsage;             ///< The enumeration value
+                        // from MISC_SLOT_USAGE.
+    SlotLengthOther,    // SlotLength;               ///< The enumeration value
+                        // from MISC_SLOT_LENGTH.
+    0,                  // SlotID;
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_CACHE_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE7),       // UINT8 Length
-            SMBIOS_HANDLE_A8_L2,
-        },
-        3,
-        0x181, //L2 enabled, WB
-        256, //256KB D cache max
-        256, //256KB installed
-        {0, 1}, //SRAM type
-        {0, 1}, //SRAM type
-        128, //speed: 128 B/line
-        CacheErrorSingleBit, //ECC checking
-        CacheTypeUnified, //instruction cache
-        CacheAssociativity16Way, //16 way associative
+        // SlotCharacteristics1;
+        1, // CharacteristicsUnknown  :1;
+        0, // Provides50Volts         :1;
+        0, // Provides33Volts         :1;
+        0, // SharedSlot              :1;
+        0, // PcCard16Supported       :1;
+        0, // CardBusSupported        :1;
+        0, // ZoomVideoSupported      :1;
+        0, // ModemRingResumeSupported:1;
     },
-    TYPE7_STRINGS
-};
-
-// Memory array
-STATIC CONST ARM_TYPE16 mArmDefaultType16 = {
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_PHYSICAL_MEMORY_ARRAY, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE16),          // UINT8 Length
-            SMBIOS_HANDLE_MEMORY,
-        },
-        MemoryArrayLocationSystemBoard, //on motherboard
-        MemoryArrayUseSystemMemory,     //system RAM
-        MemoryErrorCorrectionUnknown,   // MemoryErrorCorrection;          ///< The
+        // SlotCharacteristics2;
+        0, // PmeSignalSupported      :1;
+        0, // HotPlugDevicesSupported :1;
+        0, // SmbusSignalSupported    :1;
+        0, // Reserved                :5;  ///< Set to 0.
+    },
+    0, // SegmentGroupNum;
+    0, // BusNum;
+    0, // DevFuncNum;
+};
+CHAR8 *mSysSlotInfoType9Strings[] = {"SD Card", NULL};
+
+/***********************************************************************
+        SMBIOS data definition  TYPE16  Physical Memory ArrayInformation
+************************************************************************/
+SMBIOS_TABLE_TYPE16 mPhyMemArrayInfoType16 = {
+    {EFI_SMBIOS_TYPE_PHYSICAL_MEMORY_ARRAY, sizeof(SMBIOS_TABLE_TYPE16), 0},
+    MemoryArrayLocationSystemBoard, // Location;                       ///< The
+                                    // enumeration value from
+                                    // MEMORY_ARRAY_LOCATION.
+    MemoryArrayUseSystemMemory,     // Use;                            ///< The
+                                    // enumeration value from MEMORY_ARRAY_USE.
+    MemoryErrorCorrectionUnknown,   // MemoryErrorCorrection;          ///< The
                                     // enumeration value from
                                     // MEMORY_ERROR_CORRECTION.
-        0x1E800000, //576MB
-        0xFFFE,   //No error information structure
-        0x1,      //soldered memory
-    },
-    TYPE16_STRINGS
+    0x1E800000,                     // MaximumCapacity;
+    0xFFFE,                         // MemoryErrorInformationHandle;
+    1,                              // NumberOfMemoryDevices;
+    0x1E800000ULL,                  // ExtendedMaximumCapacity;
 };
+CHAR8 *mPhyMemArrayInfoType16Strings[] = {NULL};
 
-// Memory device
-STATIC CONST ARM_TYPE17 mArmDefaultType17 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE17  Memory Device Information
+************************************************************************/
+SMBIOS_TABLE_TYPE17 mMemDevInfoType17 = {
+    {EFI_SMBIOS_TYPE_MEMORY_DEVICE, sizeof(SMBIOS_TABLE_TYPE17), 0},
+    0, // MemoryArrayHandle; // Should match SMBIOS_TABLE_TYPE16.Handle,
+       // initialized at runtime, refer to PhyMemArrayInfoUpdateSmbiosType16()
+    0xFFFE, // MemoryErrorInformationHandle;
+    0xFFFF, // TotalWidth;
+    0xFFFF, // DataWidth;
+    0x0C00, // Size; // When bit 15 is 0: Size in MB
+            // When bit 15 is 1: Size in KB, and continues in ExtendedSize
+    MemoryFormFactorRowOfChips, // FormFactor;                     ///< The
+                                // enumeration value from MEMORY_FORM_FACTOR.
+    0xff,                       // DeviceSet;
+    0,                          // DeviceLocator String
+    0,                          // BankLocator String
+    MemoryTypeLpddr4, // MemoryType;                     ///< The enumeration
+                      // value from MEMORY_DEVICE_TYPE.
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_MEMORY_DEVICE, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE17),  // UINT8 Length
-            SMBIOS_HANDLE_DIMM,
-        },
-        SMBIOS_HANDLE_MEMORY, //array to which this module belongs
-        0xFFFE,               //no errors
-        64, //single DIMM, no ECC is 64bits (for ecc this would be 72)
-        64, //data width of this device (64-bits)
-        0x0800, //512MB
-        0x0B,   //row of chips
-        0,      //not part of a set
-        1,      //right side of board
-        2,      //bank 0
-        MemoryTypeLpddr,                  //LP DDR
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, //unbuffered
-        2133,                            //2133Mhz DDR
-        0, //varies between diffrent production runs
-        0, //serial
-        0, //asset tag
-        0, //part number
-        0, //rank
+        // TypeDetail;
+        0, // Reserved        :1;
+        0, // Other           :1;
+        1, // Unknown         :1;
+        0, // FastPaged       :1;
+        0, // StaticColumn    :1;
+        0, // PseudoStatic    :1;
+        0, // Rambus          :1;
+        0, // Synchronous     :1;
+        0, // Cmos            :1;
+        0, // Edo             :1;
+        0, // WindowDram      :1;
+        0, // CacheDram       :1;
+        0, // Nonvolatile     :1;
+        0, // Registered      :1;
+        0, // Unbuffered      :1;
+        0, // Reserved1       :1;
     },
-    TYPE17_STRINGS
+    1600, // Speed;
+    0,    // Manufacturer String
+    0,    // SerialNumber String
+    0,    // AssetTag String
+    0,    // PartNumber String
+    0,    // Attributes;
+    0,    // ExtendedSize;
+    0,    // ConfiguredMemoryClockSpeed;
 };
 
-// Memory array mapped address, this structure
-// is overridden by InstallMemoryStructure
-STATIC CONST ARM_TYPE19 mArmDefaultType19 = {
+CHAR8 *mMemDevInfoType17Strings[] = {"Top - on board", "Bank 0", "Not Specified", "Not Specified", "Not Specified", "Not Specified", NULL};
+
+/***********************************************************************
+        SMBIOS data definition  TYPE19  Memory Array Mapped Address Information
+************************************************************************/
+SMBIOS_TABLE_TYPE19 mMemArrMapInfoType19 = {
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_MEMORY_ARRAY_MAPPED_ADDRESS, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE19),                // UINT8 Length
-            SMBIOS_HANDLE_PI_RESERVED,
-        },
-        0xFFFFFFFF, //invalid, look at extended addr field
-        0xFFFFFFFF,
-        SMBIOS_HANDLE_DIMM, //handle
-        1,
-        0x11800000,        //starting addr of first 576MB
-        0x30000000,        //ending addr of first 576MB
+        EFI_SMBIOS_TYPE_MEMORY_ARRAY_MAPPED_ADDRESS,
+        sizeof(SMBIOS_TABLE_TYPE19),
+        0,
     },
-    TYPE19_STRINGS
+    0x00000000, // StartingAddress;
+    0x00000000, // EndingAddress;
+    0,          // MemoryArrayHandle;
+    1,          // PartitionWidth;
+    0,          // ExtendedStartingAddress;
+    0,          // ExtendedEndingAddress;
 };
+CHAR8 *mMemArrMapInfoType19Strings[] = {NULL};
 
-// System boot info
-STATIC CONST ARM_TYPE32 mArmDefaultType32 = {
+/***********************************************************************
+        SMBIOS data definition  TYPE32  Boot Information
+************************************************************************/
+SMBIOS_TABLE_TYPE32 mBootInfoType32 = {
     {
-        {
-            // SMBIOS_STRUCTURE Hdr
-            EFI_SMBIOS_TYPE_SYSTEM_BOOT_INFORMATION, // UINT8 Type
-            sizeof (SMBIOS_TABLE_TYPE32),            // UINT8 Length
-            SMBIOS_HANDLE_PI_RESERVED,
-        },
-        {0, 0, 0, 0, 0, 0},                        //reserved
-        BootInformationStatusNoError,
+        EFI_SMBIOS_TYPE_SYSTEM_BOOT_INFORMATION,
+        sizeof(SMBIOS_TABLE_TYPE32),
+        0,
     },
-    TYPE32_STRINGS
+    {0, 0, 0, 0, 0, 0},          // Reserved[6];
+    BootInformationStatusNoError // BootStatus
 };
 
-STATIC CONST VOID *DefaultCommonTables[] = {
-    &mArmDefaultType0,
-    &mArmDefaultType1,
-    &mArmDefaultType2,
-    &mArmDefaultType3,
-    &mArmDefaultType7_a8_l1i,
-    &mArmDefaultType7_a8_l1d,
-    &mArmDefaultType7_a8_l2,
-    &mArmDefaultType4_a8,
-    &mArmDefaultType16,
-    &mArmDefaultType17,
-    //    &mArmDefaultType19, //memory range type 19 dynamically generated
-    &mArmDefaultType32,
+CHAR8 *mBootInfoType32Strings[] = {NULL};
+
+/**
+
+  Create SMBIOS record.
+
+  Converts a fixed SMBIOS structure and an array of pointers to strings into
+  an SMBIOS record where the strings are cat'ed on the end of the fixed record
+  and terminated via a double NULL and add to SMBIOS table.
+
+  SMBIOS_TABLE_TYPE32 gSmbiosType12 = {
+    { EFI_SMBIOS_TYPE_SYSTEM_CONFIGURATION_OPTIONS, sizeof
+(SMBIOS_TABLE_TYPE12), 0 }, 1 // StringCount
+  };
+
+  CHAR8 *gSmbiosType12Strings[] = {
+    "Not Found",
     NULL
-};
+  };
 
-STATIC CONST VOID *DefaultTablesR0R1[] = {
-    &mArmDefaultType7_a8_l1i,
-    &mArmDefaultType7_a8_l1d,
-    &mArmDefaultType7_a8_l2,
-    &mArmDefaultType4_a8,
-    NULL
-};
+  ...
 
-/**
-   Installs a memory descriptor (type19) for the given address range
+  LogSmbiosData (
+    (EFI_SMBIOS_TABLE_HEADER*)&gSmbiosType12,
+    gSmbiosType12Strings
+    );
 
-   @param  Smbios               SMBIOS protocol
-
+  @param  Template    Fixed SMBIOS structure, required.
+  @param  StringPack  Array of strings to convert to an SMBIOS string pack.
+                      NULL is OK.
+  @param  DataSmbiosHande  The new SMBIOS record handle .
+                      NULL is OK.
 **/
-EFI_STATUS
-InstallMemoryStructure (
-    IN EFI_SMBIOS_PROTOCOL       *Smbios,
-    IN UINT64                    StartingAddress,
-    IN UINT64                    RegionLength
-) {
-    EFI_SMBIOS_HANDLE         SmbiosHandle;
-    ARM_TYPE19                MemoryDescriptor;
-    EFI_STATUS                Status = EFI_SUCCESS;
-    CopyMem( &MemoryDescriptor, &mArmDefaultType19, sizeof(ARM_TYPE19));
-    MemoryDescriptor.Base.ExtendedStartingAddress = StartingAddress;
-    MemoryDescriptor.Base.ExtendedEndingAddress = StartingAddress + RegionLength;
-    SmbiosHandle = MemoryDescriptor.Base.Hdr.Handle;
-    Status = Smbios->Add (
-                 Smbios,
-                 NULL,
-                 &SmbiosHandle,
-                 (EFI_SMBIOS_TABLE_HEADER *) &MemoryDescriptor
-             );
-    return Status;
-}
 
-/**
-   Install a whole table worth of structructures
-
-   @parm
-**/
-EFI_STATUS
-InstallStructures (
-    IN EFI_SMBIOS_PROTOCOL       *Smbios,
-    IN CONST VOID *DefaultTables[]
-) {
-    EFI_STATUS                Status = EFI_SUCCESS;
-    EFI_SMBIOS_HANDLE         SmbiosHandle;
-    int TableEntry;
-    for ( TableEntry = 0; DefaultTables[TableEntry] != NULL; TableEntry++) {
-        SmbiosHandle = ((EFI_SMBIOS_TABLE_HEADER *)DefaultTables[TableEntry])->Handle;
-        Status = Smbios->Add (
-                     Smbios,
-                     NULL,
-                     &SmbiosHandle,
-                     (EFI_SMBIOS_TABLE_HEADER *) DefaultTables[TableEntry]
-                 );
-        if (EFI_ERROR(Status))
-            break;
-    }
-    return Status;
-}
-
-
-/**
-   Install all structures from the DefaultTables structure
-
-   @param  Smbios               SMBIOS protocol
-
-**/
-EFI_STATUS
-InstallAllStructures (
-    IN EFI_SMBIOS_PROTOCOL       *Smbios
-) {
-    EFI_STATUS                Status = EFI_SUCCESS;
-    VOID                      *ExtraTables = DefaultTablesR0R1;
-    //
-    // Add all Leo table entries
-    //
-    Status = InstallStructures (Smbios, DefaultCommonTables);
-    ASSERT_EFI_ERROR (Status);
-    Status = InstallStructures (Smbios, ExtraTables);
-    ASSERT_EFI_ERROR (Status);
-    // Generate memory descriptors for the two memory ranges we know about
-    Status = InstallMemoryStructure ( Smbios, PcdGet64 (PcdSystemMemoryBase), PcdGet64 (PcdSystemMemorySize));
-    ASSERT_EFI_ERROR (Status);
-    return Status;
-}
-
-/**
-   Installs SMBIOS information for ARM platforms
-
-   @param ImageHandle     Module's image handle
-   @param SystemTable     Pointer of EFI_SYSTEM_TABLE
-
-   @retval EFI_SUCCESS    Smbios data successfully installed
-   @retval Other          Smbios data was not installed
-
-**/
 EFI_STATUS
 EFIAPI
-SmbiosTablePublishEntry (
-    IN EFI_HANDLE           ImageHandle,
-    IN EFI_SYSTEM_TABLE     *SystemTable
-) {
-    EFI_STATUS                Status;
-    EFI_SMBIOS_PROTOCOL       *Smbios;
-    //
-    // Find the SMBIOS protocol
-    //
-    Status = gBS->LocateProtocol (
-                 &gEfiSmbiosProtocolGuid,
-                 NULL,
-                 (VOID **)&Smbios
-             );
-    if (EFI_ERROR (Status))
-        return Status;
-    Status = InstallAllStructures (Smbios);
+LogSmbiosData(
+    IN EFI_SMBIOS_TABLE_HEADER *Template, IN CHAR8 **StringPack,
+    OUT EFI_SMBIOS_HANDLE *DataSmbiosHande)
+{
+  EFI_STATUS               Status;
+  EFI_SMBIOS_PROTOCOL *    Smbios;
+  EFI_SMBIOS_HANDLE        SmbiosHandle;
+  EFI_SMBIOS_TABLE_HEADER *Record;
+  UINTN                    Index;
+  UINTN                    StringSize;
+  UINTN                    Size;
+  CHAR8 *                  Str;
+
+  //
+  // Locate Smbios protocol.
+  //
+  Status = gBS->LocateProtocol(&gEfiSmbiosProtocolGuid, NULL, (VOID **)&Smbios);
+
+  if (EFI_ERROR(Status)) {
     return Status;
+  }
+
+  // Calculate the size of the fixed record and optional string pack
+
+  Size = Template->Length;
+  if (StringPack == NULL) {
+    // At least a double null is required
+    Size += 2;
+  }
+  else {
+    for (Index = 0; StringPack[Index] != NULL; Index++) {
+      StringSize = AsciiStrSize(StringPack[Index]);
+      Size += StringSize;
+    }
+    if (StringPack[0] == NULL) {
+      // At least a double null is required
+      Size += 1;
+    }
+
+    // Don't forget the terminating double null
+    Size += 1;
+  }
+
+  // Copy over Template
+  Record = (EFI_SMBIOS_TABLE_HEADER *)AllocateZeroPool(Size);
+  if (Record == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  CopyMem(Record, Template, Template->Length);
+
+  // Append string pack
+  Str = ((CHAR8 *)Record) + Record->Length;
+
+  for (Index = 0; StringPack[Index] != NULL; Index++) {
+    StringSize = AsciiStrSize(StringPack[Index]);
+    CopyMem(Str, StringPack[Index], StringSize);
+    Str += StringSize;
+  }
+
+  *Str         = 0;
+  SmbiosHandle = SMBIOS_HANDLE_PI_RESERVED;
+  Status       = Smbios->Add(Smbios, gImageHandle, &SmbiosHandle, Record);
+
+  if ((Status == EFI_SUCCESS) && (DataSmbiosHande != NULL)) {
+    *DataSmbiosHande = SmbiosHandle;
+  }
+
+  ASSERT_EFI_ERROR(Status);
+  FreePool(Record);
+  return Status;
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE0  BIOS Information
+************************************************************************/
+VOID BIOSInfoUpdateSmbiosType0(VOID)
+{
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mBIOSInfoType0, mBIOSInfoType0Strings, NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE1  System Information
+************************************************************************/
+
+VOID SysInfoUpdateSmbiosType1(VOID)
+{
+  //CHAR8  serialNo[13];
+  //UINT32 serial;
+
+  // Update string table before proceeds
+  mSysInfoType1Strings[1] = (CHAR8 *)FixedPcdGetPtr(PcdSmbiosSystemModel);
+  mSysInfoType1Strings[2] = (CHAR8 *)FixedPcdGetPtr(PcdSmbiosSystemRetailModel);
+  mSysInfoType1Strings[4] = (CHAR8 *)FixedPcdGetPtr(PcdSmbiosSystemRetailModel);
+
+  // Update serial number from Board DXE
+  /*if (mBoardProtocol != NULL) {
+    mBoardProtocol->board_chip_serial_char8(serialNo);
+    mSysInfoType1Strings[3] = serialNo;
+
+    serial                   = mBoardProtocol->board_chip_serial();
+    mSysInfoType1.Uuid.Data1 = (UINT32)serial;
+  }*/
+
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mSysInfoType1, mSysInfoType1Strings, NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE2  Board Information
+************************************************************************/
+VOID BoardInfoUpdateSmbiosType2(VOID)
+{
+  //CHAR8  serialNo[13];
+
+  // Update string table before proceeds
+  mBoardInfoType2Strings[1] = (CHAR8 *)FixedPcdGetPtr(PcdSmbiosSystemModel);
+  mBoardInfoType2Strings[2] =
+      (CHAR8 *)FixedPcdGetPtr(PcdSmbiosSystemRetailModel);
+
+  // Update serial number from Board DXE
+  /*if (mBoardProtocol != NULL) {
+    mBoardProtocol->board_chip_serial_char8(serialNo);
+    mBoardInfoType2Strings[3] = serialNo;
+  }*/
+
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mBoardInfoType2, mBoardInfoType2Strings,
+      NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE3  Enclosure Information
+************************************************************************/
+VOID EnclosureInfoUpdateSmbiosType3(VOID)
+{
+  CHAR8  serialNo[13];
+
+  // Update serial number from Board DXE
+  /*if (mBoardProtocol != NULL) {
+    mBoardProtocol->board_chip_serial_char8(serialNo);
+    mEnclosureInfoType3Strings[2] = serialNo;
+  }*/
+
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mEnclosureInfoType3,
+      mEnclosureInfoType3Strings, NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE4  Processor Information
+************************************************************************/
+VOID ProcessorInfoUpdateSmbiosType4(IN UINTN MaxCpus)
+{
+  // Update string table before proceeds
+  mProcessorInfoType4Strings[2] =
+      (CHAR8 *)FixedPcdGetPtr(PcdSmbiosProcessorModel);
+
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mProcessorInfoType4,
+      mProcessorInfoType4Strings, NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE7  Cache Information
+************************************************************************/
+VOID CacheInfoUpdateSmbiosType7(VOID)
+{
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mCacheInfoType7, mCacheInfoType7Strings,
+      NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE9  System Slot Information
+************************************************************************/
+VOID SysSlotInfoUpdateSmbiosType9(VOID)
+{
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mSysSlotInfoType9, mSysSlotInfoType9Strings,
+      NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE16  Physical Memory Array Information
+************************************************************************/
+VOID PhyMemArrayInfoUpdateSmbiosType16(VOID)
+{
+  EFI_SMBIOS_HANDLE MemArraySmbiosHande;
+
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mPhyMemArrayInfoType16,
+      mPhyMemArrayInfoType16Strings, &MemArraySmbiosHande);
+
+  //
+  // Update the memory device information
+  //
+  mMemDevInfoType17.MemoryArrayHandle = MemArraySmbiosHande;
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE17  Memory Device Information
+************************************************************************/
+VOID MemDevInfoUpdateSmbiosType17(VOID)
+{
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mMemDevInfoType17, mMemDevInfoType17Strings,
+      NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE19  Memory Array Map Information
+************************************************************************/
+VOID MemArrMapInfoUpdateSmbiosType19(VOID)
+{
+  mMemArrMapInfoType19.StartingAddress =
+      FixedPcdGet32(PcdSystemMemoryBase) / 1024;
+  mMemArrMapInfoType19.EndingAddress =
+      (FixedPcdGet32(PcdSystemMemorySize) + FixedPcdGet32(PcdSystemMemoryBase) -
+       1) /
+      1024;
+
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mMemArrMapInfoType19,
+      mMemArrMapInfoType19Strings, NULL);
+}
+
+/***********************************************************************
+        SMBIOS data update  TYPE32  Boot Information
+************************************************************************/
+VOID BootInfoUpdateSmbiosType32(VOID)
+{
+  LogSmbiosData(
+      (EFI_SMBIOS_TABLE_HEADER *)&mBootInfoType32, mBootInfoType32Strings,
+      NULL);
+}
+
+/***********************************************************************
+        Driver Entry
+************************************************************************/
+EFI_STATUS
+EFIAPI
+SmBiosTableDxeInitialize(
+    IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+  EFI_STATUS Status;
+
+  // Locate Qualcomm Board Protocol
+  /*Status = gBS->LocateProtocol(
+      &gQcomBoardProtocolGuid, NULL, (VOID *)&mBoardProtocol);*/
+
+  BIOSInfoUpdateSmbiosType0();
+  SysInfoUpdateSmbiosType1();
+  BoardInfoUpdateSmbiosType2();
+  EnclosureInfoUpdateSmbiosType3();
+  ProcessorInfoUpdateSmbiosType4(PcdGet32(PcdCoreCount));
+  CacheInfoUpdateSmbiosType7();
+  SysSlotInfoUpdateSmbiosType9();
+  PhyMemArrayInfoUpdateSmbiosType16();
+  MemDevInfoUpdateSmbiosType17();
+  MemArrMapInfoUpdateSmbiosType19();
+  BootInfoUpdateSmbiosType32();
+
+  return EFI_SUCCESS;
 }

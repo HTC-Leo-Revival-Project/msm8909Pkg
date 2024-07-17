@@ -80,3 +80,8 @@
   gQcomTokenSpaceGuid.PcdMsmSharedBase|0x00100000|UINT64|0x00000001
   gQcomTokenSpaceGuid.PcdMsmSharedSize|0x00100000|UINT64|0x00000002
   gQcomTokenSpaceGuid.PcdSmemTargetInfoAddress|0|UINT64|0x0000003
+
+  # SMBIOS
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"QSD8250 Device"|VOID*|0x0000a301
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosProcessorModel|"Qualcomm Snapdragon S1 Processor (QSD8250)"|VOID*|0x0000a302
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"Codename"|VOID*|0x0000a303
