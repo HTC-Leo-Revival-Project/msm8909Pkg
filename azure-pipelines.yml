@@ -40,17 +40,32 @@ steps:
       export PACKAGES_PATH=$PWD/home/vsts/work/1/edk2:$PWD/home/vsts/work/1/edk2-platforms:$PWD
       export WORKSPACE=$PWD/workspace
       . /home/vsts/work/1/edk2/edksetup.sh
-      chmod a+x build.sh
-      ./build.sh
+      chmod a+x *.sh
+
+- script: |
+    ./build.sh -d All
+  displayName: Build uefi for all platforms
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Htc Leo UEFI kernel'
   inputs: 
-    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/uefi.img
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Leo/uefi.img
     artifactName: Htc Leo UEFI kernel
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Htc Leo UEFI NBH'
   inputs: 
-    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/LEOIMG.nbh
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Leo/LEOIMG.nbh
     artifactName: Htc Leo UEFI NBH
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Htc Schubert UEFI payload'
+  inputs: 
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Schubert/bootpayload.bin
+    artifactName: Htc Schubert UEFI payload
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Htc Schubert UEFI kernel'
+  inputs: 
+    pathtoPublish: /home/vsts/work/1/HtcLeoPkg/ImageResources/Schubert/uefi.img
+    artifactName: Htc Schubert UEFI kernel
