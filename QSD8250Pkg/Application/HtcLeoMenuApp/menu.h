@@ -7,6 +7,8 @@
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
 #include <Library/ArmLib.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Guid/FileInfo.h>
 
 #include <Library/HtcLeoPlatformResetLib.h>
 #include <Library/MemoryAllocationLib.h>
@@ -18,6 +20,7 @@
 #include <Protocol/LoadedImage.h>
 #include <Resources/FbColor.h>
 #include <Chipset/timer.h>
+#include <Library/PrintLib.h>
 
 #ifndef _MAIN_MENU_H_
 #define _MAIN_MENU_H_
@@ -51,5 +54,10 @@ void NullFunction();
 void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void StartTetris(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+void DumpMemory2Sdcard(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+void DumpMemory2SdcardHelper(UINTN* hexval, CHAR16** hexstring, UINTN* length, IN EFI_SYSTEM_TABLE *SystemTable);
+void DumpDmesg(void);
+EFI_STATUS ReadMemoryAndWriteToFile(UINTN* MemoryAddress,UINTN Length, CHAR16 *FilePath);
+CHAR16* GetHexInput(EFI_SYSTEM_TABLE *SystemTable, CHAR16* message);
 
 #endif

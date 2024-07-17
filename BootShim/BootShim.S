@@ -79,7 +79,7 @@ _PrepareForBoot:
 
 	// Disable VFP
 	MOV R0, #0
-	//FMXR FPEXC, r0
+	FMXR FPEXC, r0
 
         // disable mmu
 	MRC p15, 0, r0, c1, c0, 0
@@ -103,7 +103,7 @@ _UefiSetup:
   	bic     r0, r0, #0x00000005     /* clear bits 0, 2 (---- -C-M) */
   	bic     r0, r0, #0x00000002     /* Clear bit 1 (Alignment faults) */
   	orr     r0, r0, #0x00001000     /* set bit 12 (I) enable I-Cache */
-	mcr		p15, 0, r0, c1, c0, 0
+  	mcr     p15, 0, r0, c1, c0, 0
 
 _Relocate:
 	/* see if we need to relocate */
