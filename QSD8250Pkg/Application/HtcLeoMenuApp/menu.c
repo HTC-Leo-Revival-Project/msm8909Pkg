@@ -194,6 +194,9 @@ void StartApp(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable, CHAR1
 
 void StartShell(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
+  EFI_STATUS Status = EFI_SUCCESS;
+
+  Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
   StartApp(ImageHandle, SystemTable, SHELL_APP_TITLE);
 }
 
@@ -254,7 +257,8 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   UINT32 Timeout = 400; //TODO: Get from pcd
 
   Print(L" Press Home within %d seconds to boot to menu\n", (Timeout / 100));
-  Print(L" or back key to boot from ESP\n");
+  Print(L" Back key to boot from ESP\n");
+  Print(L" Power key to boot to builtin UEFI Shell\n");
 
   do {
     Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
@@ -269,6 +273,9 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
           break;
         case CHAR_BACKSPACE:
           goto boot_esp;
+          break;
+        case SCAN_ESC:
+          StartShell(ImageHandle, SystemTable);
           break;
         default:
           break;

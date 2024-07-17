@@ -84,7 +84,7 @@ prepare_for_linux:
 	MOV R0, #0
 	//FMXR FPEXC, r0
 
-    // disable mmu
+        // disable mmu
 	MRC p15, 0, r0, c1, c0, 0
 	BIC r0, r0, #(1<<0)
 	MCR p15, 0, r0, c1, c0, 0
