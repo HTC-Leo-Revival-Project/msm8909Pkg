@@ -305,8 +305,11 @@ SdCardInitialize(
   	Status = gBS->LocateProtocol (&gEmbeddedClockProtocolGuid, NULL, (VOID **)&gClock);
   	ASSERT_EFI_ERROR (Status);
 
-    //if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
-    //{
+#if DEVICETYPE == 1
+    /* Read the gpio on leo (we assume sd is always in on schubert )*/
+    if (!gGpio->Get(HTCLEO_GPIO_SD_STATUS))
+    {
+#endif
         // Enable the SDC2 clock
         gClock->ClkEnable(SDC2_CLK);
 
@@ -349,11 +352,13 @@ SdCardInitialize(
 			&gEfiDevicePathProtocolGuid, &gMmcHsDevicePath,
 			NULL
 			);
-    /*}
+#if DEVICETYPE == 1
+    }
     else {
         // TODO: Defer installing protocol until card is found
         DEBUG((EFI_D_ERROR, "SD Card NOT inserted!\n"));
         return EFI_DEVICE_ERROR;
-    }*/
+    }
+#endif
 	return Status;
 }
