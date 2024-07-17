@@ -176,12 +176,20 @@ switch(Device){
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
 
-    // dial button
+    // camera button
     StaticContext                  = KeypadKeyCodeToKeyContext(120);
     StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
     StaticContext->Gpio            = 90;
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
+
+    // power button
+    StaticContext                  = KeypadKeyCodeToKeyContext(118);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
+    StaticContext->Gpio            = 42;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = TRUE;
     StaticContext->IsValid         = TRUE;
     break;
   case LEO:
