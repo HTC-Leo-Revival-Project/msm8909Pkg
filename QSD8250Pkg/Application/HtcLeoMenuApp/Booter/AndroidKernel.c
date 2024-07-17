@@ -1,59 +1,34 @@
 #include "../menu.h"
 #include <Chipset/interrupts.h>
 
-static inline void htcleo_boot_s() {
-    asm volatile (
-        // Save registers
-        "MOV r9, r0\n"
+void htcleo_prepare_for_linux(void)
+{
+	// Martijn Stolk's code so kernel will not crash. aux control register
+	__asm__ volatile("MRC p15, 0, r0, c1, c0, 1\n"
+					 "BIC r0, r0, #0x40\n"
+					 "BIC r0, r0, #0x200000\n"
+					 "MCR p15, 0, r0, c1, c0, 1");
 
-        // Cotulla's code so kernel will not crash. aux control register
-        // Found more info here: http://www.spinics.net/lists/linux-arm-msm/msg00492.html
-        // It looks it is Martijn Stolk's code
-        "MRC p15, 0, r0, c1, c0, 1\n"
-        "BIC r0, r0, #0x40\n"               // (1<<6)  IBE (0 = executes the CP15 Invalidate All and Invalidate by MVA instructions as a NOP instruction, reset value)
-        "BIC r0, r0, #0x200000\n"           // (1<<21) undocumented bit
-        "MCR p15, 0, r0, c1, c0, 1\n"
+	// Disable VFP
+	// __asm__ volatile("MOV R0, #0\n"
+	// 				 "FMXR FPEXC, r0");
 
-        // Disable VFP
-        "MOV r0, #0\n"
-       // "FMXR FPEXC, r0\n"
+    // disable mmu
+	__asm__ volatile("MRC p15, 0, r0, c1, c0, 0\n"
+					 "BIC r0, r0, #(1<<0)\n"
+					 "MCR p15, 0, r0, c1, c0, 0\n"
+					 "ISB");
+	
+	// Invalidate the UTLB
+	__asm__ volatile("MOV r0, #0\n"
+					 "MCR p15, 0, r0, c8, c7, 0");
 
-        // ICIALL to invalidate entire I-Cache
-        "MCR p15, 0, r0, c7, c5, 0\n"       // ICIALLU
+	// Clean and invalidate cache - Ensure pipeline flush
+	__asm__ volatile("MOV R0, #0\n"
+					 "DSB\n"
+					 "ISB");
 
-        // Disable dcache and i cache
-        "MRC p15, 0, r0, c1, c0, 0\n"
-        "BIC r0, r0, #(1<<0)\n"             // disable mmu (already disabled)
-        "BIC r0, r0, #(1<<2)\n"             // disable data cache
-        "BIC r0, r0, #(1<<12)\n"            // disable instruction cache
-        "MCR p15, 0, r0, c1, c0, 0\n"
-        "ISB\n"
-
-        // DCIALL to invalidate L2 cache bank (needs to be run 4 times, once per bank)
-        // This must be done early in code (prior to enabling the caches)
-        "MOV r0, #0x2\n"
-        "MCR p15, 0, r0, c9, c0, 6\n"       // DCIALL bank D ([15:14] == 2'b00)
-        "ORR r0, r0, #0x00004000\n"
-        "MCR p15, 0, r0, c9, c0, 6\n"       // DCIALL bank C ([15:14] == 2'b01)
-        "ADD r0, r0, #0x00004000\n"
-        "MCR p15, 0, r0, c9, c0, 6\n"       // DCIALL bank B ([15:14] == 2'b10)
-        "ADD r0, r0, #0x00004000\n"
-        "MCR p15, 0, r0, c9, c0, 6\n"       // DCIALL bank A ([15:14] == 2'b11)
-        // DCIALL to invalidate entire D-Cache
-        "MOV r0, #0\n"
-        "MCR p15, 0, r0, c9, c0, 6\n"       // DCIALL r0
-        "DSB\n"
-        "ISB\n"
-
-        // Invalidate the UTLB
-        "MOV r0, #0\n"
-        "MCR p15, 0, r0, c8, c7, 0\n"       // UTLBIALL
-        "ISB\n"
-		"MOV R0, #0 \n"
-        "BLX R9 \n"
-
-        ".ltorg\n"
-    );
+	__asm__ volatile("BX LR");
 }
 
 void htcleo_disable_interrupts(void)
@@ -67,12 +42,6 @@ void htcleo_disable_interrupts(void)
     MmioWrite32(VIC_INT_EN1, 0);
 	//disable interrupts
     MmioWrite32(VIC_INT_MASTEREN, 0);
-}
-
-void htcleo_boot(void* kernel,unsigned machtype,void* tags)
-{
-	htcleo_disable_interrupts();
-	htcleo_boot_s(kernel, machtype, tags);
 }
 
 unsigned* target_atag_mem(unsigned* ptr)
@@ -117,7 +86,7 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
     UINT32 DescriptorVersion;
 	unsigned *ptr = tags;
 	//unsigned pcount = 0;
-	//void (*entry)(unsigned,unsigned,unsigned*) = kernel;
+	void (*entry)(unsigned,unsigned,unsigned*) = kernel;
 	//struct ptable *ptable;
 	int cmdline_len = 0;
 	int have_cmdline = 0;
@@ -227,15 +196,24 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
     if (EFI_ERROR(Status)) {
         Print(L"Failed to get memory map: %r\n", Status);
     }
-
+	Print(L"about to exit bs \n");
     // Exit Boot Services
     Status = SystemTable->BootServices->ExitBootServices(ImageHandle, MapKey);
     if (EFI_ERROR(Status)) {
         Print(L"Failed to exit boot services: %r\n", Status);
     }
 
+	Print(L"about to disable interrupts \n");
+
 	//we are ready to boot the freshly loaded kernel
-	htcleo_boot(kernel, machtype, tags);
+	htcleo_disable_interrupts();
+	Print(L"Preparing... \n");
+	htcleo_prepare_for_linux();
+	Print(L"Jumping now... \n");
+	entry(0, machtype, tags);
+	Print(L"Failed to boot Linux, jump did not happen were still in uefiland \n");
+	//deadlock the platform this is not recoverable
+	for(;;);
 }
 
 EFI_STATUS
