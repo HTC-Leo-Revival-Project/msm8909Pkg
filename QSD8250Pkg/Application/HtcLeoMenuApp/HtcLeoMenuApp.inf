@@ -14,6 +14,7 @@
   HexInput.c
   MemoryTools.c
   menu.c
+  Booter/AndroidKernel.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
