@@ -99,7 +99,6 @@ _PrepareForBoot:
 _UefiSetup:
 	// From PrimeG2Pkg
 	// Disable Strict alignment checking & Enable Instruction cache
-  	mrc     p15, 0, r0, c1, c0, 0
   	bic     r0, r0, #0x00002300     /* clear bits 13, 9:8 (--V- --RS) */
   	bic     r0, r0, #0x00000005     /* clear bits 0, 2 (---- -C-M) */
   	bic     r0, r0, #0x00000002     /* Clear bit 1 (Alignment faults) */
