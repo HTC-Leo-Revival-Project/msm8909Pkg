@@ -106,12 +106,12 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
     UINTN DescriptorSize;
     UINT32 DescriptorVersion;
 	unsigned *ptr = tags;
-	unsigned pcount = 0;
-	void (*entry)(unsigned,unsigned,unsigned*) = kernel;
-	struct ptable *ptable;
+	//unsigned pcount = 0;
+	//void (*entry)(unsigned,unsigned,unsigned*) = kernel;
+	//struct ptable *ptable;
 	int cmdline_len = 0;
 	int have_cmdline = 0;
-	int pause_at_bootup = 0;
+	//int pause_at_bootup = 0;
 
 	/* CORE */
 	*ptr++ = 2;
@@ -180,14 +180,9 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 	/* END */
 	*ptr++ = 0;
 	*ptr++ = 0;
-
-    DEBUG((EFI_D_INFO, "booting linux @ %p, ramdisk @ %p (%d)\n",kernel, ramdisk, ramdisk_size));
+	Print(L"booting linux @ %p, ramdisk @ %p (%d)\n",kernel, ramdisk, ramdisk_size);
 	if (cmdline)
-	   DEBUG((EFI_D_INFO, "cmdline: %s\n", cmdline));
-    /*J0SH1X disable interrupts and timer uninit are done by exitbs
-	enter_critical_section();
-	platform_uninit_timer();
-    */
+	   Print(L"cmdline: %s\n", cmdline);
 
     /*ToDo: add uefi version of this
 	 arch_disable_cache(UCACHE);
@@ -230,10 +225,11 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 
 EFI_STATUS
 EFIAPI
-LoadKernelFromSDCard(
+LoadFileFromSDCard(
     IN EFI_HANDLE ImageHandle,
     IN EFI_SYSTEM_TABLE *SystemTable,
     IN CHAR16 *KernelFileName,
+    IN VOID *LoadAddress, // New parameter for custom load address
     OUT VOID **KernelBuffer,
     OUT UINTN *KernelSize
 )
@@ -323,11 +319,11 @@ LoadKernelFromSDCard(
         return Status;
     }
 
-    // Allocate buffer for the kernel
+    // Allocate buffer for the kernel at the specified load address
     BufferSize = (UINTN)FileInfo->FileSize;
-    Buffer = AllocatePool(BufferSize);
+    Buffer = LoadAddress; // Use the specified LoadAddress
     if (Buffer == NULL) {
-        Print(L"Failed to allocate memory for kernel\n");
+        Print(L"Failed to allocate memory at load address\n");
         FreePool(FileInfo);
         return EFI_OUT_OF_RESOURCES;
     }
@@ -340,7 +336,6 @@ LoadKernelFromSDCard(
              );
     if (EFI_ERROR(Status)) {
         Print(L"Failed to read kernel file: %r\n", Status);
-        FreePool(Buffer);
         FreePool(FileInfo);
         return Status;
     }
@@ -361,30 +356,56 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
 EFI_STATUS Status;
 VOID *KernelBuffer;
 UINTN KernelSize;
+VOID *RamdiskBuffer;
+UINTN RamdiskSize;
 CHAR16 *KernelPath = L"\\zImage";
+CHAR16 *RamdiskPath = L"\\initrd.img";
+//ToDo: get load address dynamically
+VOID *KernelLoadAddress = (VOID *)0x11808000;
+VOID *RamdiskLoadAddress = (VOID *)0x12200000;
+unsigned *tags_address= (unsigned *)0x11800100;
+const char *cmdline = "androidboot.hardware=htcleo androidboot.selinux=permissive androidboot.configfs=false";
+unsigned machtype = 0x9dc;
 
 Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
 ASSERT_EFI_ERROR(Status);
-Status = LoadKernelFromSDCard(ImageHandle, SystemTable, KernelPath, &KernelBuffer, &KernelSize);
+Status = LoadFileFromSDCard(ImageHandle, SystemTable, KernelPath, KernelLoadAddress, &KernelBuffer, &KernelSize);
 if (EFI_ERROR(Status)) {
     Print(L"Failed to load kernel: %r\n", Status);
 } else {
-    Print(L"Kernel loaded successfully. Size: %d bytes\n", KernelSize);
+     Print(L"Kernel loaded successfully at address %p. Size: %d bytes\n", KernelLoadAddress, KernelSize);
+	 //load ramdisk into memory at ramdisk addr
+	 Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
+	if (EFI_ERROR(Status)) {
+    Print(L"Failed to load kernel: %r\n", Status);
+	} else {
+		Print(L"Ramdisk loaded successfully at address %p. Size: %d bytes\n", RamdiskLoadAddress, RamdiskSize);
+	}
     // Now you can use KernelBuffer as needed
     
     // Example: Print the first few bytes of the kernel buffer
-    UINTN PrintSize = (KernelSize > 16) ? 16 : KernelSize;  // Print at most 16 bytes
-    for (UINTN i = 0; i < PrintSize; i++) {
-        Print(L"%02X ", ((UINT8*)KernelBuffer)[i]);
-    }
-    Print(L"\n");
+    //  UINTN PrintSize = (KernelSize > 16) ? 16 : KernelSize;  // Print at most 16 bytes
+    //  for (UINTN i = 0; i < PrintSize; i++) {
+    //      Print(L"%02X ", ((UINT8*)KernelBuffer)[i]);
+    //  }
+    //  Print(L"\n");
 
-	for(;;);
+	//  PrintSize = (RamdiskSize > 16) ? 16 : RamdiskSize;  // Print at most 16 bytes
+    //  for (UINTN i = 0; i < PrintSize; i++) {
+    //      Print(L"%02X ", ((UINT8*)RamdiskBuffer)[i]);
+    //  }
+    //  Print(L"\n");
+	//  for(;;);
+
     
-    // Clean up the kernel buffer when no longer needed
-    FreePool(KernelBuffer);
-}
-
-
+    
 	//kernel and ramdisk and cmdline can now be read from sdcard
+	boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address,cmdline,machtype, RamdiskBuffer, RamdiskSize);
+	// Clean up the kernel buffer when no longer needed, but we should never reach here essentially halt the platform
+	    FreePool(KernelBuffer);
+		Print(L"Booting Linux Failed, unkown error occured");
+		for(;;);
 }
+	
+}
+
