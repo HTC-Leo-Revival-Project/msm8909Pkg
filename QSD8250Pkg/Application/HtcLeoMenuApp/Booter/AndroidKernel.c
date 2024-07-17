@@ -16,7 +16,7 @@ static inline void htcleo_boot_s() {
 
         // Disable VFP
         "MOV r0, #0\n"
-       "FMXR FPEXC, r0\n"
+       // "FMXR FPEXC, r0\n"
 
         // ICIALL to invalidate entire I-Cache
         "MCR p15, 0, r0, c7, c5, 0\n"       // ICIALLU
@@ -49,6 +49,8 @@ static inline void htcleo_boot_s() {
         "MOV r0, #0\n"
         "MCR p15, 0, r0, c8, c7, 0\n"       // UTLBIALL
         "ISB\n"
+		"MOV R0, #0 \n"
+        "BLX R9 \n"
 
         ".ltorg\n"
     );
