@@ -10,6 +10,7 @@
 #include <Protocol/GpioTlmm.h>
 
 #include <Device/Gpio.h>
+#include <Device/DeviceType.h>
 
 #if KP_LED_ENABLE_METHOD == 2
 
@@ -37,13 +38,6 @@ typedef enum {
   KEY_DEVICE_TYPE_PM8X41,
   KEY_DEVICE_TYPE_PM8X41_PON,
 } KEY_DEVICE_TYPE;
-
-typedef enum {
-    LEO,
-    SCHUBERT,
-    BRAVO,
-    PASSION
-} DeviceType;
 
 typedef struct {
   KEY_CONTEXT     EfiKeyContext;
