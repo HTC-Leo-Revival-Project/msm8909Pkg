@@ -339,7 +339,7 @@ SdCardInitialize(
         if (!FoundMbr)
         {
             DEBUG((EFI_D_ERROR, "(Protective) MBR not found \n"));
-            CpuDeadLoop();
+            return EFI_DEVICE_ERROR;
         }
 
 		//Publish BlockIO.
