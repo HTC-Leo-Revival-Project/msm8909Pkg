@@ -253,7 +253,6 @@ if (Device == LEO || Device == BRAVO || Device == PASSION){
           StaticContext->ActiveLow   = 0x1 & 0x1;
           StaticContext->EnableKeyPadLed = FALSE;
           StaticContext->IsValid     = TRUE;
-          break;
 }
 
   // Register for ExitBootServicesEvent
@@ -368,7 +367,7 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         if (IsPressed && Context->EnableKeyPadLed) {
             EnableKeypadLedWithTimer();
         }
-        
+
 
         LibKeyUpdateKeyStatus(
             &Context->EfiKeyContext, KeypadReturnApi, IsPressed, Delta);
