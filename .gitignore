@@ -1,9 +1,12 @@
 BootShim/BootShim.bin
+BooterShim/*bin
+BooterShim/*.elf
 ImageResources/Leo/nbgen
 ImageResources/Leo/yangbin
 ImageResources/Leo/*.nbh
 ImageResources/Leo/os.nb
 ImageResources/Leo/LEOIMG.nbh
+ImageResources/Leo/BooterShim.bin
 ImageResources/Leo/*.bin
 ImageResources/Leo/*.img
 ImageResources/Schubert/*.bin

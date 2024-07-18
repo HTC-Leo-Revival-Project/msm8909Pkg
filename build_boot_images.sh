@@ -1,6 +1,7 @@
 #!/bin/bash
 if [ $1 == 'Leo' ]; then
     cat BootShim/BootShim.bin workspace/Build/HtcLeo/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Leo/bootpayload.bin
+    mv BooterShim/BooterShim.bin ImageResources/Leo
 
     mkbootimg --kernel ImageResources/Leo/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/Leo/uefi.img
 
