@@ -1,5 +1,6 @@
 #include "../menu.h"
 #include "AndroidKernel.h"
+#include <Library/FrameBufferConfigLib.h>
 
 void htcleo_prepare_for_linux(void)
 {
@@ -372,6 +373,9 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
         } else {
             // Copy cmdline to allocated memory
             AsciiStrCpyS(AllocatedCmdline, CmdlineSize, cmdline);
+
+            // Reconfigure the FB back to RGB565
+            ReconfigFb(RGB565_BPP);
             
             // Boot Linux with the allocated cmdline
             boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address, AllocatedCmdline, machtype, RamdiskBuffer, RamdiskSize);

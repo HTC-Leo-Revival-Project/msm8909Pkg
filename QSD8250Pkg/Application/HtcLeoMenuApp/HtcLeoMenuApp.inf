@@ -35,6 +35,7 @@
   ResetSystemLib
   UefiBootManagerLib
   DevicePathLib
+  FrameBufferConfigLib
 
 [Pcd]
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
