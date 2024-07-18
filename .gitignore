@@ -12,3 +12,4 @@ ImageResources/Leo/*.img
 ImageResources/Schubert/*.bin
 ImageResources/Schubert/*.img
 workspace/Build/
+.vscode
