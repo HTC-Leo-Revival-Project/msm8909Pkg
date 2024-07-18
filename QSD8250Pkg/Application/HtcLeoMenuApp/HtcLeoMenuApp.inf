@@ -7,7 +7,11 @@
   ENTRY_POINT                    = ShellAppMain
 
 [BuildOptions.ARM]
+<<<<<<< HEAD
   GCC:*_*_*_CC_FLAGS = -Werror -Wno-unused-function -Wno-unused-variable -Wno-incompatible-pointer-types -mfpu=vfpv3 -mfloat-abi=hard
+=======
+  GCC:*_*_*_CC_FLAGS = -Werror -Wno-unused-function -Wno-unused-variable -Wno-incompatible-pointer-types
+>>>>>>> 409578b61626a6042f308fbe4fd580aa86b698cd
 
 [Sources]
   BootApp.c
