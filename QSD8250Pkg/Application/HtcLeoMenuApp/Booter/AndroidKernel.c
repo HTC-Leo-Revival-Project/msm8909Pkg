@@ -9,8 +9,8 @@ void htcleo_prepare_for_linux(void)
 					 "MCR p15, 0, r0, c1, c0, 1");
 
 	// Disable VFP
-	// __asm__ volatile("MOV R0, #0\n"
-	// 				 "FMXR FPEXC, r0");
+	 __asm__ volatile("MOV R0, #0\n"
+	 				 "FMXR FPEXC, r0");
 
     // disable mmu
 	__asm__ volatile("MRC p15, 0, r0, c1, c0, 0\n"
