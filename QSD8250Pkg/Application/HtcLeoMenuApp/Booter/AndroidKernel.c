@@ -1,5 +1,4 @@
 #include "../menu.h"
-#include <Chipset/interrupts.h>
 
 void htcleo_prepare_for_linux(void)
 {
@@ -29,19 +28,6 @@ void htcleo_prepare_for_linux(void)
 					 "ISB");
 
 	__asm__ volatile("BX LR");
-}
-
-void htcleo_disable_interrupts(void)
-{
-	//clear current pending interrupts
-    MmioWrite32(VIC_INT_CLEAR0, 0xffffffff);
-    MmioWrite32(VIC_INT_CLEAR1, 0xffffffff);
-
-	//disable all
-    MmioWrite32(VIC_INT_EN0, 0);
-    MmioWrite32(VIC_INT_EN1, 0);
-	//disable interrupts
-    MmioWrite32(VIC_INT_MASTEREN, 0);
 }
 
 unsigned* target_atag_mem(unsigned* ptr)
@@ -207,16 +193,13 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 // #endif
     CallExitBS(ImageHandle, SystemTable);
 
-	//Print(L"about to disable interrupts \n");
-
 	//we are ready to boot the freshly loaded kernel
-	//htcleo_disable_interrupts();
-	//Print(L"Preparing... \n");
+	//DEBUG((EFI_D_INFO, "Preparing... \n"));
 	//htcleo_prepare_for_linux();
-	//Print(L"Jumping now... \n");
+	//DEBUG((EFI_D_INFO, "Jumping to kernel\n"));
 	entry(0, machtype, tags);
 
-	Print(L"Failed to boot Linux, jump did not happen were still in uefiland \n");
+    DEBUG((EFI_D_ERROR, "Failed to boot Linux, jump did not happen were still in uefiland \n\n"));
 	//deadlock the platform this is not recoverable
 	for(;;);
 }
