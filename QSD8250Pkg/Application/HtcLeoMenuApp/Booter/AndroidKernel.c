@@ -1,4 +1,5 @@
 #include "../menu.h"
+#include "AndroidKernel.h"
 
 void htcleo_prepare_for_linux(void)
 {
@@ -78,11 +79,9 @@ CallExitBS(
             /* Status is likely success - let the while() statement check success */
         }
         DEBUG((EFI_D_ERROR, "Memory loop iteration, status: %r\n", Status));
-        //Print(L"Memory loop iteration, status: %r\n", Status);
     
     } while (Status != EFI_SUCCESS);
 
-    //Print(L"Exit BS");
     DEBUG((EFI_D_ERROR, "Exit BS\n"));
     gBS->ExitBootServices(ImageHandle, LocalMapKey);
 }
@@ -106,7 +105,6 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 	//struct ptable *ptable;
 	int cmdline_len = 0;
 	int have_cmdline = 0;
-	//int pause_at_bootup = 0;
 
 	/* CORE */
 	*ptr++ = 2;
@@ -331,7 +329,6 @@ LoadFileFromSDCard(
     return EFI_SUCCESS;
 }
 
-
 void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
     EFI_STATUS Status;
     VOID *KernelBuffer;
@@ -340,12 +337,14 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     UINTN RamdiskSize;
     CHAR16 *KernelPath = L"\\zImage";
     CHAR16 *RamdiskPath = L"\\initrd.img";
-    // ToDo: get load address dynamically
-    VOID *KernelLoadAddress = (VOID *)0x11808000;
-    VOID *RamdiskLoadAddress = (VOID *)0x12200000;
-    unsigned *tags_address = (unsigned *)0x11800100;
+
+    UINTN BaseAddr = FixedPcdGet32(PcdSystemMemoryBase);
+    VOID *KernelLoadAddress = (VOID *)(BaseAddr + KERNEL_OFFSET);
+    VOID *RamdiskLoadAddress = (VOID *)(BaseAddr + RAMDISK_OFFSET);
+    unsigned *tags_address = (unsigned *)(BaseAddr + TAGS_OFFSET);
     const char *cmdline = "androidboot.hardware=htcleo androidboot.selinux=permissive androidboot.configfs=false";
     unsigned machtype = 0x9dc;
+    
     CHAR8 *AllocatedCmdline = NULL;
     UINTN CmdlineSize;
 
