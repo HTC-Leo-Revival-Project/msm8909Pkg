@@ -207,7 +207,7 @@ switch(Device){
   // windows button
     StaticContext                  = KeypadKeyCodeToKeyContext(118);
     StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
-    StaticContext->GpioOut         = 33;
+    StaticContext->GpioOut         = 32;
     StaticContext->GpioIn          = 42;
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = TRUE;
