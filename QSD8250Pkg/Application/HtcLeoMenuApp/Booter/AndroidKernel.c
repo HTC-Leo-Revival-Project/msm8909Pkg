@@ -194,7 +194,7 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 
 	//we are ready to boot the freshly loaded kernel
 	//DEBUG((EFI_D_INFO, "Preparing... \n"));
-	htcleo_prepare_for_linux();
+	//htcleo_prepare_for_linux();
 	//DEBUG((EFI_D_INFO, "Jumping to kernel\n"));
 	entry(0, machtype, tags);
 
