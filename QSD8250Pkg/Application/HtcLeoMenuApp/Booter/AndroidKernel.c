@@ -66,6 +66,41 @@ unsigned* target_atag_mem(unsigned* ptr)
 	return ptr;
 }
 
+VOID
+CallExitBS(
+    IN EFI_HANDLE ImageHandle, 
+    IN EFI_SYSTEM_TABLE *SystemTable
+)
+{
+    EFI_STATUS Status;
+    /* Get the memory map */
+    UINTN MemoryMapSize;
+    EFI_MEMORY_DESCRIPTOR *MemoryMap;
+    UINTN LocalMapKey;
+    UINTN DescriptorSize;
+    UINT32 DescriptorVersion;
+    MemoryMap = NULL;
+    MemoryMapSize = 0;
+    
+	
+    do {  
+        Status = gBS->GetMemoryMap(&MemoryMapSize, MemoryMap, &LocalMapKey, &DescriptorSize,&DescriptorVersion);
+        if (Status == EFI_BUFFER_TOO_SMALL){
+            MemoryMap = AllocatePool(MemoryMapSize + 1);
+            Status = gBS->GetMemoryMap(&MemoryMapSize, MemoryMap, &LocalMapKey, &DescriptorSize,&DescriptorVersion);      
+        } else {
+            /* Status is likely success - let the while() statement check success */
+        }
+        DEBUG((EFI_D_ERROR, "Memory loop iteration, status: %r\n", Status));
+        //Print(L"Memory loop iteration, status: %r\n", Status);
+    
+    } while (Status != EFI_SUCCESS);
+
+    //Print(L"Exit BS");
+    DEBUG((EFI_D_ERROR, "Exit BS\n"));
+    gBS->ExitBootServices(ImageHandle, LocalMapKey);
+}
+
 
 VOID AsciiStrToUnicodeStr(CONST CHAR8 *Source, CHAR16 *Destination) {
     while (*Source != '\0') {
@@ -79,11 +114,6 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 		void *ramdisk, unsigned ramdisk_size)
 {
 	EFI_STATUS Status;
-    UINTN MemoryMapSize = 0;
-	EFI_MEMORY_DESCRIPTOR *MemoryMap = NULL;
-    UINTN MapKey;
-    UINTN DescriptorSize;
-    UINT32 DescriptorVersion;
 	unsigned *ptr = tags;
 	//unsigned pcount = 0;
 	void (*entry)(unsigned,unsigned,unsigned*) = kernel;
@@ -175,42 +205,17 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 // #if DISPLAY_SPLASH_SCREEN
 // 	display_shutdown();
 // #endif
+    CallExitBS(ImageHandle, SystemTable);
 
-
-    // Get the size of the memory map
-    Status = SystemTable->BootServices->GetMemoryMap(&MemoryMapSize, MemoryMap, &MapKey, &DescriptorSize, &DescriptorVersion);
-    if (Status != EFI_BUFFER_TOO_SMALL) {
-        Print(L"Failed to get memory map size: %r\n", Status);
-    }
-
-	MemoryMapSize += 2 * DescriptorSize;
-
-    // Allocate enough memory for the memory map
-    Status = SystemTable->BootServices->AllocatePool(EfiLoaderData, MemoryMapSize, (void **)&MemoryMap);
-    if (EFI_ERROR(Status)) {
-        Print(L"Failed to allocate memory for memory map: %r\n", Status);
-    }
-
-    // Get the actual memory map
-    Status = SystemTable->BootServices->GetMemoryMap(&MemoryMapSize, MemoryMap, &MapKey, &DescriptorSize, &DescriptorVersion);
-    if (EFI_ERROR(Status)) {
-        Print(L"Failed to get memory map: %r\n", Status);
-    }
-	Print(L"about to exit bs \n");
-    // Exit Boot Services
-    Status = SystemTable->BootServices->ExitBootServices(ImageHandle, MapKey);
-    if (EFI_ERROR(Status)) {
-        Print(L"Failed to exit boot services: %r\n", Status);
-    }
-
-	Print(L"about to disable interrupts \n");
+	//Print(L"about to disable interrupts \n");
 
 	//we are ready to boot the freshly loaded kernel
-	htcleo_disable_interrupts();
-	Print(L"Preparing... \n");
+	//htcleo_disable_interrupts();
+	//Print(L"Preparing... \n");
 	//htcleo_prepare_for_linux();
-	Print(L"Jumping now... \n");
+	//Print(L"Jumping now... \n");
 	entry(0, machtype, tags);
+
 	Print(L"Failed to boot Linux, jump did not happen were still in uefiland \n");
 	//deadlock the platform this is not recoverable
 	for(;;);
