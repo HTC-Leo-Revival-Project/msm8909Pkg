@@ -22,8 +22,8 @@
 
 - ReactOS support should be possible once the arm port will be fully bootable
 
-- Any new Kernel(Downstream and other binarys) and ramdisk can be loaded from SD card. (WARNING WIP)
-- Place BooterShim.bin on the root of your SD card place the kernel named as zimage on the root of your SD card place the ramdisk named initrd.img on the root of your SD card.
+- Any new kernel (downstream or other binaries) and ramdisk can be loaded from SD card. (WARNING WIP)
+- Pace the kernel named zImage and ramdisk named initrd.img on the root of your SD card.
 - If booting fails (error shown on screen/screen turning blue/backlight stays on but screen is blank) just try again a few times
 
 ## Loading
