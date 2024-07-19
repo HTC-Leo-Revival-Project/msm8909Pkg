@@ -532,6 +532,7 @@
   QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf
   QSD8250Pkg/GPLDrivers/I2CDxe/I2CDxe.inf
   QSD8250Pkg/Drivers/MicroPDxe/MicroPDxe.inf
+  QSD8250Pkg/Drivers/NandDxe/NandDxe.inf
 
   #
   # Virtual Keyboard

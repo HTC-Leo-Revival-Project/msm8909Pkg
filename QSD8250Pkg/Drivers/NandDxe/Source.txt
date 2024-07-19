@@ -1,0 +1,2 @@
+Based on the lk driver :
+ * https://github.com/n0d3/lk/blob/BlackCLK_ex_2/target/htcleo/nand.c
