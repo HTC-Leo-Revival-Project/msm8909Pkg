@@ -45,9 +45,6 @@ function _clean() {
 		if [ -d workspace/Build ]; then
 			rm -r workspace/Build
 		fi
-		if [ -f BooterShim/BooterShim.bin ]; then
-			rm BooterShim/BooterShim.bin
-		fi
 	done
 }
 

@@ -1,36 +1,7 @@
 #include "../menu.h"
 #include "AndroidKernel.h"
 #include <Library/FrameBufferConfigLib.h>
-
-void htcleo_prepare_for_linux(void)
-{
-	// Martijn Stolk's code so kernel will not crash. aux control register
-	__asm__ volatile("MRC p15, 0, r0, c1, c0, 1\n"
-					 "BIC r0, r0, #0x40\n"
-					 "BIC r0, r0, #0x200000\n"
-					 "MCR p15, 0, r0, c1, c0, 1");
-
-	// Disable VFP
-	 __asm__ volatile("MOV R0, #0\n"
-	 				 "FMXR FPEXC, r0");
-
-    // disable mmu
-	__asm__ volatile("MRC p15, 0, r0, c1, c0, 0\n"
-					 "BIC r0, r0, #(1<<0)\n"
-					 "MCR p15, 0, r0, c1, c0, 0\n"
-					 "ISB");
-	
-	// Invalidate the UTLB
-	__asm__ volatile("MOV r0, #0\n"
-					 "MCR p15, 0, r0, c8, c7, 0");
-
-	// Clean and invalidate cache - Ensure pipeline flush
-	__asm__ volatile("MOV R0, #0\n"
-					 "DSB\n"
-					 "ISB");
-
-	__asm__ volatile("BX LR");
-}
+#include "LinuxShim.h"
 
 unsigned* target_atag_mem(unsigned* ptr)
 {
@@ -194,7 +165,7 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 
 	//we are ready to boot the freshly loaded kernel
 	//DEBUG((EFI_D_INFO, "Preparing... \n"));
-	//htcleo_prepare_for_linux();
+	PrepareForLinux();
 	//DEBUG((EFI_D_INFO, "Jumping to kernel\n"));
 	entry(0, machtype, tags);
 
@@ -332,20 +303,16 @@ LoadFileFromSDCard(
 
 void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
     EFI_STATUS Status;
-    VOID *KernelBuffer =NULL;
-    VOID *BooterShimBuffer =NULL;
+    VOID *KernelBuffer;
     UINTN KernelSize;
-    UINTN BooterShimSize;
     VOID *RamdiskBuffer;
     UINTN RamdiskSize;
     CHAR16 *KernelPath = L"\\zImage";
     CHAR16 *RamdiskPath = L"\\initrd.img";
-    CHAR16 *BooterShimPath =L"\\BooterShim.bin";
 
     UINTN BaseAddr = FixedPcdGet32(PcdSystemMemoryBase);
     VOID *KernelLoadAddress = (VOID *)(BaseAddr + KERNEL_OFFSET);
     VOID *RamdiskLoadAddress = (VOID *)(BaseAddr + RAMDISK_OFFSET);
-    VOID *BooterShimLoadAdress= (VOID*)(KernelLoadAddress-0x70); //substract shim site from kernel addr, to basically cat the binarys together in memory
     unsigned *tags_address = (unsigned *)(BaseAddr + TAGS_OFFSET);
     const char *cmdline = "androidboot.hardware=htcleo androidboot.selinux=permissive androidboot.configfs=false";
     unsigned machtype = 0x9dc;
@@ -355,11 +322,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
 
     Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
     ASSERT_EFI_ERROR(Status);
-    Status = LoadFileFromSDCard(ImageHandle, SystemTable, BooterShimPath, BooterShimLoadAdress, &BooterShimBuffer, &BooterShimSize);
-    if (EFI_ERROR(Status)) {
-        Print(L"Failed to load BooterShim: %r\n", Status);
-    } else {
-        Print(L"BooterShim loaded successfully at address %p. Size: %d bytes\n", BooterShimBuffer, BooterShimSize);
+
     Status = LoadFileFromSDCard(ImageHandle, SystemTable, KernelPath, KernelLoadAddress, &KernelBuffer, &KernelSize);
     if (EFI_ERROR(Status)) {
         Print(L"Failed to load kernel: %r\n", Status);
@@ -386,7 +349,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
             ReconfigFb(RGB565_BPP);
             
             // Boot Linux with the allocated cmdline
-            boot_linux(ImageHandle, SystemTable, BooterShimBuffer, tags_address, AllocatedCmdline, machtype, RamdiskBuffer, RamdiskSize);
+            boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address, AllocatedCmdline, machtype, RamdiskBuffer, RamdiskSize);
             
             // Clean up allocated cmdline
             SystemTable->BootServices->FreePool(AllocatedCmdline);
@@ -396,7 +359,6 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
         FreePool(KernelBuffer);
         Print(L"Booting Linux Failed, unknown error occurred");
         for (;;) ;
-    }
     }
 }
 
