@@ -371,10 +371,10 @@ void flash_init(void)
 {
 	//ASSERT(flash_ptable == NULL);
 
-	flash_ptrlist = memalign(32, 1024);
-	flash_cmdlist = memalign(32, 1024);
-	flash_data = memalign(32, 4096 + 128);
-	flash_spare = memalign(32, 128);
+	flash_ptrlist = AllocateAlignedPages(32,1024);//memalign(32, 1024);
+	flash_cmdlist = AllocateAlignedPages(32,1024);//memalign(32, 1024);
+	flash_data = AllocateAlignedPages(32,4096+128);//memalign(32, 4096 + 128);
+	flash_spare = AllocateAlignedPages(32,128);//memalign(32, 128);
 
 	flash_read_id(flash_cmdlist, flash_ptrlist);
 	if((FLASH_8BIT_NAND_DEVICE == flash_info.type)
@@ -397,6 +397,44 @@ void htcleo_ptable_dump(struct ptable *ptable)
 	}
 }
 
+void flash_set_ptable(struct ptable *new_ptable)
+{
+	//ToDo: fix me
+	// if(!flash_ptable && new_ptable){
+	// 	dprintf(INFO, "flash_set_ptable INIT FAILED");
+	// 	for(;;);
+	// }
+	
+	//flash_ptable = new_ptable;
+}
+
+void ptable_add(struct ptable *ptable, char *name, unsigned start,
+		unsigned length, unsigned flags, char type, char perm)
+{
+	//ToDo: fix me
+	// struct ptentry *ptn;
+
+	// ASSERT(ptable && ptable->count < MAX_PTABLE_PARTS);
+
+	// ptn = &ptable->parts[ptable->count++];
+	// strncpy(ptn->name, name, MAX_PTENTRY_NAME);
+	// ptn->start = start;
+	// ptn->length = length;
+	// ptn->flags = flags;
+	// ptn->type = type;
+	// ptn->perm = perm;
+}
+
+void ptable_init(struct ptable *ptable)
+{
+	ASSERT(ptable);
+if (ptable == NULL) {
+	dprintf(INFO, "PTABLE INIT FAILED");
+    for(;;);
+  }
+
+	SetMem(ptable,sizeof(struct ptable), 0);
+}
 
 EFI_STATUS
 EFIAPI
@@ -426,16 +464,16 @@ NandDxeInitialize(
 	DEBUG((EFI_D_INFO, "flash init\n"));
 	flash_init();
 	flash_info1 = flash_get_info();
-	ASSERT(flash_info);
-	ASSERT(flash_info->num_blocks);
-	nand_num_blocks = flash_info->num_blocks;
+	//ASSERT(flash_info);
+	//ASSERT(flash_info->num_blocks);
+	nand_num_blocks = flash_info1->num_blocks;
 
 	ptable_init(&flash_ptable);
 
 	if( strcmp(board_part_list[0].name,"PTABLE-BLK")==0 )
 		blocks_per_plen =1 ;
 	else if( strcmp(board_part_list[0].name,"PTABLE-MB")==0 )
-		blocks_per_plen = (1024*1024)/flash_info->block_size;
+		blocks_per_plen = (1024*1024)/flash_info1->block_size;
 	else
 		//panic("Invalid partition table\n");
 
