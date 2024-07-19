@@ -14,6 +14,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/TimerLib.h>
 #include <Library/LKEnvLib.h>
+#include <Library/FrameBufferConfigLib.h>
 #include <Chipset/timer.h>
 #include "dmov.h"
 #include "nand.h"
@@ -248,7 +249,7 @@ static void flash_nand_read_id(dmov_s *cmdlist, unsigned *ptrlist)
 
 	dmov_exec_cmdptr(DMOV_NAND_CHAN, ptr);
 
-#if VERBOSE
+#if 1
 	dprintf(INFO, "status: %x\n", data[3]);
 #endif
 
@@ -370,10 +371,9 @@ static int flash_nand_read_config(dmov_s *cmdlist, unsigned *ptrlist)
 void flash_init(void)
 {
 	//ASSERT(flash_ptable == NULL);
-
 	flash_ptrlist = AllocateAlignedPages(32,1024);//memalign(32, 1024);
 	flash_cmdlist = AllocateAlignedPages(32,1024);//memalign(32, 1024);
-	flash_data = AllocateAlignedPages(32,4096+128);//memalign(32, 4096 + 128);
+	flash_data = AllocateAlignedPages(32,4096);//memalign(32, 4096 + 128);
 	flash_spare = AllocateAlignedPages(32,128);//memalign(32, 128);
 
 	flash_read_id(flash_cmdlist, flash_ptrlist);
@@ -459,15 +459,17 @@ NandDxeInitialize(
 		// &Handle, &gHtcLeoMicropProtocolGuid, &gHtcLeoMicropProtocol, NULL);
 		// ASSERT_EFI_ERROR(Status);
 	
+	PaintScreen(0);
 	
-	
-	DEBUG((EFI_D_INFO, "flash init\n"));
+	DEBUG((EFI_D_ERROR, "flash init\n"));
 	flash_init();
 	flash_info1 = flash_get_info();
-	//ASSERT(flash_info);
-	//ASSERT(flash_info->num_blocks);
+	if (flash_info1 == NULL){
+		DEBUG((EFI_D_ERROR, "flash_get_info failed\n"));
+		for(;;);
+	}
 	nand_num_blocks = flash_info1->num_blocks;
-
+	for(;;);
 	ptable_init(&flash_ptable);
 
 	if( strcmp(board_part_list[0].name,"PTABLE-BLK")==0 )

@@ -42,11 +42,7 @@
 #define DMOV_SD2(off, ch) (MSM_DMOV_BASE + 0x0800 + (off) + ((ch) << 2))
 #define DMOV_SD3(off, ch) (MSM_DMOV_BASE + 0x0C00 + (off) + ((ch) << 2))
 
-#ifdef PLATFORM_MSM7X30
-#define DMOV_SDn DMOV_SD2
-#else
 #define DMOV_SDn DMOV_SD3
-#endif
 
 
 

@@ -45,6 +45,7 @@
   DebugLib
   UefiBootServicesTableLib
   TimerLib
+  FrameBufferConfigLib
   
 [Guids]
 
