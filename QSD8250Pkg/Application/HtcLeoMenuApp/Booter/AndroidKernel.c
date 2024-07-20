@@ -2,6 +2,7 @@
 #include "AndroidKernel.h"
 #include <Library/FrameBufferConfigLib.h>
 #include "LinuxShim.h"
+#include "AndroidSDDir.h"
 
 unsigned* target_atag_mem(unsigned* ptr)
 {
@@ -152,15 +153,6 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
         Print(L"cmdline: %s\n", CmdlineUnicode);
     }
 
-    /*ToDo: add uefi version of this
-	 arch_disable_cache(UCACHE);
-	 arch_disable_mmu();
-    */
-
-    /*replace with crappy fade effect code i guess*/
-// #if DISPLAY_SPLASH_SCREEN
-// 	display_shutdown();
-// #endif
     CallExitBS(ImageHandle, SystemTable);
 
 	//we are ready to boot the freshly loaded kernel
@@ -307,8 +299,8 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     UINTN KernelSize;
     VOID *RamdiskBuffer;
     UINTN RamdiskSize;
-    CHAR16 *KernelPath = L"\\zImage";
-    CHAR16 *RamdiskPath = L"\\initrd.img";
+    CHAR16 KernelPath[256];
+    CHAR16 RamdiskPath[256];
 
     UINTN BaseAddr = FixedPcdGet32(PcdSystemMemoryBase);
     VOID *KernelLoadAddress = (VOID *)(BaseAddr + KERNEL_OFFSET);
@@ -323,19 +315,29 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
     ASSERT_EFI_ERROR(Status);
 
+    if (!FallBack) {
+        // Build the paths based on SelectedDir
+        UnicodeSPrint(KernelPath, sizeof(KernelPath), L"\\%s\\zImage", SelectedDir);
+        UnicodeSPrint(RamdiskPath, sizeof(RamdiskPath), L"\\%s\\initrd.img", SelectedDir);
+    } else {
+        // Use default paths
+        StrCpyS(KernelPath, sizeof(KernelPath) / sizeof(CHAR16), L"\\zImage");
+        StrCpyS(RamdiskPath, sizeof(RamdiskPath) / sizeof(CHAR16), L"\\initrd.img");
+    }
+    //print the path that was generated
+    Print(L"KernelDir is %s\n", KernelPath, Status);
     Status = LoadFileFromSDCard(ImageHandle, SystemTable, KernelPath, KernelLoadAddress, &KernelBuffer, &KernelSize);
     if (EFI_ERROR(Status)) {
-        Print(L"Failed to load kernel: %r\n", Status);
+        Print(L"Failed to load kernel from path %s: %r\n", KernelPath, Status);
     } else {
-        Print(L"Kernel loaded successfully at address %p. Size: %d bytes\n", KernelBuffer, KernelSize);
+        Print(L"Kernel loaded successfully from path %s at address %p. Size: %d bytes\n", KernelPath, KernelBuffer, KernelSize);
         
         Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
         if (EFI_ERROR(Status)) {
-            Print(L"Failed to load ramdisk: %r\n", Status);
+            Print(L"Failed to load ramdisk from path %s: %r\n", RamdiskPath, Status);
         } else {
-            Print(L"Ramdisk loaded successfully at address %p. Size: %d bytes\n", RamdiskLoadAddress, RamdiskSize);
+            Print(L"Ramdisk loaded successfully from path %s at address %p. Size: %d bytes\n", RamdiskPath, RamdiskLoadAddress, RamdiskSize);
         }
-
         // Allocate memory for cmdline
         CmdlineSize = AsciiStrLen(cmdline) + 1; // +1 for the null terminator
         Status = SystemTable->BootServices->AllocatePool(EfiLoaderData, CmdlineSize, (void **)&AllocatedCmdline);
@@ -361,5 +363,6 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
         for (;;) ;
     }
 }
+
 
 

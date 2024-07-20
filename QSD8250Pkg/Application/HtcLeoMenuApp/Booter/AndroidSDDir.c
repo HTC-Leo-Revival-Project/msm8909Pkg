@@ -3,7 +3,8 @@
 
 //by default the selected dir is / (root of sdcard)
 
-CHAR16 *SelectedDir = L"\\";;
+CHAR16 *SelectedDir = L"\\";
+BOOLEAN FallBack = FALSE;
 
 EFI_STATUS ListDirectories(EFI_HANDLE *HandleBuffer, UINTN HandleCount, CHAR16 ***DirList, UINTN *DirCount) {
     EFI_STATUS Status;
@@ -96,7 +97,89 @@ EFI_STATUS DisplayAndSelectDirectory(CHAR16 **DirList, UINTN DirCount, CHAR16 **
     return EFI_SUCCESS;
 }
 
+EFI_STATUS SaveSelectedDirToFile(CHAR16 *DirPath) {
+    EFI_STATUS Status;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
+    EFI_FILE_PROTOCOL *Root, *File;
+    EFI_HANDLE *HandleBuffer;
+    UINTN HandleCount;
+    UINTN BufferSize = StrSize(DirPath);
+    
+    Status = gBS->LocateHandleBuffer(ByProtocol, &gEfiSimpleFileSystemProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
 
+    Status = gBS->HandleProtocol(HandleBuffer[0], &gEfiSimpleFileSystemProtocolGuid, (VOID **)&FileSystem);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = FileSystem->OpenVolume(FileSystem, &Root);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = Root->Open(Root, &File, CONFIG_FILE_PATH, EFI_FILE_MODE_CREATE | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_READ, 0);
+    if (EFI_ERROR(Status)) {
+        Root->Close(Root);
+        return Status;
+    }
+
+    Status = File->Write(File, &BufferSize, DirPath);
+    File->Close(File);
+    Root->Close(Root);
+
+    return Status;
+}
+
+EFI_STATUS LoadSelectedDirFromFile(CHAR16 **DirPath) {
+    EFI_STATUS Status;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
+    EFI_FILE_PROTOCOL *Root, *File;
+    EFI_HANDLE *HandleBuffer;
+    UINTN HandleCount;
+    UINTN BufferSize;
+    CHAR16 *Buffer;
+
+    Status = gBS->LocateHandleBuffer(ByProtocol, &gEfiSimpleFileSystemProtocolGuid, NULL, &HandleCount, &HandleBuffer);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = gBS->HandleProtocol(HandleBuffer[0], &gEfiSimpleFileSystemProtocolGuid, (VOID **)&FileSystem);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = FileSystem->OpenVolume(FileSystem, &Root);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = Root->Open(Root, &File, CONFIG_FILE_PATH, EFI_FILE_MODE_READ, 0);
+    if (EFI_ERROR(Status)) {
+        Root->Close(Root);
+        return Status;
+    }
+
+    BufferSize = 256 * sizeof(CHAR16);
+    Buffer = AllocateZeroPool(BufferSize);
+
+    Status = File->Read(File, &BufferSize, Buffer);
+    if (EFI_ERROR(Status)) {
+        FreePool(Buffer);
+        File->Close(File);
+        Root->Close(Root);
+        return Status;
+    }
+
+    *DirPath = Buffer;
+    File->Close(File);
+    Root->Close(Root);
+
+    return Status;
+}
 
 void SetAndroidSdDir(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
     EFI_STATUS Status;
@@ -125,5 +208,9 @@ void SetAndroidSdDir(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable
 
     DEBUG((EFI_D_ERROR, "Failed to select directory: %r\n", Status));
     //we are done here return to main menu
+    Status = SaveSelectedDirToFile(SelectedDir);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to save selected directory to file: %r\n", Status));
+    }
     MainMenu(ImageHandle, SystemTable);
 }

@@ -166,6 +166,7 @@ void HandleKeyInput(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
           break;
         case CHAR_BACKSPACE:
           // back button
+          FallBack = TRUE;
           break;
         default:
           break;
@@ -276,6 +277,7 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   EFI_STATUS Status;
   EFI_INPUT_KEY key;
   UINT32 Timeout = 400; //TODO: Get from pcd
+  CHAR16 *LoadedDir;
 
   Print(L" Press Home within %d seconds to boot to menu\n", (Timeout / 100));
   Print(L" Back key to boot from ESP\n");
@@ -314,6 +316,15 @@ boot_esp:
   Print(L" Could not boot from ESP, loading menu\n");
 
 menu:
+      // Load previously selected directory
+    Status = LoadSelectedDirFromFile(&SelectedDir);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to load selected directory from file: %r\n", Status));
+        //fallback to root dir of sdcard
+        CHAR16* FallBackPath = L"\\";
+        FallBack = TRUE;
+        *SelectedDir = *FallBackPath;
+    }
   // Fill main menu
   FillMenu();
 
