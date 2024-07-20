@@ -1,6 +1,9 @@
+#include <Library/UbootEnvLib.h>
 /*
  * 2008 (c) STMicroelectronics, Inc.
  * Author: Ryan Chen <Ryan.Chen at st.com>
+ * Updated for EDK2 Use in 2024
+ * J0SH1X <aljoshua.hell@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -51,6 +54,8 @@
  * Record checksum        4        Signed 32-bit sum of record data bytes. 
  * Record data            Record length    Record data. 
  */
+
+ulong load_addr = 0x11800000;	/* Default Load Address */
 #define WINCE_IMAGE_SYNC_SIZE 7
 #define WINCE_IMAGE_SYNC      "B000FF\n"
 
@@ -82,7 +87,7 @@ int valid_wince_image (unsigned long addr)
 {
     type_wince_image_header *p = (type_wince_image_header *)addr;
 
-    if(strcmp((char *)p->sync_bytes, (char *)WINCE_IMAGE_SYNC) != 0)
+    if (AsciiStrCmp((CHAR8 *)p->sync_bytes, (CHAR8 *)WINCE_IMAGE_SYNC) != 0)
         return 0;
 
     return 1;
@@ -101,13 +106,12 @@ unsigned long load_wince_image (unsigned long addr)
 
     if(valid_wince_image(addr) == 0)
         return ~0;
-
-    printf("WINCE image is found: ");
+    DEBUG((EFI_D_ERROR, "WINCE image is found: "));
     p += WINCE_IMAGE_SYNC_SIZE;
     start_addr = (u32)(p[3]<<24) + (u32)(p[2]<<16) + (u32)(p[1]<<8) + (u32)p[0];
     p += 4;
     total_length = (u32)(p[3]<<24) + (u32)(p[2]<<16) + (u32)(p[1]<<8) + (u32)p[0];
-    printf(" Start Address = 0x%x @ Total Length = 0x%x\n", start_addr, total_length);
+    DEBUG((EFI_D_ERROR, " Start Address = 0x%x @ Total Length = 0x%x\n", start_addr, total_length));
     p += 4;
 
     /* read each records */
@@ -119,19 +123,19 @@ unsigned long load_wince_image (unsigned long addr)
             break;
 
         if(check_sum((unsigned char *)&p[12], record_length, record_checksum) != 0) {
-            printf("Checksum Error!\n");
+            DEBUG((EFI_D_ERROR, "Checksum Error!\n"));
             return (unsigned long)~0;
         }
-        memcpy ((void *)record_addr, (const void *)&p[12], (unsigned long)record_length);
-        printf("Region %d: Loading from 0x%x to 0x%x @ Length 0x%x\n", i, (unsigned int)&p[12], \
-            (unsigned int)record_addr, record_length);
+        CopyMem((VOID *)record_addr, (CONST VOID *)&p[12], (UINTN)record_length);
+        DEBUG((EFI_D_ERROR, "Region %d: Loading from 0x%x to 0x%x @ Length 0x%x\n", i, (unsigned int)&p[12], \
+            (unsigned int)record_addr, record_length));
         p = p + 12 + record_length;
         i++;
     }
 
     /* the lastest checksun should be zero */
     if(record_checksum != 0) {
-        printf("Checksum Error!\n");
+        DEBUG((EFI_D_ERROR, "Checksum Error!\n"));
         return (unsigned long)~0;
     }
 
@@ -144,7 +148,7 @@ unsigned long load_wince_image (unsigned long addr)
  * be an WinCE image.  WinCE image do not need the
  * bootline and other parameters.
  * ====================================================================== */
-int do_bootwince (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_bootwince (int flag, int argc, char *argv[])
 {
     unsigned long addr;             /* Address of image            */
 
@@ -155,16 +159,7 @@ int do_bootwince (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     if (argc < 2)
         addr = load_addr;
     else
-        addr = simple_strtoul (argv[1], NULL, 16);
-
-#if defined(CONFIG_CMD_NET)
-    /* Check to see if we need to tftp the image ourselves before starting */
-    if ((argc == 2) && (strcmp (argv[1], "tftp") == 0)) {
-        if (NetLoop (TFTP) <= 0)
-            return 1;
-        printf ("Automatic boot of WinCE image at address 0x%08lx ... \n", addr);
-    }
-#endif
+        addr = AsciiStrHexToUintn(argv[1]);
 
     /*
      * If the data at the load address is an WinCE image, then
@@ -173,15 +168,13 @@ int do_bootwince (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     if (valid_wince_image (addr)) {
         addr = load_wince_image (addr);
     } else {
-        puts ("## Not an WinCE image, exit!\n");
+        DEBUG((EFI_D_ERROR, "## Not an WinCE image, exit!\n"));
         return 1;
         /* leave addr as load_addr */
     }
-
-    printf ("## Starting Wince at 0x%08lx ...\n", addr);
+    DEBUG((EFI_D_ERROR, "## Starting Wince at 0x%08lx ...\n", addr));
 
     ((void (*)(void)) addr) ();
-
-    puts ("## WinCE terminated\n");
+     DEBUG((EFI_D_ERROR, "## WinCE terminated\n", addr));
     return 1;
 }
