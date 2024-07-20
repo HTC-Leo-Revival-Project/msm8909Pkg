@@ -1,4 +1,7 @@
 #include <Library/UbootEnvLib.h>
+#include <Library/FrameBufferConfigLib.h>
+#include "SdLoader.h"
+#include "../menu.h"
 /*
  * 2008 (c) STMicroelectronics, Inc.
  * Author: Ryan Chen <Ryan.Chen at st.com>
@@ -178,3 +181,36 @@ int do_bootwince (int flag, int argc, char *argv[])
      DEBUG((EFI_D_ERROR, "## WinCE terminated\n", addr));
     return 1;
 }
+
+void BootWinCe(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
+    EFI_STATUS Status;
+    VOID *NkImageBuffer;
+    UINTN NkImageSize;
+    CHAR16 NkImagePath[256];
+
+    UINTN BaseAddr = FixedPcdGet32(PcdSystemMemoryBase);
+    VOID *NkImageLoadAddress = (VOID *)(BaseAddr);
+
+    
+
+    Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
+    ASSERT_EFI_ERROR(Status);
+
+        // Use default paths
+        StrCpyS(NkImagePath, sizeof(NkImagePath) / sizeof(CHAR16), L"\\nk.bin");
+    Status = LoadFileFromSDCard(ImageHandle, SystemTable, NkImagePath, NkImageLoadAddress, &NkImageBuffer, &NkImageSize);
+    if (EFI_ERROR(Status)) {
+        Print(L"Failed to load NK image from path %s: %r\n", NkImagePath, Status);
+    } else {
+        Print(L"NK image loaded successfully at address %p. Size: %d bytes\n", NkImageBuffer, NkImageSize);
+
+            // Reconfigure the FB back to RGB565
+            ReconfigFb(RGB565_BPP);
+            
+        }
+        
+        // Clean up the kernel buffer when no longer needed, but we should never reach here essentially halt the platform
+        FreePool(NkImageBuffer);
+        Print(L"Booting WinCE Failed, unknown error occurred");
+        for (;;) ;
+    }
