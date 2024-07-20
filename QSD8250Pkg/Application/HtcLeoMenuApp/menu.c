@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "BootApp.h"
+#include "Booter/AndroidSDDir.h"
 
 MenuEntry MenuOptions[MAX_OPTIONS_COUNT] = {0};
 
@@ -18,6 +19,7 @@ FillMenu()
   MenuOptions[Index++] = (MenuEntry){Index, L"Dump DMESG to sdcard", TRUE, &DumpDmesg},
   MenuOptions[Index++] = (MenuEntry){Index, L"Dump Memory to sdcard", TRUE, &DumpMemory2Sdcard},
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Settings", TRUE, &SettingsMenu};
   MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
 }
 
@@ -74,7 +76,7 @@ void DrawMenu()
 
   // Print menu title
   gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_RED, EFI_BLACK));
-  gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 1 );
+  gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN-4, 1 ); // offset by 4 so the next line will center under the name
   
   Print(L" %s \n", (CHAR16 *)PcdGetPtr(PcdFirmwareVendor));
   gST->ConOut->SetCursorPosition( gST->ConOut, PRINT_CENTRE_COLUMN, 2 );
@@ -220,6 +222,21 @@ void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot to CLK", TRUE, &NullFunction};
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot", TRUE, &ResetCold};
   MenuOptions[Index++] = (MenuEntry){Index, L"Shutdown", TRUE, &htcleo_shutdown};
+  // Fill disabled options
+  do {
+    MenuOptions[Index++] = (MenuEntry){Index, L"", FALSE, &NullFunction};
+  }while(Index < MAX_OPTIONS_COUNT);
+}
+
+void SettingsMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
+{
+  SelectedIndex     = 0;
+  UINT8 Index = 0;
+  EFI_STATUS Status = EFI_SUCCESS;
+  
+  Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
+  ASSERT_EFI_ERROR(Status);
+  MenuOptions[Index++] = (MenuEntry){Index, L"Set AD SD dir", TRUE, &SetAndroidSdDir};
   // Fill disabled options
   do {
     MenuOptions[Index++] = (MenuEntry){Index, L"", FALSE, &NullFunction};

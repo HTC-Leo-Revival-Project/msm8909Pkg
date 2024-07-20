@@ -1,3 +1,5 @@
+#ifndef _MAIN_MENU_H_
+#define _MAIN_MENU_H_
 #include <Uefi.h>
 #include <PiDxe.h>
 #include <Library/UefiLib.h>
@@ -22,8 +24,7 @@
 #include <Chipset/timer.h>
 #include <Library/PrintLib.h>
 
-#ifndef _MAIN_MENU_H_
-#define _MAIN_MENU_H_
+
 
 typedef struct {
   UINT8   Index;
@@ -36,6 +37,7 @@ typedef struct {
 #define PRINT_CENTRE_COLUMN 20
 
 void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
+void SettingsMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void ExitMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 void DrawMenu();
 void ReturnToMainMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);

@@ -15,6 +15,7 @@
   MemoryTools.c
   menu.c
   Booter/LinuxShim.S
+  Booter/AndroidSDDir.c
   Booter/AndroidKernel.c
 
 [Packages]
