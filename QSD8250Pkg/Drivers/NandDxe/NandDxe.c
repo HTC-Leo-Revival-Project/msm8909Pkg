@@ -299,7 +299,8 @@ static void flash_read_id(dmov_s *cmdlist, unsigned *ptrlist)
 		{
 			flash_info.num_blocks = 0;
 		}
-		ASSERT(flash_info.num_blocks);
+			DEBUG((EFI_D_ERROR, "flash_info.num_blocks is 0\n"));
+			for(;;);
 		//return;
 	}
 
@@ -381,7 +382,7 @@ void flash_init(void)
 		||(FLASH_16BIT_NAND_DEVICE == flash_info.type)) {
 		if(flash_nand_read_config(flash_cmdlist, flash_ptrlist)) {
 			dprintf(CRITICAL, "ERROR: could not read CFG0/CFG1 state\n");
-			ASSERT(0);
+			for(;;);
 		}
 	}
 }
@@ -428,12 +429,25 @@ void ptable_add(struct ptable *ptable, char *name, unsigned start,
 void ptable_init(struct ptable *ptable)
 {
 	ASSERT(ptable);
-if (ptable == NULL) {
+  if (ptable == NULL) {
 	dprintf(INFO, "PTABLE INIT FAILED");
     for(;;);
   }
 
 	SetMem(ptable,sizeof(struct ptable), 0);
+}
+
+int
+strcmp1(char const *cs, char const *ct)
+{
+	signed char __res;
+
+	while(1) {
+		if((__res = *cs - *ct++) != 0 || !*cs++)
+			break;
+	}
+
+	return __res;
 }
 
 EFI_STATUS
@@ -460,24 +474,18 @@ NandDxeInitialize(
 		// ASSERT_EFI_ERROR(Status);
 	
 	PaintScreen(0);
-	
-	DEBUG((EFI_D_ERROR, "flash init\n"));
-	flash_init();
-	flash_info1 = flash_get_info();
-	if (flash_info1 == NULL){
-		DEBUG((EFI_D_ERROR, "flash_get_info failed\n"));
-		for(;;);
-	}
-	nand_num_blocks = flash_info1->num_blocks;
-	for(;;);
+	 DEBUG((EFI_D_ERROR, "ptable1 init\n"));
+	// flash_init();
+	// flash_info1 = flash_get_info();
+	// if (flash_info1 == NULL){
+	// 	DEBUG((EFI_D_ERROR, "flash_get_info failed\n"));
+	// 	for(;;);
+	// }
+	// nand_num_blocks = flash_info1->num_blocks;
+	// for(;;);
 	ptable_init(&flash_ptable);
 
-	if( strcmp(board_part_list[0].name,"PTABLE-BLK")==0 )
-		blocks_per_plen =1 ;
-	else if( strcmp(board_part_list[0].name,"PTABLE-MB")==0 )
-		blocks_per_plen = (1024*1024)/flash_info1->block_size;
-	else
-		//panic("Invalid partition table\n");
+		blocks_per_plen = (1024*1024)/(2048<<6); //block_size needs to be dumped and checked
 
 	start_block = HTCLEO_FLASH_OFFSET;
 	for (unsigned i = 1; i < num_parts; i++) {
@@ -489,7 +497,9 @@ NandDxeInitialize(
 		if( ptn->start == 0 )
 			ptn->start = start_block;
 		else if( ptn->start < start_block)
-			//panic("Partition %s start %x < %x\n", ptn->name, ptn->start, start_block);
+			DEBUG((EFI_D_ERROR, "NandDxe: Platform Panic\n"));
+			DEBUG((EFI_D_ERROR, "Partition %s start %x < %x\n", *ptn->name, ptn->start, start_block));
+			for(;;);
 
 		if(ptn->length == 0) {
 			unsigned length_for_prt = 0;
@@ -517,7 +527,7 @@ NandDxeInitialize(
 	}
 
 	htcleo_ptable_dump(&flash_ptable);
-	flash_set_ptable(&flash_ptable);
+	//flash_set_ptable(&flash_ptable);
 
 	return Status;
 }
