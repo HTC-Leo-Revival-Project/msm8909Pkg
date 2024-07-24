@@ -3,6 +3,7 @@
 #include <Library/FrameBufferConfigLib.h>
 #include "LinuxShim.h"
 #include "AndroidSDDir.h"
+#include "LinuxHeader.h"
 
 unsigned* target_atag_mem(unsigned* ptr)
 {
@@ -306,7 +307,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     VOID *KernelLoadAddress = (VOID *)(BaseAddr + KERNEL_OFFSET);
     VOID *RamdiskLoadAddress = (VOID *)(BaseAddr + RAMDISK_OFFSET);
     unsigned *tags_address = (unsigned *)(BaseAddr + TAGS_OFFSET);
-    const char *cmdline = "androidboot.hardware=htcleo androidboot.selinux=permissive androidboot.configfs=false";
+    const char *cmdline;// = "androidboot.hardware=htcleo androidboot.selinux=permissive androidboot.configfs=false";
     unsigned machtype = 0x9dc;
     
     CHAR8 *AllocatedCmdline = NULL;
@@ -332,6 +333,22 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     } else {
         Print(L"Kernel loaded successfully from path %s at address %p. Size: %d bytes\n", KernelPath, KernelBuffer, KernelSize);
         
+        //from https://github.com/ARM-software/u-boot/blob/master/arch/arm/lib/zimage.c
+        struct arm_z_header *zi = (struct arm_z_header *)KernelBuffer;
+        if (zi->zi_magic != LINUX_ARM_ZIMAGE_MAGIC) {
+            //Print(L"Image is not an Android bootimage\n");
+            Print(L"Bad Linux ARM zImage magic, booting only the image\n");
+
+            // Reconfigure the FB back to RGB565
+            ReconfigFb(RGB565_BPP);
+            
+            // Boot Linux
+            boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address, NULL, machtype, NULL, NULL);
+
+            // Clean up and loop if booting failed
+            goto cleanup;
+        }
+
         Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
         if (EFI_ERROR(Status)) {
             Print(L"Failed to load ramdisk from path %s: %r\n", RamdiskPath, Status);
@@ -352,7 +369,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
             
             // Boot Linux with the allocated cmdline
             boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address, AllocatedCmdline, machtype, RamdiskBuffer, RamdiskSize);
-            
+cleanup:
             // Clean up allocated cmdline
             SystemTable->BootServices->FreePool(AllocatedCmdline);
         }
