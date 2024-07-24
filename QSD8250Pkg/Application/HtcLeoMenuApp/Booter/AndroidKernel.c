@@ -5,19 +5,16 @@
 #include "AndroidSDDir.h"
 #include "LinuxHeader.h"
 
+#define BASE_ADDR FixedPcdGet32(PcdSystemMemoryBase)
+
+VOID *KernelLoadAddress = (VOID *)(BASE_ADDR + KERNEL_OFFSET);
+VOID *RamdiskLoadAddress = (VOID *)(BASE_ADDR + RAMDISK_OFFSET);
+UINTN *AtagsAddress = (unsigned *)(BASE_ADDR + TAGS_OFFSET);
+UINTN MachType = 0x9DC;
+//UINTN MachType = FixedPcdGet32(PcdMachType);
+
 unsigned* target_atag_mem(unsigned* ptr)
 {
-
-#if 0
-	//MEM TAG
-	*ptr++ = 4;
-	*ptr++ = 0x54410002;
-	//*ptr++ = 0x1e400000; //mem size from haret
-	//*ptr++ = 0x1E7C0000; //mem size from kernel config
-	*ptr++ = 0x1CFC0000; //mem size from kernel config with bravo dsp
-	*ptr++ = 0x11800000; //mem base
-#endif
-
 	//add atag to notify nand boot
 	*ptr++ = 4;
 	*ptr++ = 0x4C47414D; 	// NAND atag (MAGL :))
@@ -34,7 +31,7 @@ CallExitBS(
 )
 {
     EFI_STATUS Status;
-    /* Get the memory map */
+    
     UINTN MemoryMapSize;
     EFI_MEMORY_DESCRIPTOR *MemoryMap;
     UINTN LocalMapKey;
@@ -43,7 +40,7 @@ CallExitBS(
     MemoryMap = NULL;
     MemoryMapSize = 0;
     
-	
+    /* Get the memory map */
     do {  
         Status = gBS->GetMemoryMap(&MemoryMapSize, MemoryMap, &LocalMapKey, &DescriptorSize,&DescriptorVersion);
         if (Status == EFI_BUFFER_TOO_SMALL){
@@ -52,11 +49,10 @@ CallExitBS(
         } else {
             /* Status is likely success - let the while() statement check success */
         }
-        DEBUG((EFI_D_ERROR, "Memory loop iteration, status: %r\n", Status));
     
     } while (Status != EFI_SUCCESS);
 
-    DEBUG((EFI_D_ERROR, "Exit BS\n"));
+    DEBUG((EFI_D_INFO, "Exit BS\n"));
     gBS->ExitBootServices(ImageHandle, LocalMapKey);
 }
 
@@ -68,9 +64,41 @@ VOID AsciiStrToUnicodeStr(CONST CHAR8 *Source, CHAR16 *Destination) {
     *Destination = '\0'; // Null-terminate the Unicode string
 }
 
-void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void *kernel, unsigned *tags, 
-		const char *cmdline, unsigned machtype,
-		void *ramdisk, unsigned ramdisk_size)
+/* Loads a raw image */
+VOID
+BootImage(
+    IN EFI_HANDLE ImageHandle, 
+    IN EFI_SYSTEM_TABLE *SystemTable,
+    void *Kernel
+)
+{
+	EFI_STATUS Status;
+	void (*Entry)(unsigned,unsigned,unsigned*) = Kernel;
+
+	Print(L"booting image @ %p\n", Kernel);
+
+    CallExitBS(ImageHandle, SystemTable);
+
+	//we are ready to boot the freshly loaded kernel
+	PrepareForLinux();
+	Entry(0, 0, 0);
+
+    DEBUG((EFI_D_ERROR, "Failed to boot image, jump did not happen were still in uefiland \n\n"));
+	//deadlock the platform, this is not recoverable
+	for(;;);
+}
+
+/* Loads a linux image */
+VOID
+BootLinux(
+    IN EFI_HANDLE ImageHandle, 
+    IN EFI_SYSTEM_TABLE *SystemTable,
+    void *kernel, 
+    unsigned *tags, 
+	const char *cmdline, 
+    unsigned MachType,
+	void *ramdisk, 
+    unsigned ramdisk_size)
 {
 	EFI_STATUS Status;
 	unsigned *ptr = tags;
@@ -92,7 +120,7 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
 	}
 
 	ptr = target_atag_mem(ptr);
-/* ToDo: add the needed nand stuff ????*/
+    /* ToDo: add the needed nand stuff ????*/
 	// if (!target_is_emmc_boot()) {
 	// 	/* Skip NAND partition ATAGS for eMMC boot */
 	// 	if ((ptable = flash_get_ptable()) && (ptable->count != 0)) {
@@ -157,10 +185,8 @@ void boot_linux(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable,void
     CallExitBS(ImageHandle, SystemTable);
 
 	//we are ready to boot the freshly loaded kernel
-	//DEBUG((EFI_D_INFO, "Preparing... \n"));
 	PrepareForLinux();
-	//DEBUG((EFI_D_INFO, "Jumping to kernel\n"));
-	entry(0, machtype, tags);
+	entry(0, MachType, tags);
 
     DEBUG((EFI_D_ERROR, "Failed to boot Linux, jump did not happen were still in uefiland \n\n"));
 	//deadlock the platform this is not recoverable
@@ -303,12 +329,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     CHAR16 KernelPath[256];
     CHAR16 RamdiskPath[256];
 
-    UINTN BaseAddr = FixedPcdGet32(PcdSystemMemoryBase);
-    VOID *KernelLoadAddress = (VOID *)(BaseAddr + KERNEL_OFFSET);
-    VOID *RamdiskLoadAddress = (VOID *)(BaseAddr + RAMDISK_OFFSET);
-    unsigned *tags_address = (unsigned *)(BaseAddr + TAGS_OFFSET);
     const char *cmdline;// = "androidboot.hardware=htcleo androidboot.selinux=permissive androidboot.configfs=false";
-    unsigned machtype = 0x9dc;
     
     CHAR8 *AllocatedCmdline = NULL;
     UINTN CmdlineSize;
@@ -325,31 +346,34 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
         StrCpyS(KernelPath, sizeof(KernelPath) / sizeof(CHAR16), L"\\zImage");
         StrCpyS(RamdiskPath, sizeof(RamdiskPath) / sizeof(CHAR16), L"\\initrd.img");
     }
-    //print the path that was generated
-    Print(L"KernelDir is %s\n", KernelPath, Status);
+    // Print the path that was generated
+    DEBUG((EFI_D_INFO, "KernelDir is %s\n", KernelPath, Status));
+
     Status = LoadFileFromSDCard(ImageHandle, SystemTable, KernelPath, KernelLoadAddress, &KernelBuffer, &KernelSize);
     if (EFI_ERROR(Status)) {
         Print(L"Failed to load kernel from path %s: %r\n", KernelPath, Status);
     } else {
         Print(L"Kernel loaded successfully from path %s at address %p. Size: %d bytes\n", KernelPath, KernelBuffer, KernelSize);
         
-        //from https://github.com/ARM-software/u-boot/blob/master/arch/arm/lib/zimage.c
+        /* Check if the image is a linux kernel 
+         * source: https://github.com/ARM-software/u-boot/blob/master/arch/arm/lib/zimage.c
+         */
         struct arm_z_header *zi = (struct arm_z_header *)KernelBuffer;
         if (zi->zi_magic != LINUX_ARM_ZIMAGE_MAGIC) {
-            //Print(L"Image is not an Android bootimage\n");
-            Print(L"Bad Linux ARM zImage magic, booting only the image\n");
+            DEBUG((EFI_D_INFO, "Bad Linux ARM zImage magic, booting only the image\n"));
 
             // Reconfigure the FB back to RGB565
             ReconfigFb(RGB565_BPP);
             
-            // Boot Linux
-            boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address, NULL, machtype, NULL, NULL);
+            // Boot the image
+            BootImage(ImageHandle, SystemTable, KernelBuffer);
 
             // Clean up and loop if booting failed
             goto cleanup;
         }
 
-        Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
+        Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, 
+                                RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
         if (EFI_ERROR(Status)) {
             Print(L"Failed to load ramdisk from path %s: %r\n", RamdiskPath, Status);
         } else {
@@ -368,7 +392,8 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
             ReconfigFb(RGB565_BPP);
             
             // Boot Linux with the allocated cmdline
-            boot_linux(ImageHandle, SystemTable, KernelBuffer, tags_address, AllocatedCmdline, machtype, RamdiskBuffer, RamdiskSize);
+            BootLinux(ImageHandle, SystemTable, KernelBuffer, AtagsAddress, 
+                    AllocatedCmdline, MachType, RamdiskBuffer, RamdiskSize);
 cleanup:
             // Clean up allocated cmdline
             SystemTable->BootServices->FreePool(AllocatedCmdline);
