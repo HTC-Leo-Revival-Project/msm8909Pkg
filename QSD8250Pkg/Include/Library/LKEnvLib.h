@@ -9,6 +9,7 @@
 #include <Library/TimerLib.h>
 #include <Library/CacheMaintenanceLib.h>
 #include <Library/ArmLib.h>
+#include <Library/MemoryAllocationLib.h>
 
 typedef INT8 int8_t;
 typedef INT16 int16_t;
@@ -112,7 +113,7 @@ typedef unsigned long u_long;
 #define memcpy(s1, s2, n) CopyMem((s1), (s2), (n))
 #define memmove(s1, s2, n) CopyMem((s1), (s2), (n))
 #define memcmp(s1, s2, n) ((int)CompareMem((s1), (s2), (n)))
-
+#define memalign(s1, s2) AllocateAlignedPages((s1), (s2))
 #define va_list VA_LIST
 //#define offsetof(type, member) OFFSET_OF (type, member)
 #define __PACKED __attribute__((packed))

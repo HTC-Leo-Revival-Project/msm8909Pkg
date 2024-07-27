@@ -23,6 +23,7 @@
   GCC:*_*_*_CC_FLAGS = -Werror -Wno-unused-function -Wno-unused-variable -Wno-incompatible-pointer-types
 
 [Sources.common]
+  nand.c
   NandDxe.c
 
 [Packages]
