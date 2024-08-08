@@ -88,13 +88,6 @@ TimerConstructor (
   VOID
   );
 
-VOID
-PrePiMain (
-  IN  UINTN   UefiMemoryBase,
-  IN  UINTN   StacksBase,
-  IN  UINT64  StartTimeStamp
-  );
-
 EFI_STATUS
 EFIAPI
 MemoryPeim (
@@ -106,18 +99,6 @@ EFI_STATUS
 EFIAPI
 PlatformPeim (
   VOID
-  );
-
-VOID
-PrimaryMain (
-  IN  UINTN   UefiMemoryBase,
-  IN  UINTN   StacksBase,
-  IN  UINT64  StartTimeStamp
-  );
-
-VOID
-SecondaryMain (
-  IN  UINTN  MpId
   );
 
 // Either implemented by PrePiLib or by MemoryInitPei

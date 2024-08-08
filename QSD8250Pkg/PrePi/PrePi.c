@@ -196,13 +196,8 @@ PrePiMain (
   Status = MemoryPeim (UefiMemoryBase, FixedPcdGet32 (PcdSystemMemoryUefiRegionSize));
   ASSERT_EFI_ERROR (Status);
 
-  // Create the Stacks HOB (reserve the memory for all stacks)
-  if (ArmIsMpCore ()) {
-    StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize) +
-                 ((FixedPcdGet32 (PcdCoreCount) - 1) * FixedPcdGet32 (PcdCPUCoreSecondaryStackSize));
-  } else {
-    StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
-  }
+  // Create the Stacks HOB
+  StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
 
   BuildStackHob (StacksBase, StacksSize);
 
@@ -261,8 +256,6 @@ CEntryPoint (
   // Wait the Primary core has defined the address of the Global Variable region (event: ARM_CPU_EVENT_DEFAULT)
   ArmCallWFE ();
 
-  // Goto primary Main.
-  //PrimaryMain (UefiMemoryBase, StacksBase, StartTimeStamp);
   PrePiMain (UefiMemoryBase, StacksBase, StartTimeStamp);
 
   // DXE Core should always load and never return
