@@ -11,40 +11,27 @@
 *  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 *
 **/
-//#include <Uefi.h>
 #include <PiDxe.h>
-
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/ResetSystemLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/IoLib.h>
-//#include <Library/MemoryAllocationLib.h>
-//#include <Library/PcdLib.h>
-//#include <Library/BaseMemoryLib.h>
 
 #include <Library/pcom.h>
-#include <Library/LKEnvLib.h>
-
 #include <Library/BootReason.h>
 
-#define LK_BOOTREASON_ADDR 		0x2FFB0000
-#define MARK_LK_TAG 	0X004B4C63
+VOID
+EFIAPI 
+PlatformReboot(
+  unsigned RebootReason
+)
+{
+  MmioWrite32(LK_BOOTREASON_ADDR, RebootReason);
+	MmioWrite32(LK_BOOTREASON_ADDR + 4, RebootReason^MARK_LK_TAG);
+  msm_proc_comm(PCOM_RESET_CHIP, &RebootReason, 0);
 
-VOID EFIAPI reboot (unsigned rebootReason){
-  msm_proc_comm(PCOM_RESET_CHIP, &rebootReason, 0);
-  for(;;) ;
-}
-
-VOID EFIAPI htcleo_reboot(unsigned rebootReason){
-  writel(rebootReason, LK_BOOTREASON_ADDR);
-	writel(rebootReason^MARK_LK_TAG, LK_BOOTREASON_ADDR + 4);
-  reboot(rebootReason);
-}
-
-VOID EFIAPI htcleo_shutdown (){
-  msm_proc_comm(PCOM_POWER_DOWN, 0, 0);
-	for (;;) ;
+  CpuDeadLoop();
 }
 
 /**
@@ -54,7 +41,7 @@ VOID EFIAPI htcleo_shutdown (){
  **/
 RETURN_STATUS
 EFIAPI
-PlatformResetSystemLibConstructor (
+ResetSystemLibConstructor (
   VOID
   )
 {
@@ -75,7 +62,7 @@ ResetCold (
   VOID
   )
 {
-  htcleo_reboot(ANDRBOOT_MODE);
+  PlatformReboot(ANDRBOOT_MODE);
 }
 
 /**
@@ -110,7 +97,9 @@ ResetShutdown (
   VOID
   )
 {
-  htcleo_shutdown();
+  // Shut down via proc comm
+  msm_proc_comm(PCOM_POWER_DOWN, 0, 0);
+  CpuDeadLoop();
 }
 
 /**
@@ -132,9 +121,8 @@ ResetPlatformSpecific (
   )
 {
   // Map the platform specific reset as reboot
-  htcleo_reboot(ANDRBOOT_MODE);
+  PlatformReboot(ANDRBOOT_MODE);
 }
-
 
 /**
   Resets the entire platform.
