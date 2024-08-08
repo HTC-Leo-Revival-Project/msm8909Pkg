@@ -82,12 +82,6 @@
 
 extern UINT64  mSystemMemoryEnd;
 
-RETURN_STATUS
-EFIAPI
-TimerConstructor (
-  VOID
-  );
-
 EFI_STATUS
 EFIAPI
 MemoryPeim (
