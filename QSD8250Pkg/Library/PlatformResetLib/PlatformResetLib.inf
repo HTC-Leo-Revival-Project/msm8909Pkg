@@ -6,7 +6,7 @@
   MODULE_TYPE                    = BASE
   VERSION_STRING                 = 1.0
   LIBRARY_CLASS                  = ResetSystemLib
-  CONSTRUCTOR                    = ResetSystemLibConstructor
+  CONSTRUCTOR                    = PlatformResetSystemLibConstructor
 
 [Sources.common]
   PlatformResetLib.c
