@@ -134,6 +134,13 @@ EnableCounter()
 	__asm__ volatile("mcr	p15, 0, %0, c9, c12, 1" :: "r" (en));
 }
 
+/**
+  SEC main routine.
+  @param[in]  UefiMemoryBase  Start of the PI/UEFI memory region
+  @param[in]  StacksBase      Start of the stack
+  @param[in]  StartTimeStamp  Timer value at start of execution
+**/
+STATIC
 VOID
 PrePiMain (
   IN  UINTN   UefiMemoryBase,
