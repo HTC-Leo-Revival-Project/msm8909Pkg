@@ -11,24 +11,20 @@
 *  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 *
 **/
-#include <Library/DebugLib.h>
-#include <Library/pcom.h>
-#include <Library/LKEnvLib.h>
-#include <Uefi.h>
+//#include <Uefi.h>
 #include <PiDxe.h>
 
 #include <Library/BaseLib.h>
-#include <Library/MemoryAllocationLib.h>
-#include <Library/IoLib.h>
-#include <Library/PcdLib.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Library/EfiResetSystemLib.h>
-#include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
+#include <Library/ResetSystemLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/IoLib.h>
+//#include <Library/MemoryAllocationLib.h>
+//#include <Library/PcdLib.h>
+//#include <Library/BaseMemoryLib.h>
 
-#include <Protocol/BlockIo.h>
-#include <Protocol/DevicePath.h>
 #include <Library/pcom.h>
+#include <Library/LKEnvLib.h>
 
 #include <Library/BootReason.h>
 
@@ -49,6 +45,20 @@ VOID EFIAPI htcleo_reboot(unsigned rebootReason){
 VOID EFIAPI htcleo_shutdown (){
   msm_proc_comm(PCOM_POWER_DOWN, 0, 0);
 	for (;;) ;
+}
+
+/**
+  Library constructor. This function does nothing, but this library may depend
+  on other libraries that do have a non-trivial constructor, which the
+  BaseToools fail to account for if a library has no constructor at all.
+ **/
+RETURN_STATUS
+EFIAPI
+PlatformResetSystemLibConstructor (
+  VOID
+  )
+{
+  return EFI_SUCCESS;
 }
 
 /**
