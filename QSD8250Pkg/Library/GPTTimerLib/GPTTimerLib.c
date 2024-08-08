@@ -32,15 +32,6 @@ TimerEarlyInit (
   return RETURN_SUCCESS;
 }
 
-RETURN_STATUS
-EFIAPI
-TimerConstructor (
-  VOID
-  )
-{
-  return RETURN_SUCCESS;
-}
-
 UINTN
 EFIAPI
 MicroSecondDelay (

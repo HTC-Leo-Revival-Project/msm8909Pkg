@@ -71,7 +71,7 @@
   ArmSmcLib|ArmPkg/Library/ArmSmcLib/ArmSmcLib.inf
   ArmMmuLib|ArmPkg/Library/ArmMmuLib/ArmMmuBaseLib.inf
 
-  ResetSystemLib|QSD8250Pkg/Library/HtcLeoPlatformResetLib/HtcLeoPlatformResetLib.inf
+  ResetSystemLib|QSD8250Pkg/Library/PlatformResetLib/PlatformResetLib.inf
 
   # ARM PL011 UART Driver
   PL011UartClockLib|ArmPlatformPkg/Library/PL011UartClockLib/PL011UartClockLib.inf

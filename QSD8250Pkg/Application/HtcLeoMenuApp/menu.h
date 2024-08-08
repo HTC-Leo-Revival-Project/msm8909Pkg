@@ -10,7 +10,7 @@
 #include <Protocol/SimpleFileSystem.h>
 #include <Guid/FileInfo.h>
 
-#include <Library/HtcLeoPlatformResetLib.h>
+#include <Library/PlatformResetLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiBootManagerLib.h>
