@@ -218,7 +218,7 @@ void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   ASSERT_EFI_ERROR(Status);
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot to CLK", TRUE, &NullFunction};
   MenuOptions[Index++] = (MenuEntry){Index, L"Reboot", TRUE, &ResetCold};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Shutdown", TRUE, &NullFunction};
+  MenuOptions[Index++] = (MenuEntry){Index, L"Shutdown", TRUE, &ResetShutdown};
   // Fill disabled options
   do {
     MenuOptions[Index++] = (MenuEntry){Index, L"", FALSE, &NullFunction};
