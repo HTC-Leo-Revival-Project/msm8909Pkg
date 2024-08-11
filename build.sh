@@ -68,7 +68,7 @@ if [ $DEVICE == 'All' ]; then
 else
     echo "Building uefi for $DEVICE"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
-	mkdir "ImageResources/$DEVICE"
+	mkdir -p "ImageResources/$DEVICE"
 	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE
 fi
