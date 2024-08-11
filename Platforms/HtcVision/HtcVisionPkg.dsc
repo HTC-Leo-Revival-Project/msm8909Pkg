@@ -31,11 +31,12 @@
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
 [BuildOptions.common]
-  GCC:*_*_ARM_CC_FLAGS = -DSOC=2 -DKP_LED_ENABLE_METHOD=1 -DDEVICETYPE=1 #Gpio
+  GCC:*_*_ARM_CC_FLAGS = -DSOC=2 -DKP_LED_ENABLE_METHOD=1 -DDEVICETYPE=3 #Gpio
 
 [LibraryClasses.common]
 
 [Components.common]
+QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
   # Charging
 
 [PcdsFixedAtBuild.common]

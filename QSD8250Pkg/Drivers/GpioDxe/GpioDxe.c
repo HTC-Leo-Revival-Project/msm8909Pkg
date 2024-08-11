@@ -48,13 +48,16 @@
 #include <Library/gpio.h>
 #include <Library/pcom.h>
 
-#include <Chipset/gpio.h>
 #if SOC == 1
 #include <Chipset/iomap_qsd8250.h>
+#include <Chipset/irqs_qsd8250.h>
+#include <Chipset/gpio_qsd8250.h>
 #elif SOC == 2
 #include <Chipset/iomap_msm7230.h>
+#include <Chipset/irqs_msm7230.h>
+#include <Chipset/gpio_msm7230.h>
 #endif
-#include <Chipset/irqs.h>
+
 #include <Chipset/clock.h>
 
 #include <Protocol/GpioTlmm.h>
@@ -73,7 +76,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge 	= GPIO_INT_EDGE_0,
 	.int_pos 	= GPIO_INT_POS_0,
 	.oe 		= GPIO_OE_0,
-	.owner 		= GPIO_OWNER_0,
+	.owner 		= 0,
 	.start 		= 0,
 	.end 		= 15,
 	},
@@ -86,7 +89,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge 	= GPIO_INT_EDGE_1,
 	.int_pos 	= GPIO_INT_POS_1,
 	.oe 		= GPIO_OE_1,
-	.owner 		= GPIO_OWNER_1,
+	.owner 		= 0,
 	.start	 	= 16,
 	.end 		= 42,
 	},
@@ -99,7 +102,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge 	= GPIO_INT_EDGE_2,
 	.int_pos 	= GPIO_INT_POS_2,
 	.oe 		= GPIO_OE_2,
-	.owner 		= GPIO_OWNER_2,
+	.owner 		= 0,
 	.start 		= 43,
 	.end 		= 67,
 	},
@@ -112,7 +115,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge 	= GPIO_INT_EDGE_3,
 	.int_pos 	= GPIO_INT_POS_3,
 	.oe 		= GPIO_OE_3,
-	.owner 		= GPIO_OWNER_3,
+	.owner 		= 0,
 	.start 		= 68,
 	.end 		= 94
 	},
@@ -125,7 +128,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge 	= GPIO_INT_EDGE_4,
 	.int_pos 	= GPIO_INT_POS_4,
 	.oe 		= GPIO_OE_4,
-	.owner 		= GPIO_OWNER_4,
+	.owner 		= 0,
 	.start 		= 95,
 	.end 		= 103,
 	},
@@ -138,7 +141,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge 	= GPIO_INT_EDGE_5,
 	.int_pos 	= GPIO_INT_POS_5,
 	.oe 		= GPIO_OE_5,
-	.owner 		= GPIO_OWNER_5,
+	.owner 		= 0,
 	.start 		= 104,
 	.end 		= 121,
 	},
@@ -151,7 +154,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge   = GPIO_INT_EDGE_6,
 	.int_pos    = GPIO_INT_POS_6,
 	.oe         = GPIO_OE_6,
-	.owner      = GPIO_OWNER_6,
+	.owner      = 0,
 	.start      = 122,
 	.end        = 152,
 	},
@@ -164,7 +167,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_edge   = GPIO_INT_EDGE_7,
 	.int_pos    = GPIO_INT_POS_7,
 	.oe         = GPIO_OE_7,
-	.owner      = GPIO_OWNER_7,
+	.owner      = 0,
 	.start      = 153,
 	.end        = 164,
 	},
@@ -254,24 +257,6 @@ config_gpio_table(UINT32 *table, int len)
 		msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &id, 0);
 	}
 }
-
-/*void msm_gpio_set_owner(UINTN gpio, UINTN owner)
-{
-
-	gpioregs *r;
-	UINTN b = 0;
-	UINTN v;
-
-	if ((r = find_gpio(gpio, &b)) == 0)
-		return;
-
-	v = readl(r->owner);
-	if (owner == MSM_GPIO_OWNER_ARM11) {
-		writel(v | b, r->owner);
-	} else {
-		writel(v & (~b), r->owner);
-	}
-}*/
 
 static void msm_gpio_update_both_edge_detect(UINTN gpio)
 {
