@@ -30,8 +30,10 @@
 #include <Chipset/msm_i2c.h>
 #if SOC == 1
 #include <Chipset/iomap_qsd8250.h>
+#include <Chipset/irqs_qsd8250.h>
 #elif SOC == 2
 #include <Chipset/iomap_msm7230.h>
+#include <Chipset/irqs_msm7230.h>
 #endif
 #include <Chipset/timer.h>
 #include <Chipset/clock.h>
@@ -41,7 +43,7 @@
 #include <Protocol/HtcLeoI2C.h>
 
 #include <Chipset/gpio.h>
-#include <Chipset/irqs.h>
+
 #include <Protocol/GpioTlmm.h>
 
 // Cached copy of the Hardware Gpio protocol instance
