@@ -37,7 +37,7 @@
 
 [Components.common]
  QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
- 
+ QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
 
 [PcdsFixedAtBuild.common]
   # System Memory (243MB for now)

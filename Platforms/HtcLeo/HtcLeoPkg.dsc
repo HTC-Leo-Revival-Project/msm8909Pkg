@@ -33,16 +33,13 @@
 [BuildOptions.common]
   GCC:*_*_ARM_CC_FLAGS = -DSOC=1 -DKP_LED_ENABLE_METHOD=1 -DDEVICETYPE=1 #Gpio
 
-  [LibraryClasses.common]
-
-[Components.common]
- QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
-
 [LibraryClasses.common]
   DS2746Lib|QSD8250Pkg/Library/DS2746Lib/DS2746.inf
 
 [Components.common]
   # Charging
+  QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
+  QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
   QSD8250Pkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
 [PcdsFixedAtBuild.common]

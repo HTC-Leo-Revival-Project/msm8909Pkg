@@ -521,7 +521,7 @@
   MdeModulePkg/Universal/StatusCodeHandler/RuntimeDxe/StatusCodeHandlerRuntimeDxe.inf
 
   # SoC Drivers
-  QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
+  
   QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
   QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
   QSD8250Pkg/GPLDrivers/SdCardDxe/SdCardDxe.inf

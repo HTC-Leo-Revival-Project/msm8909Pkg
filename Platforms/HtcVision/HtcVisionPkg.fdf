@@ -1,4 +1,4 @@
-[FD.QSD8250_UEFI]
+[FD.MSM7230_UEFI]
 BaseAddress   = 0x2C000000|gArmTokenSpaceGuid.PcdFdBaseAddress  # The base address of the Firmware in NOR Flash.
 Size          = 0x00100000|gArmTokenSpaceGuid.PcdFdSize         # The size in bytes of the FLASH Device
 ErasePolarity = 1
@@ -32,7 +32,7 @@ FV = FVMAIN_COMPACT
 
   // Mainline device tree blob
   FILE FREEFORM = 25462CDA-221F-47DF-AC1D-259CFAA4E326 {
-  SECTION RAW = Platforms/HtcVision/FdtBlob/qcom-qsd8250-htc-vision.dtb
+  SECTION RAW = Platforms/HtcVision/FdtBlob/qcom-msm7230-htc-vision.dtb
   }
 
 !include QSD8250Pkg/CommonFv.fdf.inc

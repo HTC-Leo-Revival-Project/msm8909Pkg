@@ -29,6 +29,7 @@ gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
 FV = FVMAIN_COMPACT
 
 !include QSD8250Pkg/QSD8250Pkg.fdf
+INF QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
 INF QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
 
   // Mainline device tree blob

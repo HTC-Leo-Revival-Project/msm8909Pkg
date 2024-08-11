@@ -36,6 +36,7 @@
 [LibraryClasses.common]
 
 [Components.common]
+  # Charging
 
 [PcdsFixedAtBuild.common]
   # System Memory (576MB)
