@@ -40,10 +40,10 @@
 
 [PcdsFixedAtBuild.common]
   # System Memory (576MB)
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x04000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x20000000
 
-  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2fd00000
 
   # SMBIOS
   gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"HTC Desire Z"
