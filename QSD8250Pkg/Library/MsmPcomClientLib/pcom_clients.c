@@ -19,7 +19,11 @@
 #include <Library/pcom.h>
 #include <Chipset/clock.h>
 #include <Chipset/gpio.h>
-#include <Chipset/iomap.h>
+#if SOC == 1
+#include <Chipset/iomap_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/iomap_msm7230.h>
+#endif
 
 #include <Library/pcom_clients.h>
 

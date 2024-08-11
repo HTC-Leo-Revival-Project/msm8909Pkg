@@ -23,10 +23,10 @@
 #ifndef __PLATFORM_INTERRUPTS_H
 #define __PLATFORM_INTERRUPTS_H
 
-#include "iomap.h"
+#include <Chipset/iomap_msm7230.h>
+
 
 #define VIC_REG(off) (MSM_VIC_BASE + (off))
-
 #define VIC_INT_SELECT0     VIC_REG(0x0000)  /* 1: FIQ, 0: IRQ */
 #define VIC_INT_SELECT1     VIC_REG(0x0004)  /* 1: FIQ, 0: IRQ */
 #define VIC_INT_EN0         VIC_REG(0x0010)
@@ -65,9 +65,7 @@
 #define VIC_FIQ_IN_SERVICE  VIC_REG(0x00F0)
 #define VIC_FIQ_IN_STACK    VIC_REG(0x00F4)
 #define VIC_TEST_BUS_SEL    VIC_REG(0x00F8)
-
 #define SIRC_REG(off) (MSM_SIRC_BASE + (off))
-
 #define SIRC_INT_SELECT     SIRC_REG(0x0000)  /* 0: IRQ0 1: IRQ1 */
 #define SIRC_INT_ENABLE     SIRC_REG(0x0004)
 #define SIRC_INT_ENCLEAR    SIRC_REG(0x0008)

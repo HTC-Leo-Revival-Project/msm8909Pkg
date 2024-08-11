@@ -524,7 +524,6 @@
   QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
   QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
   QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
-  QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
   QSD8250Pkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
   QSD8250Pkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
   QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf

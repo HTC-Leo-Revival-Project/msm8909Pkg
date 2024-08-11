@@ -31,7 +31,13 @@
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
 [BuildOptions.common]
-  GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=3 -DDEVICETYPE=2 # Gpio
+  GCC:*_*_ARM_CC_FLAGS = -DSOC=1 -DKP_LED_ENABLE_METHOD=3 -DDEVICETYPE=2 # Gpio
+
+[LibraryClasses.common]
+
+[Components.common]
+ QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
+ 
 
 [PcdsFixedAtBuild.common]
   # System Memory (243MB for now)

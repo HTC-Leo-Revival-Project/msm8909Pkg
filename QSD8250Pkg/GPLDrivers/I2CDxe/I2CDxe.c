@@ -28,7 +28,11 @@
 #include <Device/Gpio.h>
 
 #include <Chipset/msm_i2c.h>
-#include <Chipset/iomap.h>
+#if SOC == 1
+#include <Chipset/iomap_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/iomap_msm7230.h>
+#endif
 #include <Chipset/timer.h>
 #include <Chipset/clock.h>
 

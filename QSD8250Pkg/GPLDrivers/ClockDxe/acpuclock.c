@@ -16,7 +16,11 @@
 
 #include <Library/pcom.h>
 #include <Library/LKEnvLib.h>
-#include <Chipset/iomap.h>
+#if SOC == 1
+#include <Chipset/iomap_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/iomap_msm7230.h>
+#endif
 #include <Chipset/clock.h>
 #include <Library/acpuclock.h>
 #include <Library/TimerLib.h>

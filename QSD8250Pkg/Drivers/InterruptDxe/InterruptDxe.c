@@ -25,8 +25,12 @@
 
 #include <Protocol/Cpu.h>
 #include <Protocol/HardwareInterrupt.h>
+#if SOC == 1
+#include <Chipset/interrupts_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/interrupts_msm7230.h>
+#endif
 
-#include <Chipset/interrupts.h>
 #include <Chipset/irqs.h>
 
 //

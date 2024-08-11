@@ -4,7 +4,7 @@ set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
 
-AvailablePlatforms=("Leo" "Schubert" "All")
+AvailablePlatforms=("Leo" "Schubert" "Vision" "All")
 IsValid=0
 
 while getopts d: flag
@@ -41,9 +41,6 @@ function _clean() {
 			fi
 		if [ -f BootShim/BootShim.bin ]; then
 			rm BootShim/BootShim.bin
-		fi
-		if [ -d workspace/Build ]; then
-			rm -r workspace/Build
 		fi
 	done
 }

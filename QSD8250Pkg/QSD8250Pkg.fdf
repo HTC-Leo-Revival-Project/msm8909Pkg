@@ -60,7 +60,7 @@ APRIORI DXE {
   INF QSD8250Pkg/GPLDrivers/ClockDxe/ClockDxe.inf
   INF QSD8250Pkg/Drivers/SmemDxe/SmemDxe.inf
   INF QSD8250Pkg/Drivers/SmemPtableDxe/SmemPtableDxe.inf
-  INF QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
+  #INF QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
   INF QSD8250Pkg/GPLDrivers/SdCardDxe/SdCardDxe.inf
   INF QSD8250Pkg/Drivers/GenericKeypadDeviceDxe/GenericKeypadDeviceDxe.inf
   INF QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf

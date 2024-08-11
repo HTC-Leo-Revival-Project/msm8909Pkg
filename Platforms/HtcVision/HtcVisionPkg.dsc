@@ -16,7 +16,7 @@
 #
 ################################################################################
 [Defines]
-  PLATFORM_NAME                  = HtcLeo
+  PLATFORM_NAME                  = HtcVision
   PLATFORM_GUID                  = 28f1a3bf-193a-47e3-a7b9-5a435eaab2ee
   PLATFORM_VERSION               = 0.1
   DSC_SPECIFICATION              = 0x00010019
@@ -31,19 +31,11 @@
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
 [BuildOptions.common]
-  GCC:*_*_ARM_CC_FLAGS = -DSOC=1 -DKP_LED_ENABLE_METHOD=1 -DDEVICETYPE=1 #Gpio
-
-  [LibraryClasses.common]
-
-[Components.common]
- QSD8250Pkg/Drivers/GpioDxe/GpioDxe.inf
+  GCC:*_*_ARM_CC_FLAGS = -DSOC=2 -DKP_LED_ENABLE_METHOD=1 -DDEVICETYPE=1 #Gpio
 
 [LibraryClasses.common]
-  DS2746Lib|QSD8250Pkg/Library/DS2746Lib/DS2746.inf
 
 [Components.common]
-  # Charging
-  QSD8250Pkg/GPLDrivers/ChargingDxe/ChargingDxe.inf
 
 [PcdsFixedAtBuild.common]
   # System Memory (576MB)
@@ -53,5 +45,5 @@
   gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
 
   # SMBIOS
-  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"HTC HD2"
-  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"HTC LEO"
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"HTC Desire Z"
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"HTC VISION"

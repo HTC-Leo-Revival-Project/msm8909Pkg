@@ -13,7 +13,11 @@
 #endif /*USE_PROC_COMM */
 
 #include <Library/gpio.h>
-#include <Chipset/iomap.h>
+#if SOC == 1
+#include <Chipset/iomap_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/iomap_msm7230.h>
+#endif
 #include <Library/reg.h>
 #include <Chipset/gpio.h>
 

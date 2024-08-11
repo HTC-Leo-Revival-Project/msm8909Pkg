@@ -21,6 +21,10 @@ elif [ $1 == 'Schubert' ]; then
     cat BootShim/BootShim.bin workspace/Build/HtcSchubert/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/$1/bootpayload.bin
 
     mkbootimg --kernel ImageResources/$1/bootpayload.bin --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/$1/uefi.img
+elif [ $1 == 'Vision' ]; then
+    cat BootShim/BootShim.bin workspace/Build/HtcVision/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/$1/bootpayload.bin
+
+    mkbootimg --kernel ImageResources/$1/bootpayload.bin --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/$1/uefi.img
 else
     echo "Bootimages: Invalid platform"
 fi

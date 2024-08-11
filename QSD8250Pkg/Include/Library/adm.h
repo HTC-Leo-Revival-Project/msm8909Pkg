@@ -60,7 +60,11 @@
 #ifndef __QC_ADM_H
 #define __QC_ADM_H
 
-#include <Chipset/iomap.h>
+#if SOC == 1
+#include <Chipset/iomap_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/iomap_msm7230.h>
+#endif
 
 // ADM base address for channel (n) and security_domain (s)
 #define ADM_BASE_ADDR(n, s) (MSM_ADM_BASE + 4*(n) + ((MSM_ADM_SD_OFFSET)*(s)))
