@@ -25,10 +25,12 @@
 
 #if SOC == 1
 #include <Chipset/iomap_qsd8250.h>
+#include <Chipset/irqs_qsd8250.h>
 #elif SOC == 2
 #include <Chipset/iomap_msm7230.h>
+#include <Chipset/irqs_msm7230.h>
 #endif
-#include <Chipset/irqs.h>
+
 #include <Chipset/timer.h>
 #include <Library/gpio.h>
 #include <Library/DS2746.h>

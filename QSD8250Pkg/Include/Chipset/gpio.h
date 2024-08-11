@@ -1,5 +1,5 @@
-#ifndef __PLATFORM_QSD8K_GPIO_HW_H
-#define __PLATFORM_QSD8K_GPIO_HW_H
+#ifndef __PLATFORM_GPIO_HW_H
+#define __PLATFORM_GPIO_HW_H
 
 #define MSM_GPIO_CFG(gpio, func, dir, pull, drvstr)	(						\
 													(((gpio) & 0x3FF) << 4)|\

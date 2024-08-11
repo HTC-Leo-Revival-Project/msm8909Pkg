@@ -41,7 +41,11 @@
 #include <Protocol/EmbeddedClock.h>
 
 #include <Chipset/clock.h>
-
+#if SOC == 1
+#include <Chipset/gpio_qsd8250.h>
+#elif SOC == 2
+#include <Chipset/gpio_msm7230.h>
+#endif
 #include "SdCardDxe.h"
 
 static block_dev_desc_t *sdc_dev;
