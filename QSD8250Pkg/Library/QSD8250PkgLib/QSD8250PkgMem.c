@@ -28,7 +28,7 @@
 #define WRITE_BACK_XN                   ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK
 
 #define QSD8250_PERIPH_BASE              0xA0000000
-#define QSD8250_PERIPH_SIZE              0x0C300000
+#define QSD8250_PERIPH_SIZE              0x0D901000
 
 #define FB_ADDR FixedPcdGet32(PcdMipiFrameBufferAddress)
 #define FB_SIZE FixedPcdGet32(PcdMipiFrameBufferWidth)*FixedPcdGet32(PcdMipiFrameBufferHeight)*(FixedPcdGet32(PcdMipiFrameBufferPixelBpp) / 8)
@@ -37,7 +37,9 @@ STATIC struct ReservedMemory {
     EFI_PHYSICAL_ADDRESS         Offset;
     EFI_PHYSICAL_ADDRESS         Size;
 } ReservedMemoryBuffer [] = {
-    { 0x10000000, 0x20000000 },    // MEMHOLE
+    { 0x10000000, 0x10000000 },    // MEMHOLE
+    { 0x2befffff, 0x03E00000},
+    {FB_ADDR, FB_SIZE},
 };
 
 /**
