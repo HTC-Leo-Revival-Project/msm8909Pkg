@@ -1,0 +1,5 @@
+Driver based on:
+* https://github.com/sonic011gamer/Lumia520Pkg/tree/new/Driver/TimerDxe
+with some code from lk:
+* https://github.com/n0d3/lk/blob/BlackCLK_ex_2/kernel/timer.c
+* https://github.com/n0d3/lk/blob/BlackCLK_ex_2/platform/msm_shared/timer.c
