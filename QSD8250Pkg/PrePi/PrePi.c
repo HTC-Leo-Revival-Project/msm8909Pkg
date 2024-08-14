@@ -208,37 +208,40 @@ PrePiMain (
   ASSERT_EFI_ERROR (Status);
 
   // Create the Stacks HOB
+  for (int i =0; i < 100; i++){
+     DEBUG((EFI_D_ERROR,"%d \n", i));
+  }
     DEBUG((EFI_D_ERROR,"Create the Stacks HOB \n"));
   StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
-
+ DEBUG((EFI_D_ERROR,"BuildStackHob \n"));
   BuildStackHob (StacksBase, StacksSize);
-
+ DEBUG((EFI_D_ERROR,"BuildCpuHob \n"));
   // TODO: Call CpuPei as a library
   BuildCpuHob (ArmGetPhysicalAddressBits (), PcdGet8 (PcdPrePiCpuIoSize));
-
+ DEBUG((EFI_D_ERROR,"GetTimeInNanoSecond \n"));
   // Store timer value logged at the beginning of firmware image execution
   Performance.ResetEnd = GetTimeInNanoSecond (StartTimeStamp);
-
+ DEBUG((EFI_D_ERROR,"BuildGuidDataHob \n"));
   // Build SEC Performance Data Hob
   BuildGuidDataHob (&gEfiFirmwarePerformanceGuid, &Performance, sizeof (Performance));
-
+ DEBUG((EFI_D_ERROR,"SetBootMode \n"));
   // Set the Boot Mode
   SetBootMode (ArmPlatformGetBootMode ());
-
+ DEBUG((EFI_D_ERROR,"PlatformPeim \n"));
   // Initialize Platform HOBs (CpuHob and FvHob)
   Status = PlatformPeim ();
   ASSERT_EFI_ERROR (Status);
-
+ DEBUG((EFI_D_ERROR,"PERF_START \n"));
   // Now, the HOB List has been initialized, we can register performance information
   PERF_START (NULL, "PEI", NULL, StartTimeStamp);
-
+ DEBUG((EFI_D_ERROR,"ProcessLibraryConstructorList \n"));
   // SEC phase needs to run library constructors by hand.
   ProcessLibraryConstructorList ();
-
+ DEBUG((EFI_D_ERROR,"DecompressFirstFv \n"));
   // Assume the FV that contains the SEC (our code) also contains a compressed FV.
   Status = DecompressFirstFv ();
   ASSERT_EFI_ERROR (Status);
-
+ DEBUG((EFI_D_ERROR,"LoadDxeCoreFromFv \n"));
   // Load the DXE Core and transfer control to it
   Status = LoadDxeCoreFromFv (NULL, 0);
   ASSERT_EFI_ERROR (Status);

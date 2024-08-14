@@ -33,7 +33,9 @@ if [ "$1" == 'Leo' ]; then
 elif [[ "$1" == 'Schubert' || "$1" == 'Gold' ]]; then
     build_uefi_img "$1" "0x20000000"
 elif [[ "$1" == 'Vision' ]]; then
-    build_uefi_img "$1" "0x04000000"
+    dd if=/dev/zero bs=1 count=1 of=ImageResources/$1/ramdisk
+    mkbootimg --kernel workspace/Build/HtcVision/DEBUG_GCC/FV/QSD8250_UEFI.fd --ramdisk ImageResources/Vision/recovery-clockwork-6.0.5.0-vision.img-ramdisk.gz --kernel_offset 0x00008000 --ramdisk_offset 0x01000000 --second_offset 0x00f00000 --pagesize 2048 --cmdline no_console_suspend=1 --base 0x04000000 -o ImageResources/$1/uefi.img
+    rm -rf ImageResources/$1/ramdisk
 else
     echo "Bootimages: Invalid platform"
 fi
