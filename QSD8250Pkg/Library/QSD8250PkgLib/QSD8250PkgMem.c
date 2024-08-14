@@ -37,14 +37,7 @@ STATIC struct ReservedMemory {
     EFI_PHYSICAL_ADDRESS         Offset;
     EFI_PHYSICAL_ADDRESS         Size;
 } ReservedMemoryBuffer [] = {
-    { 0x00000000, 0x00100000 },    // APPSBL
-    { 0x00100000, 0x00100000 },    // SMEM
-    { 0x00200000, 0x00200000 },    // OEMSBL
-    { 0x00400000, 0x02100000 },    // AMSS
-    { 0x10000000, 0x01800000 },    // QDSP6
-    { 0x2FFC0000, 0x00040000 },    // PSTORE
-    
-    { FB_ADDR,    FB_SIZE    },    // Display Reserved
+    { 0x10000000, 0x20000000 },    // MEMHOLE
 };
 
 /**
