@@ -159,7 +159,7 @@ PrePiMain (
   ArchInitialize ();
 
   // Reconfigure the framebuffer based on PCD
-  //ReconfigFb();
+  ReconfigFb();
 
   // Paint screen to red
   PaintScreen(FB_BGRA8888_BLACK);

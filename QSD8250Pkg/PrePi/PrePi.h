@@ -35,10 +35,11 @@
 /* MDP-related defines */
 #if SOC == 1
 #define MSM_MDP_BASE1 	0xAA200000
+#define LCDC_BASE     	0xE0000
 #elif SOC ==2
 #define MSM_MDP_BASE1 	0xA3F00000
+#define LCDC_BASE     	0xC0000
 #endif
-#define LCDC_BASE     	0xE0000
 #define MDP_LCDC_EN (MSM_MDP_BASE1 + LCDC_BASE)
 
 /* MDP 3.1 */
