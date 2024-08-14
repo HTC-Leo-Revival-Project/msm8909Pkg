@@ -97,6 +97,8 @@ APRIORI DXE {
   #
   INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
   INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
+  INF HtcLeoPkg/Drivers/InterruptDxe/InterruptDxe.inf
+  INF HtcLeoPkg/Drivers/TimerDxe/TimerDxe.inf
   INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   INF MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
   INF MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf

@@ -204,6 +204,8 @@
 
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf
 
+  HtcLeoPkg/Drivers/InterruptDxe/InterruptDxe.inf
+  HtcLeoPkg/Drivers/TimerDxe/TimerDxe.inf
   # ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
   # ArmPkg/Drivers/TimerDxe/TimerDxe.inf
 
