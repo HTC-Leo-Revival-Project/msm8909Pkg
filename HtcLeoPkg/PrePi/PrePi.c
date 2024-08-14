@@ -43,8 +43,8 @@ PrePiMain (
   ArchInitialize ();
 
   // Paint the screen to black
-  UINT8 *start = (UINT8 *)0x02A00000;
-  UINT8 *end = (UINT8 *)0x02ABBB00;  
+  UINT8 *start = (UINT8 *)0x2fd00000;
+  UINT8 *end = (UINT8 *)0x2fdbbb00;  
 
   for (UINT8 *ptr = start; ptr < end; ptr++) {
     *ptr = 0;

@@ -109,8 +109,8 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Testing"
 
   # System Memory (576MB)
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x04000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x20000000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
   # We boot all processors here!!!!!
@@ -150,7 +150,7 @@
   #
   gEfiMdeModulePkgTokenSpaceGuid.PcdEmuVariableNvModeEnable|TRUE
 
-  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2a00000
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2fd00000
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800
 

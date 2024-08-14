@@ -36,7 +36,7 @@
 
 [PcdsFixedAtBuild.common]
   # Simple FrameBuffer
-  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2a00000|UINT32|0x0000a400
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x2fd00000|UINT32|0x0000a400
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|480|UINT32|0x0000a401
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|800|UINT32|0x0000a402
   gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|16|UINT32|0x0000a403
