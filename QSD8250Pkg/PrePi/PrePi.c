@@ -190,6 +190,8 @@ PrePiMain (
   InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
   SaveAndSetDebugTimerInterrupt (TRUE);
 
+  DEBUG((EFI_D_ERROR,"Declare the PI/UEFI memory region \n"));
+
   // Declare the PI/UEFI memory region
   HobList = HobConstructor (
               (VOID *)UefiMemoryBase,
@@ -199,11 +201,14 @@ PrePiMain (
               );
   PrePeiSetHobList (HobList);
 
+  DEBUG((EFI_D_ERROR,"INIT MMU \n"));
+
   // Initialize MMU and Memory HOBs (Resource Descriptor HOBs)
   Status = MemoryPeim (UefiMemoryBase, FixedPcdGet32 (PcdSystemMemoryUefiRegionSize));
   ASSERT_EFI_ERROR (Status);
 
   // Create the Stacks HOB
+    DEBUG((EFI_D_ERROR,"Create the Stacks HOB \n"));
   StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
 
   BuildStackHob (StacksBase, StacksSize);

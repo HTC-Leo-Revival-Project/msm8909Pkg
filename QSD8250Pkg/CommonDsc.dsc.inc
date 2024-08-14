@@ -395,8 +395,8 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdImageProtectionPolicy|0x00000000
 
   # System Memory (576MB)
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x11800000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1E800000
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x04000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x20000000
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
 
   # We boot all processors here!!!!!
