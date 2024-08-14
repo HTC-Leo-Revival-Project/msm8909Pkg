@@ -3,3 +3,4 @@ workspace/Build
 *.img
 *.orig
 *.rej
+.vscode
