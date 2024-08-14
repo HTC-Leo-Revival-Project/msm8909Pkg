@@ -1,0 +1,3 @@
+This driver was based on : 
+* interrupt.c from lk sources: https://github.com/n0d3/lk/blob/BlackCLK_ex_2/platform/qsd8k/interrupts.c
+* InterruptDxe from iPhone4Pkg: https://github.com/idaviden/kaikidan/tree/linaro-release/iPhone4Pkg/InterruptDxe
