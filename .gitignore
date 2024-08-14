@@ -1,0 +1,5 @@
+workspace/Build
+*.patch
+*.img
+*.orig
+*.rej
