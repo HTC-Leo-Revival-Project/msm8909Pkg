@@ -28,7 +28,7 @@
 .text
 .globl _start
 _start:
-	b	_Reset
+	b _Reset
 
 //if EDK2 is loaded by wince spl add romhdr
 .org 0x40
@@ -70,31 +70,15 @@ _Reset:
 	orr		r0, r0, #(1<<1)
 	mcr		p15, 0, r0, c1, c0, 0
 
-_PrepareForBoot:
-	// Martijn Stolk's code so kernel will not crash. aux control register
-	MRC p15, 0, r0, c1, c0, 1
-	BIC r0, r0, #0x40
-	BIC r0, r0, #0x200000
-	MCR p15, 0, r0, c1, c0, 1
+    LDR r0, =0xA3F90008      // Load the address where the start address is stored
+    LDR r0, [r0]             // Load the actual start address from memory into r0
+    ADD r1, r0, #0x300000    // Calculate the end address (start address + 0x300000)
+    MOV r2, #0               // Set r2 to 0 (the value to store)
 
-	// Disable VFP
-	MOV R0, #0
-	FMXR FPEXC, r0
-
-        // disable mmu
-	MRC p15, 0, r0, c1, c0, 0
-	BIC r0, r0, #(1<<0)
-	MCR p15, 0, r0, c1, c0, 0
-	ISB
-	
-	// Invalidate the UTLB
-	MOV r0, #0
-	MCR p15, 0, r0, c8, c7, 0
-
-	// Clean and invalidate cache - Ensure pipeline flush
-	MOV R0, #0
-	DSB
-	ISB
+loop:
+    STR r2, [r0], #4         // Store 0 at the address in r0 and increment r0 by 4
+    CMP r0, r1               // Compare current address (r0) with end address (r1)
+    BNE loop                 // If r0 != r1, branch back to loop
 
 _UefiSetup:
 	// From PrimeG2Pkg
@@ -104,6 +88,17 @@ _UefiSetup:
   	bic     r0, r0, #0x00000002     /* Clear bit 1 (Alignment faults) */
   	orr     r0, r0, #0x00001000     /* set bit 12 (I) enable I-Cache */
   	mcr     p15, 0, r0, c1, c0, 0
+
+    LDR r0, =0xA3F90008      // Load the address where the start address is stored
+    LDR r0, [r0]             // Load the actual start address from memory into r0
+    ADD r1, r0, #0x300000    // Calculate the end address (start address + 0x300000)
+    MOV r2, #0xA               // Set r2 to 0 (the value to store)
+
+loop1:
+    STR r2, [r0], #4         // Store 0 at the address in r0 and increment r0 by 4
+    CMP r0, r1               // Compare current address (r0) with end address (r1)
+    BNE loop1                 // If r0 != r1, branch back to loop
+
 
 _Relocate:
 	/* see if we need to relocate */
@@ -122,6 +117,16 @@ _CopyLoop:
 	bgt	_CopyLoop		// branch if greater than zero
 
 	/* we're relocated, jump to the right address */
+
+    LDR r0, =0xA3F90008      // Load the address where the start address is stored
+    LDR r0, [r0]             // Load the actual start address from memory into r0
+    ADD r1, r0, #0x300000    // Calculate the end address (start address + 0x300000)
+    MOV r2, #0x0               // Set r2 to 0 (the value to store)
+
+loop2:
+    STR r2, [r0], #4         // Store 0 at the address in r0 and increment r0 by 4
+    CMP r0, r1               // Compare current address (r0) with end address (r1)
+    BNE loop2                 // If r0 != r1, branch back to loop
 
 _Entry:
 	ldr		r5, UefiBase

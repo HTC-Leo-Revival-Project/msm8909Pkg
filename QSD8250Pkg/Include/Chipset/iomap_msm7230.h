@@ -83,7 +83,6 @@
 #define MSM_SAW_BASE            0xC0102000
 #define PLL_ENA_REG             REG_SH2_BASE(0x0264)
 #define PLL2_STATUS_BASE_REG    REG_BASE(0x0350)
-#define PLL2_L_VAL_ADDR         REG_BASE(0x033C)
 #define MSM_I2C_BASE            0xACD00000
 #define MSM_SCPLL_BASE        0xA8800000
 #endif

@@ -6,7 +6,9 @@ build_uefi_img() {
     local base_addr=$2
 
     cat BootShim/BootShim.bin workspace/Build/Htc$platform/DEBUG_GCC/FV/QSD8250_UEFI.fd >> ImageResources/$platform/bootpayload.bin
+    dd if=/dev/zero bs=1 count=1 of=ImageResources/$platform/ramdisk
     mkbootimg --kernel ImageResources/$platform/bootpayload.bin --base $base_addr --kernel_offset 0x00008000 -o ImageResources/$platform/uefi.img
+    rm -rf ImageResources/$platform/ramdisk
 }
 
 # Handle the Leo platform separately
@@ -28,8 +30,10 @@ if [ "$1" == 'Leo' ]; then
     cd ../../
     
 # Handle the other platforms (Schubert, Vision, Gold)
-elif [[ "$1" == 'Schubert' || "$1" == 'Vision' || "$1" == 'Gold' ]]; then
+elif [[ "$1" == 'Schubert' || "$1" == 'Gold' ]]; then
     build_uefi_img "$1" "0x20000000"
+elif [[ "$1" == 'Vision' ]]; then
+    build_uefi_img "$1" "0x04000000"
 else
     echo "Bootimages: Invalid platform"
 fi
