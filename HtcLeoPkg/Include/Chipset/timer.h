@@ -25,6 +25,8 @@
 
 #define DGT_ENABLE_CLR_ON_MATCH_EN        2
 #define DGT_ENABLE_EN                     1
+#define GPT_ENABLE_CLR_ON_MATCH_EN        2
+#define GPT_ENABLE_EN                     1
 #define DGT_HZ 6144000	/* Uses TCXO/4 (19.2 MHz / 4) */
 
 #endif

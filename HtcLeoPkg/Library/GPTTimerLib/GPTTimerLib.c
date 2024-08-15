@@ -5,9 +5,7 @@
 #include <Library/DebugLib.h>
 #include <Library/BaseLib.h>
 #include <Chipset/iomap_msm7230.h>
-
-#define GPT_ENABLE_CLR_ON_MATCH_EN        2
-#define GPT_ENABLE_EN                     1
+#include <Chipset/timer.h>
 
 RETURN_STATUS
 EFIAPI
@@ -40,6 +38,9 @@ MicroSecondDelay (
   // calculate number of ticks we have to wait
   Ticks = ((UINT64)MicroSeconds * 33 + 1000 - 33) / 1000;
 
+	MmioWrite32(GPT_CLEAR,0);
+	MmioWrite32(GPT_ENABLE,0);
+
   // get current counter value
   Count = MmioRead32(GPT_COUNT_VAL);
   InitCount = Count;
@@ -53,10 +54,14 @@ MicroSecondDelay (
   while (Timeout < Count && InitCount <= Count)
     Count = MmioRead32(GPT_COUNT_VAL);
 
+  MmioWrite32(GPT_ENABLE, GPT_ENABLE_EN);
   // Wait till the number of ticks is reached
   while (Timeout > Count)
     Count = MmioRead32(GPT_COUNT_VAL);
 
+	MmioWrite32(GPT_ENABLE,0);
+	MmioWrite32(GPT_CLEAR,0);
+  
   return MicroSeconds;
 }
 
