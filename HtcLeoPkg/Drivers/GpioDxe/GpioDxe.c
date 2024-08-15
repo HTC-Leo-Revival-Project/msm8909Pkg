@@ -48,15 +48,9 @@
 #include <Library/gpio.h>
 #include <Library/pcom.h>
 
-#if SOC == 1
-#include <Chipset/iomap_qsd8250.h>
-#include <Chipset/irqs_qsd8250.h>
-#include <Chipset/gpio_qsd8250.h>
-#elif SOC == 2
 #include <Chipset/iomap_msm7230.h>
 #include <Chipset/irqs_msm7230.h>
 #include <Chipset/gpio_msm7230.h>
-#endif
 
 #include <Chipset/clock.h>
 
@@ -91,7 +85,7 @@ static gpioregs GPIO_REGS[] = {
 	.oe 		= GPIO_OE_1,
 	.owner 		= 0,
 	.start	 	= 16,
-	.end 		= 42,
+	.end 		= 43,
 	},
 	{
 	.out 		= GPIO_OUT_2,
@@ -103,7 +97,7 @@ static gpioregs GPIO_REGS[] = {
 	.int_pos 	= GPIO_INT_POS_2,
 	.oe 		= GPIO_OE_2,
 	.owner 		= 0,
-	.start 		= 43,
+	.start 		= 44,
 	.end 		= 67,
 	},
 	{
@@ -130,7 +124,7 @@ static gpioregs GPIO_REGS[] = {
 	.oe 		= GPIO_OE_4,
 	.owner 		= 0,
 	.start 		= 95,
-	.end 		= 103,
+	.end 		= 106,
 	},
 	{
 	.out 		= GPIO_OUT_5,
@@ -142,8 +136,8 @@ static gpioregs GPIO_REGS[] = {
 	.int_pos 	= GPIO_INT_POS_5,
 	.oe 		= GPIO_OE_5,
 	.owner 		= 0,
-	.start 		= 104,
-	.end 		= 121,
+	.start 		= 107,
+	.end 		= 133,
 	},
 	{
 	.out        = GPIO_OUT_6,
@@ -155,8 +149,8 @@ static gpioregs GPIO_REGS[] = {
 	.int_pos    = GPIO_INT_POS_6,
 	.oe         = GPIO_OE_6,
 	.owner      = 0,
-	.start      = 122,
-	.end        = 152,
+	.start      = 134,
+	.end        = 150,
 	},
 	{
 	.out        = GPIO_OUT_7,
@@ -168,8 +162,8 @@ static gpioregs GPIO_REGS[] = {
 	.int_pos    = GPIO_INT_POS_7,
 	.oe         = GPIO_OE_7,
 	.owner      = 0,
-	.start      = 153,
-	.end        = 164,
+	.start      = 151,
+	.end        = 181,
 	},
 };
 
