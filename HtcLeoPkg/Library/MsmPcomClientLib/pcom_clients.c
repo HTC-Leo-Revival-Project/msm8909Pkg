@@ -18,13 +18,8 @@
 #include <Library/reg.h>
 #include <Library/pcom.h>
 #include <Chipset/clock.h>
-#if SOC == 1
-#include <Chipset/iomap_qsd8250.h>
-#include <Chipset/gpio_qsd8250.h>
-#elif SOC == 2
 #include <Chipset/iomap_msm7230.h>
 #include <Chipset/gpio_msm7230.h>
-#endif
 
 #include <Library/pcom_clients.h>
 
