@@ -334,6 +334,7 @@ ExitBootServicesEvent (
   @retval EFI_DEVICE_ERROR      Hardware problems
 
 **/
+
 EFI_STATUS
 EFIAPI
 TimerInitialize (
@@ -343,6 +344,9 @@ TimerInitialize (
 {
   EFI_HANDLE  Handle = NULL;
   EFI_STATUS  Status;
+
+
+  DEBUG ((DEBUG_INFO, "Timer Init"));
 
   // Find the interrupt controller protocol.  ASSERT if not found.
   Status = gBS->LocateProtocol (&gHardwareInterruptProtocolGuid, NULL, (VOID **)&gInterrupt);
