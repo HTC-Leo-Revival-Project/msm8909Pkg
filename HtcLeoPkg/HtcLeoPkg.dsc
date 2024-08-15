@@ -79,6 +79,10 @@
   MemoryInitPeiLib|HtcLeoPkg/Library/MemoryInitPeiLib/PeiMemoryAllocationLib.inf
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
 
+  # Little kernel libraries
+  MsmPcomLib|HtcLeoPkg/Library/MsmPcomLib/MsmPcomLib.inf
+  MsmPcomClientLib|HtcLeoPkg/Library/MsmPcomClientLib/MsmPcomClientLib.inf
+
 [LibraryClasses.common.SEC]
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
   PrePiHobListPointerLib|ArmPlatformPkg/Library/PrePiHobListPointerLib/PrePiHobListPointerLib.inf
@@ -224,7 +228,7 @@
   #
   # GPIO
   #
-
+  HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
   #
   # Virtual Keyboard
   #
