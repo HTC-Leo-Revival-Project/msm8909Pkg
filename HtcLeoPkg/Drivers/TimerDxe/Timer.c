@@ -188,6 +188,14 @@ TimerDriverSetTimerPeriod (
   {
     /* Disable the timer interrupt */
     Status = gInterrupt->DisableInterruptSource(gInterrupt, gVector);
+    //msm7230 quirk here
+  	unsigned val = 0;
+	  //Check for the hardware revision
+	  val = MmioRead32(HW_REVISION_NUMBER);
+	  val = (val >> 28) & 0x0F;
+	  if(val >= 1)
+	  MmioWrite32(DGT_CLK_CTL,1);
+    // quirk end
 
     // The following code expects time in ms
     TimerCount = TimerPeriod / 10000;
