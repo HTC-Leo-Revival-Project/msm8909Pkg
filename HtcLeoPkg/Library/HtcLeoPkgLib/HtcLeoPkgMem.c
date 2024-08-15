@@ -85,6 +85,18 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Length         = 0x00300000;
   VirtualMemoryTable[Index].Attributes     = SOC_REGISTERS_ATTRIBUTES;
 
+    // VIC region
+  VirtualMemoryTable[++Index].PhysicalBase = 0xC0080000;
+  VirtualMemoryTable[Index].VirtualBase    = 0xC0080000;
+  VirtualMemoryTable[Index].Length         = 0x0001FFFF;
+  VirtualMemoryTable[Index].Attributes     = SOC_REGISTERS_ATTRIBUTES;
+
+  // GPT region
+  VirtualMemoryTable[++Index].PhysicalBase = 0xC0100000;
+  VirtualMemoryTable[Index].VirtualBase    = 0xC0100000;
+  VirtualMemoryTable[Index].Length         = 0x00100000;
+  VirtualMemoryTable[Index].Attributes     = SOC_REGISTERS_ATTRIBUTES;
+
   // End of Table
   VirtualMemoryTable[++Index].PhysicalBase = 0;
   VirtualMemoryTable[Index].VirtualBase    = 0;
