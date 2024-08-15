@@ -85,10 +85,10 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Length         = 0x00300000;
   VirtualMemoryTable[Index].Attributes     = SOC_REGISTERS_ATTRIBUTES;
 
-  //HW Revision
-  VirtualMemoryTable[++Index].PhysicalBase = 0xABC00270;
-  VirtualMemoryTable[Index].VirtualBase    = 0xABC00270;
-  VirtualMemoryTable[Index].Length         = 0x00010000;
+  //Memory Mapped IO
+  VirtualMemoryTable[++Index].PhysicalBase = 0xA0000000;
+  VirtualMemoryTable[Index].VirtualBase    = 0xA0000000;
+  VirtualMemoryTable[Index].Length         = 0x0D901000;
   VirtualMemoryTable[Index].Attributes     = SOC_REGISTERS_ATTRIBUTES;
 
     // VIC region
