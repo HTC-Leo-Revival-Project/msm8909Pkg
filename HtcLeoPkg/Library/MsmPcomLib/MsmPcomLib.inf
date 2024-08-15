@@ -1,0 +1,29 @@
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = MsmPcomLib
+  FILE_GUID                      = A9BBFDB5-108A-4989-9668-4901007083DA
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = MsmPcomLib
+
+
+#
+#  VALID_ARCHITECTURES           = ARM IA32 X64 IPF EBC
+#
+  
+[Sources.common]
+  pcom.c
+
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  HtcLeoPkg/HtcLeoPkg.dec
+  
+[LibraryClasses]
+  DebugLib
+  IoLib
+  ArmLib
+  TimerLib
+
