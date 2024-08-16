@@ -229,6 +229,11 @@
   # GPIO
   #
   HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
+
+  #
+  # SSBI
+  #
+  HtcLeoPkg/Drivers/SsbiDxe/SsbiDxe.inf
   #
   # Virtual Keyboard
   #

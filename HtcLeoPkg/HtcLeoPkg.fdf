@@ -120,7 +120,15 @@ APRIORI DXE {
 
   INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 
+  #
+  # GPIO
+  #
   INF HtcLeoPkg/Drivers/GpioDxe/GpioDxe.inf
+
+  #
+  #SSBI
+  #
+  INF HtcLeoPkg/Drivers/SsbiDxe/SsbiDxe.inf
 
   #
   # Virtual Keyboard
