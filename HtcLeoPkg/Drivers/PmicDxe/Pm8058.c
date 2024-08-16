@@ -1,267 +1,111 @@
-#include "commonvars.h"
+#include <Chipset/pmic_msm7230.h>
+#include <Chipset/ssbi_msm7230.h>
+#include <Library/LKEnvLib.h>
 
-int pm8058_masked_write(UINT16 addr, UINT8 val, UINT8 mask)
+typedef int (*pm8058_write_func) (unsigned char *, unsigned short,
+				  unsigned short);
+extern int pa1_ssbi2_write_bytes(unsigned char *buffer, unsigned short length,
+				 unsigned short slave_addr);
+extern int pa1_ssbi2_read_bytes(unsigned char *buffer, unsigned short length,
+				unsigned short slave_addr);
+extern int pa2_ssbi2_write_bytes(unsigned char *buffer, unsigned short length,
+				 unsigned short slave_addr);
+extern int pa2_ssbi2_read_bytes(unsigned char *buffer, unsigned short length,
+				unsigned short slave_addr);
+
+/* PM8058 APIs */
+int pm8058_write(uint16_t addr, uint8_t * data, uint16_t length)
 {
-	int rc;
-	UINT8 reg;
-
-	rc = gSsbi->SsbiRead(addr, &reg, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: ssbi_read(0x%03X) failed: rc=%d\n", __func__, addr,rc));
-		goto done;
-	}
-
-	reg &= ~mask;
-	reg |= val & mask;
-
-	rc = gSsbi->SsbiWrite(addr, &reg, 1);
-	if (rc)
-    DEBUG((EFI_D_ERROR, "%s: ssbi_write(0x%03X)=0x%02X failed: rc=%d\n",__func__, addr, reg, rc));
-done:
-	return rc;
+	return pa1_ssbi2_write_bytes(data, length, addr);
 }
 
-/**
- * pm8058_smpl_control - enables/disables SMPL detection
- * @enable: 0 = shutdown PMIC on power loss, 1 = reset PMIC on power loss
- *
- * This function enables or disables the Sudden Momentary Power Loss detection
- * module.  If SMPL detection is enabled, then when a sufficiently long power
- * loss event occurs, the PMIC will automatically reset itself.  If SMPL
- * detection is disabled, then the PMIC will shutdown when power loss occurs.
- *
- * RETURNS: an appropriate -ERRNO error value on error, or zero for success.
- */
-int pm8058_smpl_control(int enable)
+int pm8058_read(uint16_t addr, uint8_t * data, uint16_t length)
 {
-	return pm8058_masked_write(SSBI_REG_ADDR_SLEEP_CNTL,
-				   (enable ? PM8058_SLEEP_SMPL_EN_RESET
-					   : PM8058_SLEEP_SMPL_EN_PWR_OFF),
-				   PM8058_SLEEP_SMPL_EN_MASK);
+	return pa1_ssbi2_read_bytes(data, length, addr);
 }
 
-/**
- * pm8058_smpl_set_delay - sets the SMPL detection time delay
- * @delay: enum value corresponding to delay time
- *
- * This function sets the time delay of the SMPL detection module.  If power
- * is reapplied within this interval, then the PMIC reset automatically.  The
- * SMPL detection module must be enabled for this delay time to take effect.
- *
- * RETURNS: an appropriate -ERRNO error value on error, or zero for success.
- */
-int pm8058_smpl_set_delay(enum pm8058_smpl_delay delay)
+void pm8058_write_one(unsigned data, unsigned address)
 {
-	if (delay < PM8058_SLEEP_SMPL_SEL_MIN
-	    || delay > PM8058_SLEEP_SMPL_SEL_MAX) {
-    DEBUG((EFI_D_ERROR, "%s: invalid delay specified: %d\n", __func__, delay));
-		return -1;
-	}
+    pm8058_write_func wr_function = &pa1_ssbi2_write_bytes;
+    if (wr_function == NULL)
+        return;
 
-	return pm8058_masked_write(SSBI_REG_ADDR_SLEEP_CNTL, delay,
-				   PM8058_SLEEP_SMPL_SEL_MASK);
+    unsigned char data_byte = (unsigned char)data;  // Convert unsigned int to unsigned char
+    if ((*wr_function) (&data_byte, 1, address))
+        dprintf(CRITICAL, "Error in initializing register\n");
 }
 
-/**
- * pm8058_watchdog_reset_control - enables/disables watchdog reset detection
- * @enable: 0 = shutdown when PS_HOLD goes low, 1 = reset when PS_HOLD goes low
- *
- * This function enables or disables the PMIC watchdog reset detection feature.
- * If watchdog reset detection is enabled, then the PMIC will reset itself
- * when PS_HOLD goes low.  If it is not enabled, then the PMIC will shutdown
- * when PS_HOLD goes low.
- *
- * RETURNS: an appropriate -ERRNO error value on error, or zero for success.
- */
-int pm8058_watchdog_reset_control(int enable)
+int pm8058_get_irq_status(pm_irq_id_type irq, bool * rt_status)
 {
-	return pm8058_masked_write(SSBI_REG_ADDR_PON_CNTL_1,
-				   (enable ? PM8058_PON_WD_EN_RESET
-					   : PM8058_PON_WD_EN_PWR_OFF),
-				   PM8058_PON_WD_EN_MASK);
+    unsigned char block_index = PM_IRQ_ID_TO_BLOCK_INDEX(irq);
+    unsigned char reg_data;
+    unsigned reg_mask;
+    int errFlag;
+
+    /* select the irq block */
+    errFlag = pa1_ssbi2_write_bytes(&block_index, 1, IRQ_BLOCK_SEL_USR_ADDR);
+    if (errFlag) {
+        dprintf(INFO, "Device Timeout");
+        return 1;
+    }
+
+    /* read real time status */
+    errFlag = pa1_ssbi2_read_bytes(&reg_data, 1, IRQ_STATUS_RT_USR_ADDR);
+    if (errFlag) {
+        dprintf(INFO, "Device Timeout");
+        return 1;
+    }
+
+    reg_mask = PM_IRQ_ID_TO_BIT_MASK(irq);
+
+    if ((reg_data & reg_mask) == reg_mask) {
+        /* The RT Status is high. */
+        *rt_status = TRUE;
+    } else {
+        /* The RT Status is low. */
+        *rt_status = FALSE;
+    }
+    return 0;
 }
 
-/*
- * Set an SMPS regulator to be disabled in its CTRL register, but enabled
- * in the master enable register.  Also set it's pull down enable bit.
- * Take care to make sure that the output voltage doesn't change if switching
- * from advanced mode to legacy mode.
- */
-int disable_smps_locally_set_pull_down(UINT16 ctrl_addr, UINT16 test2_addr,
-		UINT16 master_enable_addr, UINT8 master_enable_bit)
-{
-	int rc = 0;
-	UINT8 vref_sel, vlow_sel, band, vprog, bank, reg;
-
-	bank = REGULATOR_BANK_SEL(7);
-	rc = gSsbi->SsbiWrite(test2_addr, &bank, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%03X): rc=%d\n", __func__,test2_addr, rc));
-		goto done;
-	}
-
-	rc = gSsbi->SsbiRead(test2_addr, &reg, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: FAIL pm8058_read(0x%03X): rc=%d\n",__func__, test2_addr, rc));
-		goto done;
-	}
-
-	/* Check if in advanced mode. */
-	if ((reg & SMPS_ADVANCED_MODE_MASK) == SMPS_ADVANCED_MODE) {
-		/* Determine current output voltage. */
-		rc = gSsbi->SsbiRead(ctrl_addr, &reg, 1);
-		if (rc) {
-      DEBUG((EFI_D_ERROR, "%s: FAIL pm8058_read(0x%03X): rc=%d\n",__func__, ctrl_addr, rc));
-			goto done;
-		}
-
-		band = (reg & SMPS_ADVANCED_BAND_MASK)
-			>> SMPS_ADVANCED_BAND_SHIFT;
-		switch (band) {
-		case 3:
-			vref_sel = 0;
-			vlow_sel = 0;
-			break;
-		case 2:
-			vref_sel = SMPS_LEGACY_VREF_SEL;
-			vlow_sel = 0;
-			break;
-		case 1:
-			vref_sel = SMPS_LEGACY_VREF_SEL;
-			vlow_sel = SMPS_LEGACY_VLOW_SEL;
-			break;
-		default:
-      DEBUG((EFI_D_ERROR, "%s: regulator already disabled\n", __func__));
-			return -1;
-		}
-		vprog = (reg & SMPS_ADVANCED_VPROG_MASK);
-		/* Round up if fine step is in use. */
-		vprog = (vprog + 1) >> 1;
-		if (vprog > SMPS_LEGACY_VPROG_MASK)
-			vprog = SMPS_LEGACY_VPROG_MASK;
-
-		/* Set VLOW_SEL bit. */
-		bank = REGULATOR_BANK_SEL(1);
-		rc = gSsbi->SsbiWrite(test2_addr, &bank, 1);
-		if (rc) {
-      DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%03X): rc=%d\n",__func__, test2_addr, rc));
-			goto done;
-		}
-		rc = pm8058_masked_write(test2_addr,
-			REGULATOR_BANK_WRITE | REGULATOR_BANK_SEL(1)
-				| vlow_sel,
-			REGULATOR_BANK_WRITE | REGULATOR_BANK_MASK
-				| SMPS_LEGACY_VLOW_SEL);
-		if (rc)
-			goto done;
-
-		/* Switch to legacy mode */
-		bank = REGULATOR_BANK_SEL(7);
-		rc = gSsbi->SsbiWrite(test2_addr, &bank, 1);
-		if (rc) {
-      DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%03X): rc=%d\n", __func__,test2_addr, rc));
-			goto done;
-		}
-		rc = pm8058_masked_write(test2_addr,
-				REGULATOR_BANK_WRITE | REGULATOR_BANK_SEL(7)
-					| SMPS_LEGACY_MODE,
-				REGULATOR_BANK_WRITE | REGULATOR_BANK_MASK
-					| SMPS_ADVANCED_MODE_MASK);
-		if (rc)
-			goto done;
-
-		/* Enable locally, enable pull down, keep voltage the same. */
-		rc = pm8058_masked_write(ctrl_addr,
-			REGULATOR_ENABLE | REGULATOR_PULL_DOWN_EN
-				| vref_sel | vprog,
-			REGULATOR_ENABLE_MASK | REGULATOR_PULL_DOWN_MASK
-			       | SMPS_LEGACY_VREF_SEL | SMPS_LEGACY_VPROG_MASK);
-		if (rc)
-			goto done;
-	}
-
-	/* Enable in master control register. */
-	rc = pm8058_masked_write(master_enable_addr, master_enable_bit,
-				 master_enable_bit);
-	if (rc)
-		goto done;
-
-	/* Disable locally and enable pull down. */
-	rc = pm8058_masked_write(ctrl_addr,
-		REGULATOR_DISABLE | REGULATOR_PULL_DOWN_EN,
-		REGULATOR_ENABLE_MASK | REGULATOR_PULL_DOWN_MASK);
-
-done:
-	return rc;
-}
-
-int disable_ldo_locally_set_pull_down(UINT16 ctrl_addr,UINT16 master_enable_addr, UINT8 master_enable_bit)
-{
-	int rc;
-
-	/* Enable LDO in master control register. */
-	rc = pm8058_masked_write(master_enable_addr, master_enable_bit,master_enable_bit);
-	if (rc)
-		goto done;
-
-	/* Disable LDO in CTRL register and set pull down */
-	rc = pm8058_masked_write(ctrl_addr,
-		REGULATOR_DISABLE | REGULATOR_PULL_DOWN_EN,
-		REGULATOR_ENABLE_MASK | REGULATOR_PULL_DOWN_MASK);
-
-done:
-	return rc;
-}
 
 int pm8058_reset_pwr_off(int reset)
 {
 	int rc;
-	UINT8 pon, ctrl, smpl;
-
-	/* When shutting down, enable active pulldowns on important rails. */
-	if (!reset) {
-		/* Disable SMPS's 0,1,3 locally and set pulldown enable bits. */
-		disable_smps_locally_set_pull_down(SSBI_REG_ADDR_S0_CTRL,SSBI_REG_ADDR_S0_TEST2, SSBI_REG_ADDR_VREG_EN_MSM, BIT(7));
-		disable_smps_locally_set_pull_down(SSBI_REG_ADDR_S1_CTRL,SSBI_REG_ADDR_S1_TEST2, SSBI_REG_ADDR_VREG_EN_MSM, BIT(6));
-		disable_smps_locally_set_pull_down(SSBI_REG_ADDR_S3_CTRL,SSBI_REG_ADDR_S3_TEST2, SSBI_REG_ADDR_VREG_EN_GRP_5_4,BIT(7) | BIT(4));
-		/* Disable LDO 21 locally and set pulldown enable bit. */
-		disable_ldo_locally_set_pull_down(SSBI_REG_ADDR_L21_CTRL,SSBI_REG_ADDR_VREG_EN_GRP_5_4, BIT(1));
-	}
+	uint8_t pon, ctrl, smpl;
 
 	/* Set regulator L22 to 1.225V in high power mode. */
-	rc = gSsbi->SsbiRead(SSBI_REG_ADDR_L22_CTRL, &ctrl, 1);
+	rc = pm8058_read(SSBI_REG_ADDR_L22_CTRL, &ctrl, 1);
 	if (rc) {
-		DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_read(0x%x): rc=%d\n", __func__,SSBI_REG_ADDR_L22_CTRL, rc));
 		goto get_out3;
 	}
 	/* Leave pull-down state intact. */
 	ctrl &= 0x40;
 	ctrl |= 0x93;
-	rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_L22_CTRL, &ctrl, 1);
-	if (rc)
-		DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%x)=0x%x: rc=%d\n", __func__,SSBI_REG_ADDR_L22_CTRL, ctrl, rc));
 
-get_out3:
+	rc = pm8058_write(SSBI_REG_ADDR_L22_CTRL, &ctrl, 1);
+	if (rc) {
+	}
+
+ get_out3:
 	if (!reset) {
 		/* Only modify the SLEEP_CNTL reg if shutdown is desired. */
-		rc = gSsbi->SsbiRead(SSBI_REG_ADDR_SLEEP_CNTL,&smpl, 1);
+		rc = pm8058_read(SSBI_REG_ADDR_SLEEP_CNTL, &smpl, 1);
 		if (rc) {
-			DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_read(0x%x): rc=%d\n",__func__, SSBI_REG_ADDR_SLEEP_CNTL, rc));
 			goto get_out2;
 		}
 
 		smpl &= ~PM8058_SLEEP_SMPL_EN_MASK;
 		smpl |= PM8058_SLEEP_SMPL_EN_PWR_OFF;
 
-		rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_SLEEP_CNTL,&smpl, 1);
-		if (rc)
-			DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%x)=0x%x: rc=%d\n",__func__, SSBI_REG_ADDR_SLEEP_CNTL, smpl, rc));
+		rc = pm8058_write(SSBI_REG_ADDR_SLEEP_CNTL, &smpl, 1);
+		if (rc) {
+		}
 	}
 
-get_out2:
-	rc = gSsbi->SsbiRead(SSBI_REG_ADDR_PON_CNTL_1, &pon, 1);
+ get_out2:
+	rc = pm8058_read(SSBI_REG_ADDR_PON_CNTL_1, &pon, 1);
 	if (rc) {
-		DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_read(0x%x): rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_1, rc));
 		goto get_out;
 	}
 
@@ -271,145 +115,181 @@ get_out2:
 	/* Enable all pullups */
 	pon |= PM8058_PON_PUP_MASK;
 
-	rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_PON_CNTL_1, &pon, 1);
+	rc = pm8058_write(SSBI_REG_ADDR_PON_CNTL_1, &pon, 1);
 	if (rc) {
-		DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%x)=0x%x: rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_1, pon, rc));
 		goto get_out;
 	}
 
-get_out:
+ get_out:
 	return rc;
 }
 
-
-/**
- * pm8058_stay_on - enables stay_on feature
- *
- * PMIC stay-on feature allows PMIC to ignore MSM PS_HOLD=low
- * signal so that some special functions like debugging could be
- * performed.
- *
- * This feature should not be used in any product release.
- *
- * RETURNS: an appropriate -ERRNO error value on error, or zero for success.
- */
-int pm8058_stay_on(void)
+int pm8058_rtc0_alarm_irq_disable(void)
 {
-	UINT8	ctrl = 0x92;
-	int	rc;
+	int rc;
+	uint8_t reg;
 
-	rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_GP_TEST_1, &ctrl, 1);
-  DEBUG((EFI_D_ERROR, "%s: set stay-on: rc = %d\n", __func__, rc));
+	rc = pm8058_read(PM8058_RTC_CTRL, &reg, 1);
+	if (rc) {
+		return rc;
+	}
+	reg = (reg & ~PM8058_RTC_ALARM_ENABLE);
+
+	rc = pm8058_write(PM8058_RTC_CTRL, &reg, 1);
+	if (rc) {
+		return rc;
+	}
+
 	return rc;
 }
 
-/*
-   power on hard reset configuration
-   config = DISABLE_HARD_RESET to disable hard reset
-	  = SHUTDOWN_ON_HARD_RESET to turn off the system on hard reset
-	  = RESTART_ON_HARD_RESET to restart the system on hard reset
- */
-int pm8058_hard_reset_config(enum pon_config config)
+bool pm8058_gpio_get(unsigned int gpio)
 {
-	int rc, ret;
-	UINT8 pon, pon_5;
+	pm_irq_id_type gpio_irq;
+	bool status;
+	int ret;
 
-	if (config >= MAX_PON_CONFIG)
-		return -1;
+	gpio_irq = gpio + PM_GPIO01_CHGED_ST_IRQ_ID;
+	ret = pm8058_get_irq_status(gpio_irq, &status);
 
-	//mutex_lock(&pmic_chip->pm_lock);
-
-	rc = gSsbi->SsbiRead(SSBI_REG_ADDR_PON_CNTL_5, &pon, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_read(0x%x): rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_5, rc));
-		//mutex_unlock(&pmic_chip->pm_lock);
-		return rc;
-	}
-
-	pon_5 = pon;
-	(config != DISABLE_HARD_RESET) ? (pon |= PM8058_HARD_RESET_EN_MASK) :
-					(pon &= ~PM8058_HARD_RESET_EN_MASK);
-
-	rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_PON_CNTL_5, &pon, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%x)=0x%x: rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_5, pon, rc));
-		//mutex_unlock(&pmic_chip->pm_lock);
-		return rc;
-	}
-
-	if (config == DISABLE_HARD_RESET) {
-		//mutex_unlock(&pmic_chip->pm_lock);
-		return 0;
-	}
-
-	rc = gSsbi->SsbiRead(SSBI_REG_ADDR_PON_CNTL_4, &pon, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_read(0x%x): rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_4, rc));
-		goto err_restore_pon_5;
-	}
-
-	(config == RESTART_ON_HARD_RESET) ? (pon |= PM8058_PON_RESET_EN_MASK) :
-					(pon &= ~PM8058_PON_RESET_EN_MASK);
-
-	rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_PON_CNTL_4, &pon, 1);
-	if (rc) {
-    DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%x)=0x%x: rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_4, pon, rc));
-		goto err_restore_pon_5;
-	}
-	//mutex_unlock(&pmic_chip->pm_lock);
-	return 0;
-
-err_restore_pon_5:
-	ret = gSsbi->SsbiWrite(SSBI_REG_ADDR_PON_CNTL_5, &pon_5, 1);
 	if (ret)
-    DEBUG((EFI_D_ERROR, "%s: FAIL ssbi_write(0x%x)=0x%x: rc=%d\n",__func__, SSBI_REG_ADDR_PON_CNTL_5, pon, ret));
-	//mutex_unlock(&pmic_chip->pm_lock);
+		dprintf(CRITICAL, "pm8058_gpio_get failed\n");
+
+	return status;
+}
+
+int pm8058_mwrite(uint16_t addr, uint8_t val, uint8_t mask, uint8_t * reg_save)
+{
+	int rc = 0;
+	uint8_t reg;
+
+	reg = (*reg_save & ~mask) | (val & mask);
+	if (reg != *reg_save)
+		rc = pm8058_write(addr, &reg, 1);
+	if (rc)
+		dprintf(CRITICAL, "pm8058_write failed; addr=%03X, rc=%d\n",
+			addr, rc);
+	else
+		*reg_save = reg;
 	return rc;
 }
 
-
-int pm8058_readb(UINT16 addr, UINT8 *val)
+int pm8058_ldo_set_voltage()
 {
-
-	return gSsbi->SsbiRead(addr, val, 1);
+	int ret = 0;
+	unsigned vprog = 0x00000110;
+	ret =
+	    pm8058_mwrite(PM8058_HDMI_L16_CTRL, vprog, LDO_CTRL_VPROG_MASK, 0);
+	if (ret) {
+		dprintf(SPEW, "Failed to set voltage for l16 regulator\n");
+	}
+	return ret;
 }
 
-int pm8058_writeb(UINT16 addr, UINT8 val)
+int pm8058_vreg_enable()
 {
-
-	return gSsbi->SsbiWrite(addr, &val, 1);
+	int ret = 0;
+	ret =
+	    pm8058_mwrite(PM8058_HDMI_L16_CTRL, REGULATOR_EN_MASK,
+			  REGULATOR_EN_MASK, 0);
+	if (ret) {
+		dprintf(SPEW, "Vreg enable failed for PM 8058\n");
+	}
+	return ret;
 }
 
-int pm8058_read_buf(UINT16 addr, UINT8 *buf,int cnt)
+int pm8058_gpio_config(int gpio, struct pm8058_gpio *param)
 {
+	int	rc;
+        pm8058_write_func wr_function = &pa1_ssbi2_write_bytes;
+	unsigned char bank[8];
+	static int dir_map[] = {
+		PM8058_GPIO_MODE_OFF,
+		PM8058_GPIO_MODE_OUTPUT,
+		PM8058_GPIO_MODE_INPUT,
+		PM8058_GPIO_MODE_BOTH,
+	};
 
-	return gSsbi->SsbiRead(addr, buf, cnt);
+	if (param == 0) {
+	  dprintf (INFO, "pm8058_gpio struct not defined\n");
+          return -1;
+	}
+
+	/* Select banks and configure the gpio */
+	bank[0] = PM8058_GPIO_WRITE |
+		((param->vin_sel << PM8058_GPIO_VIN_SHIFT) &
+			PM8058_GPIO_VIN_MASK) |
+		PM8058_GPIO_MODE_ENABLE;
+	bank[1] = PM8058_GPIO_WRITE |
+		((1 << PM8058_GPIO_BANK_SHIFT) & PM8058_GPIO_BANK_MASK) |
+		((dir_map[param->direction] << PM8058_GPIO_MODE_SHIFT) &
+			PM8058_GPIO_MODE_MASK) |
+		((param->direction & PM_GPIO_DIR_OUT) ?
+			PM8058_GPIO_OUT_BUFFER : 0);
+	bank[2] = PM8058_GPIO_WRITE |
+		((2 << PM8058_GPIO_BANK_SHIFT) & PM8058_GPIO_BANK_MASK) |
+		((param->pull << PM8058_GPIO_PULL_SHIFT) &
+			PM8058_GPIO_PULL_MASK);
+	bank[3] = PM8058_GPIO_WRITE |
+		((3 << PM8058_GPIO_BANK_SHIFT) & PM8058_GPIO_BANK_MASK) |
+		((param->out_strength << PM8058_GPIO_OUT_STRENGTH_SHIFT) &
+			PM8058_GPIO_OUT_STRENGTH_MASK);
+	bank[4] = PM8058_GPIO_WRITE |
+		((4 << PM8058_GPIO_BANK_SHIFT) & PM8058_GPIO_BANK_MASK) |
+		((param->function << PM8058_GPIO_FUNC_SHIFT) &
+			PM8058_GPIO_FUNC_MASK);
+
+	rc = (*wr_function)(bank, 5, SSBI_REG_ADDR_GPIO(gpio));
+	if (rc) {
+	        dprintf(INFO, "Failed on 1st ssbi_write(): rc=%d.\n", rc);
+		return 1;
+	}
+	return 0;
 }
 
-int pm8058_write_buf(UINT16 addr, UINT8 *buf,int cnt)
+int pm8058_gpio_config_kypd_drv(int gpio_start, int num_gpios, unsigned mach_id)
 {
+	int	rc;
+	struct pm8058_gpio kypd_drv = {
+		.direction	= PM_GPIO_DIR_OUT,
+		.pull		= PM_GPIO_PULL_NO,
+		.vin_sel	= 2,
+		.out_strength	= PM_GPIO_STRENGTH_LOW,
+		.function	= PM_GPIO_FUNC_1,
+		.inv_int_pol	= 1,
+	};
 
-	return gSsbi->SsbiWrite(addr, buf, cnt);
+
+	while (num_gpios--) {
+		rc = pm8058_gpio_config(gpio_start++, &kypd_drv);
+		if (rc) {
+		        dprintf(INFO, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
+			return rc;
+		}
+	}
+
+	return 0;
 }
 
-int pm8058_read_irq_stat(int irq)
+int pm8058_gpio_config_kypd_sns(int gpio_start, int num_gpios)
 {
+	int	rc;
+	struct pm8058_gpio kypd_sns = {
+		.direction	= PM_GPIO_DIR_IN,
+		.pull		= PM_GPIO_PULL_UP1,
+		.vin_sel	= 2,
+		.out_strength	= PM_GPIO_STRENGTH_NO,
+		.function	= PM_GPIO_FUNC_NORMAL,
+		.inv_int_pol	= 1,
+	};
 
-	return pm8xxx_get_irq_stat(irq);
-}
+	while (num_gpios--) {
+		rc = pm8058_gpio_config(gpio_start++, &kypd_sns);
+		if (rc) {
+		        dprintf(INFO, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
+			return rc;
+		}
+	}
 
-enum pm8xxx_version pm8058_get_version(void)
-{
-	enum pm8xxx_version version = -1;
-
-	if ((revision != 0) &&((revision & PM8058_VERSION_MASK) == PM8058_VERSION_VALUE))
-		version = PM8XXX_VERSION_8058;
-
-	return version;
-}
-
-int pm8058_get_revision(void)
-{
-
-	return revision & PM8058_REVISION_MASK;
+	return 0;
 }

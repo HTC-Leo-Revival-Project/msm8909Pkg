@@ -1,11 +1,15 @@
-#include "commonvars.h"
+#include <Uefi.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiLib.h>
+#include <Library/DebugLib.h>
+#include <Library/BaseMemoryLib.h>
 
-SSBI_PROTOCOL *gSsbi = NULL;
-
-UINT8 revision = 0;
+#include <Protocol/Pmic.h>
 
 PMIC_PROTOCOL gPmicProtocol = {
 };
+
+extern UINTN EFIAPI MicroSecondDelay (IN      UINTN                     MicroSeconds);
 
 EFI_STATUS
 EFIAPI
@@ -23,31 +27,14 @@ PmicDxeInitialize(
   ZeroMem((void*)0x2fd00000, 0x000C0000);
 
 // Find the ssbi controller protocol.  ASSERT if not found.
-  Status = gBS->LocateProtocol (&gSsbiProtocolGuid, NULL, (VOID **)&gSsbi);
-  ASSERT_EFI_ERROR (Status);
+  // Status = gBS->LocateProtocol (&gSsbiProtocolGuid, NULL, (VOID **)&gSsbi);
+  // ASSERT_EFI_ERROR (Status);
 
   Status = gBS->InstallMultipleProtocolInterfaces(
   &Handle, &gPmicProtocolGuid, &gPmicProtocol, NULL);
   ASSERT_EFI_ERROR(Status);
 
   DEBUG((EFI_D_ERROR, "PmicDxe Initalize \n"));
-  rc = pm8058_readb(PM8058_REG_REV, &revision);
-	if (rc)
-    DEBUG((EFI_D_ERROR, "%s: Failed on pm8058_readb for revision: rc=%d.\n","PmicDxeInitialize", rc));
-
-  DEBUG((EFI_D_ERROR, "%s: PMIC revision: %X\n", __func__, revision));
-
-	rc = pm8058_hard_reset_config(SHUTDOWN_ON_HARD_RESET);
-	if (rc < 0){
-    DEBUG((EFI_D_ERROR,"%s: failed to config shutdown on hard reset: %d\n","PmicDxeInitialize", rc));
-  }
-
-  rc = pm_gpio_init_bank1();
-  if(rc){
-    DEBUG((EFI_D_ERROR, "gpio init bank failed ret = %d\n", rc));
-  }else {
-    DEBUG((EFI_D_ERROR, "pm8058-gpio succesfully started"));
-  }
 
 
 	return Status;
