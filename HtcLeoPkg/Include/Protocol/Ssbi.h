@@ -18,6 +18,6 @@ struct _SSBI_PROTOCOL {
   msm_ssbi_write_t SsbiWrite;
 };
 
-extern EFI_GUID gHtcLeoMicropProtocolGuid;
+extern EFI_GUID gSsbiProtocolGuid;
 
 #endif

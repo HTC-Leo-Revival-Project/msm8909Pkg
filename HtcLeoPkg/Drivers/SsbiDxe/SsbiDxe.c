@@ -21,7 +21,7 @@
 
 void ssbi_writel(unsigned val,unsigned offset)
 {
-	MmioWrite32(val, SSBI_REG(offset));
+	MmioWrite32(SSBI_REG(offset),val);
 }
 
 UINT32 ssbi_wait_mask(UINT32 set_mask, UINT32 clr_mask)
@@ -80,7 +80,7 @@ UINT32 msm_ssbi_write(UINT16 addr, UINT8 *buf, UINT32 len)
 
 	//remote_spin_lock_irqsave(&ssbi->rspin_lock, flags);
 
-	mode2 = MmioRead32(SSBI_REG(SSBI2_MODE2));
+	mode2 = ssbi_readl(SSBI2_MODE2);
 	if (mode2 & SSBI_MODE2_SSBI2_MODE) {
 		mode2 = (mode2 & 0xf) | (((addr >> 8) & 0x7f) << 4);
 		ssbi_writel(mode2, SSBI2_MODE2);
