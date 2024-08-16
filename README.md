@@ -19,7 +19,7 @@ This branch is mainly for Htc Desire Z but also adds support for MSM7x30 to the 
 | Battery Gauge | Supported in cLK since 1.5.x                     |   ❌   |
 | USB           | Driver exists in cLK                             |   ❌   |
 | Keypad        | Loosely based on cLK driver (only power button)  |   ✅   |
-| SSBI          | Driver exists in Linux                           |   ❌   |
+| SSBI          | Baed on linux kernel driver                      |   ?   |
 | PMIC          | Driver exists in Linux depends on SSBI driver    |   ❌   |
 
 
