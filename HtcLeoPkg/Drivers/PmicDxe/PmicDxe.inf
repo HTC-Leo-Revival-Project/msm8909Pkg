@@ -24,6 +24,7 @@
 
 [Sources.common]
   PmicDxe.c
+  Pm8058.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
