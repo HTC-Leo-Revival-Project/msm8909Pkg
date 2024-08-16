@@ -11,7 +11,21 @@
 #include <Protocol/Pmic.h>
 #include <Protocol/Ssbi.h>
 
+#include <Chipset/pmic_msm7230.h>
+
 SSBI_PROTOCOL *gSsbi = NULL;
+
+static int pm8058_readb(UINT16 addr, UINT8 *val)
+{
+
+	return gSsbi->SsbiRead(addr, val, 1);
+}
+
+static int pm8058_writeb(UINT16 addr, UINT8 val)
+{
+
+	return gSsbi->SsbiWrite(addr, &val, 1);
+}
 
 PMIC_PROTOCOL gPmicProtocol = {
 };
@@ -25,6 +39,8 @@ PmicDxeInitialize(
 {
   EFI_STATUS  Status = EFI_SUCCESS;
   EFI_HANDLE  Handle = NULL;
+  int rc;
+  UINT8 revision = 0;
 
 // Find the ssbi controller protocol.  ASSERT if not found.
   Status = gBS->LocateProtocol (&gSsbiProtocolGuid, NULL, (VOID **)&gSsbi);
@@ -34,6 +50,13 @@ PmicDxeInitialize(
   &Handle, &gPmicProtocolGuid, &gPmicProtocol, NULL);
   ASSERT_EFI_ERROR(Status);
 
+  DEBUG((EFI_D_ERROR, "PmicDxe Initalize"));
+  rc = pm8058_readb(PM8058_REG_REV, &revision);
+	if (rc)
+    DEBUG((EFI_D_ERROR, "%s: Failed on pm8058_readb for revision: rc=%d.\n",__func__, rc));
+
+  DEBUG((EFI_D_ERROR, "%s: PMIC revision: %X\n", __func__, revision));
+  for(;;){};
 
 	return Status;
 }
