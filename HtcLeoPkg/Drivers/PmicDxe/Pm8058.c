@@ -392,6 +392,12 @@ int pm8058_write_buf(UINT16 addr, UINT8 *buf,int cnt)
 	return gSsbi->SsbiWrite(addr, buf, cnt);
 }
 
+int pm8058_read_irq_stat(int irq)
+{
+
+	return pm8xxx_get_irq_stat(irq);
+}
+
 enum pm8xxx_version pm8058_get_version(void)
 {
 	enum pm8xxx_version version = -1;

@@ -222,7 +222,6 @@ enum pm8xxx_version {
 
 /* PMIC8xxx IRQ */
 
-//used to be SSBI_REG_ADDR_IRQ_*(x) (x+y)
 #define SSBI_REG_ADDR_IRQ_ROOT(base)		(base + 0)
 #define SSBI_REG_ADDR_IRQ_M_STATUS1(base)	(base + 1)
 #define SSBI_REG_ADDR_IRQ_M_STATUS2(base)	(base + 2)
@@ -247,7 +246,7 @@ enum pm8xxx_version {
 #define	MAX_PM_IRQ		256
 
 
-//GPIO STUFF
+/* PMIC8058 GPIO */
 
 /* GPIO registers */
 #define	SSBI_REG_ADDR_GPIO_BASE		0x150
@@ -291,6 +290,67 @@ enum pm8xxx_version {
 /* Bank 5 */
 #define	PM_GPIO_NON_INT_POL_INV	0x08
 #define PM_GPIO_BANKS		6
+
+
+/* GPIO parameters */
+/* direction */
+#define	PM_GPIO_DIR_OUT			0x01
+#define	PM_GPIO_DIR_IN			0x02
+#define	PM_GPIO_DIR_BOTH		(PM_GPIO_DIR_OUT | PM_GPIO_DIR_IN)
+
+/* output_buffer */
+#define	PM_GPIO_OUT_BUF_OPEN_DRAIN	1
+#define	PM_GPIO_OUT_BUF_CMOS		0
+
+/* pull */
+#define	PM_GPIO_PULL_UP_30		0
+#define	PM_GPIO_PULL_UP_1P5		1
+#define	PM_GPIO_PULL_UP_31P5		2
+#define	PM_GPIO_PULL_UP_1P5_30		3
+#define	PM_GPIO_PULL_DN			4
+#define	PM_GPIO_PULL_NO			5
+
+/* vin_sel: Voltage Input Select */
+#define	PM_GPIO_VIN_VPH			0 /* 3v ~ 4.4v */
+#define	PM_GPIO_VIN_BB			1 /* ~3.3v */
+#define	PM_GPIO_VIN_S4			2 /* 1.8v */
+#define	PM_GPIO_VIN_L15			3
+#define	PM_GPIO_VIN_L4			4
+#define	PM_GPIO_VIN_L3			5
+#define	PM_GPIO_VIN_L17			6
+
+/* vin_sel: Voltage Input select on PM8058 */
+#define PM8058_GPIO_VIN_VPH		0
+#define PM8058_GPIO_VIN_BB		1
+#define PM8058_GPIO_VIN_S3		2
+#define PM8058_GPIO_VIN_L3		3
+#define PM8058_GPIO_VIN_L7		4
+#define PM8058_GPIO_VIN_L6		5
+#define PM8058_GPIO_VIN_L5		6
+#define PM8058_GPIO_VIN_L2		7
+
+/* out_strength */
+#define	PM_GPIO_STRENGTH_NO		0
+#define	PM_GPIO_STRENGTH_HIGH		1
+#define	PM_GPIO_STRENGTH_MED		2
+#define	PM_GPIO_STRENGTH_LOW		3
+
+/* function */
+#define	PM_GPIO_FUNC_NORMAL		0
+#define	PM_GPIO_FUNC_PAIRED		1
+#define	PM_GPIO_FUNC_1			2
+#define	PM_GPIO_FUNC_2			3
+#define	PM_GPIO_DTEST1			4
+#define	PM_GPIO_DTEST2			5
+#define	PM_GPIO_DTEST3			6
+#define	PM_GPIO_DTEST4			7
+
+static int dir_map[] = {
+	PM_GPIO_MODE_OFF,
+	PM_GPIO_MODE_OUTPUT,
+	PM_GPIO_MODE_INPUT,
+	PM_GPIO_MODE_BOTH,
+};
 
 
 #endif

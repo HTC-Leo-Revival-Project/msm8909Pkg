@@ -42,13 +42,13 @@ PmicDxeInitialize(
     DEBUG((EFI_D_ERROR,"%s: failed to config shutdown on hard reset: %d\n","PmicDxeInitialize", rc));
   }
 
+  rc = pm_gpio_init_bank1();
+  if(rc){
+    DEBUG((EFI_D_ERROR, "gpio init bank failed ret = %d\n", rc));
+  }else {
+    DEBUG((EFI_D_ERROR, "pm8058-gpio succesfully started"));
+  }
 
-
-
-
-
-
-  for(;;){};
 
 	return Status;
 }

@@ -26,6 +26,7 @@
   PmicDxe.c
   Pm8058.c
   Pm8xxx-irq.c
+  Pm8058-gpio.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
