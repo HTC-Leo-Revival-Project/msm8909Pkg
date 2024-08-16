@@ -53,6 +53,7 @@
   gEfiCpuArchProtocolGuid
   gEfiDevicePathProtocolGuid
   gHardwareInterruptProtocolGuid
+  gSsbiProtocolGuid
 
 [Pcd]
 
