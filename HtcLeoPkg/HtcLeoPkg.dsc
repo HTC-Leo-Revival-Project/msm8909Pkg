@@ -234,6 +234,8 @@
   # SSBI
   #
   HtcLeoPkg/Drivers/SsbiDxe/SsbiDxe.inf
+
+  HtcLeoPkg/Drivers/PmicDxe/PmicDxe.inf
   #
   # Virtual Keyboard
   #

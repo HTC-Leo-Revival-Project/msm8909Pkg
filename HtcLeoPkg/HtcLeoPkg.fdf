@@ -129,6 +129,7 @@ APRIORI DXE {
   #SSBI
   #
   INF HtcLeoPkg/Drivers/SsbiDxe/SsbiDxe.inf
+  INF HtcLeoPkg/Drivers/PmicDxe/PmicDxe.inf
 
   #
   # Virtual Keyboard
