@@ -1,6 +1,8 @@
 #ifndef __PLATFORM_MSM7230_PMIC_HW_H
 #define __PLATFORM_MSM7230_PMIC_HW_H
 
+#include <Chipset/irqs_msm7230.h>
+
 #define REG_MPP_BASE			0x50
 #define REG_IRQ_BASE			0x1BB
 
@@ -217,5 +219,78 @@ enum pm8xxx_version {
 	PM8XXX_VERSION_8018,
 	PM8XXX_VERSION_8922,
 };
+
+/* PMIC8xxx IRQ */
+
+//used to be SSBI_REG_ADDR_IRQ_*(x) (x+y)
+#define SSBI_REG_ADDR_IRQ_ROOT(base)		(base + 0)
+#define SSBI_REG_ADDR_IRQ_M_STATUS1(base)	(base + 1)
+#define SSBI_REG_ADDR_IRQ_M_STATUS2(base)	(base + 2)
+#define SSBI_REG_ADDR_IRQ_M_STATUS3(base)	(base + 3)
+#define SSBI_REG_ADDR_IRQ_M_STATUS4(base)	(base + 4)
+#define SSBI_REG_ADDR_IRQ_BLK_SEL(base)		(base + 5)
+#define SSBI_REG_ADDR_IRQ_IT_STATUS(base)	(base + 6)
+#define SSBI_REG_ADDR_IRQ_CONFIG(base)		(base + 7)
+#define SSBI_REG_ADDR_IRQ_RT_STATUS(base)	(base + 8)
+
+#define	PM_IRQF_LVL_SEL			0x01	/* level select */
+#define	PM_IRQF_MASK_FE			0x02	/* mask falling edge */
+#define	PM_IRQF_MASK_RE			0x04	/* mask rising edge */
+#define	PM_IRQF_CLR			0x08	/* clear interrupt */
+#define	PM_IRQF_BITS_MASK		0x70
+#define	PM_IRQF_BITS_SHIFT		4
+#define	PM_IRQF_WRITE			0x80
+
+#define	PM_IRQF_MASK_ALL		(PM_IRQF_MASK_FE | \
+					PM_IRQF_MASK_RE)
+
+#define	MAX_PM_IRQ		256
+
+
+//GPIO STUFF
+
+/* GPIO registers */
+#define	SSBI_REG_ADDR_GPIO_BASE		0x150
+#define	SSBI_REG_ADDR_GPIO(n)		(SSBI_REG_ADDR_GPIO_BASE + n)
+
+/* GPIO */
+#define	PM_GPIO_BANK_MASK		0x70
+#define	PM_GPIO_BANK_SHIFT		4
+#define	PM_GPIO_WRITE			0x80
+
+/* Bank 0 */
+#define	PM_GPIO_VIN_MASK		0x0E
+#define	PM_GPIO_VIN_SHIFT		1
+#define	PM_GPIO_MODE_ENABLE		0x01
+
+/* Bank 1 */
+#define	PM_GPIO_MODE_MASK		0x0C
+#define	PM_GPIO_MODE_SHIFT		2
+#define	PM_GPIO_OUT_BUFFER		0x02
+#define	PM_GPIO_OUT_INVERT		0x01
+
+#define	PM_GPIO_MODE_OFF		3
+#define	PM_GPIO_MODE_OUTPUT		2
+#define	PM_GPIO_MODE_INPUT		0
+#define	PM_GPIO_MODE_BOTH		1
+
+/* Bank 2 */
+#define	PM_GPIO_PULL_MASK		0x0E
+#define	PM_GPIO_PULL_SHIFT		1
+
+/* Bank 3 */
+#define	PM_GPIO_OUT_STRENGTH_MASK	0x0C
+#define	PM_GPIO_OUT_STRENGTH_SHIFT	2
+#define PM_GPIO_PIN_ENABLE		0x00
+#define	PM_GPIO_PIN_DISABLE		0x01
+
+/* Bank 4 */
+#define	PM_GPIO_FUNC_MASK		0x0E
+#define	PM_GPIO_FUNC_SHIFT		1
+
+/* Bank 5 */
+#define	PM_GPIO_NON_INT_POL_INV	0x08
+#define PM_GPIO_BANKS		6
+
 
 #endif

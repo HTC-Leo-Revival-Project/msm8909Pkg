@@ -21,5 +21,6 @@ extern SSBI_PROTOCOL *gSsbi;
 
 extern int pm8058_readb(UINT16 addr, UINT8 *val);
 extern int pm8058_hard_reset_config(enum pon_config config);
+extern int pm8058_writeb(UINT16 addr, UINT8 val);
 
 #endif
