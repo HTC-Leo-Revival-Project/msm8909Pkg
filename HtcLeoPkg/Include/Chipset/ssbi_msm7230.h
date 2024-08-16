@@ -1,6 +1,9 @@
 #ifndef __PLATFORM_MSM7230_SSBI_HW_H
 #define __PLATFORM_MSM7230_SSBI_HW_H
+#include <Chipset/iomap_msm7230.h>
 
+
+#define SSBI_REG(offset) (MSM_SSBI_BASE + offset)
 
 /* SSBI 2.0 controller registers */
 #define SSBI2_CTL			0x0000

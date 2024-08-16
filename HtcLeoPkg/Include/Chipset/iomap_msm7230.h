@@ -85,4 +85,5 @@
 #define PLL2_STATUS_BASE_REG    REG_BASE(0x0350)
 #define MSM_I2C_BASE            0xACD00000
 #define MSM_SCPLL_BASE        0xA8800000
+#define MSM_SSBI_BASE         0xAD900000
 #endif

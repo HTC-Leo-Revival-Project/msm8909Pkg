@@ -11,9 +11,11 @@
 
 typedef struct _SSBI_PROTOCOL SSBI_PROTOCOL;
 
-typedef VOID(*sbbi_test)(VOID);
+typedef UINT32(*msm_ssbi_read_t)(UINT16 addr, UINT8 *buf, UINT32 len);
+typedef UINT32(*msm_ssbi_write_t)(UINT16 addr, UINT8 *buf, UINT32 len);
 struct _SSBI_PROTOCOL {
-  sbbi_test SsbiTest;
+  msm_ssbi_read_t SsbiRead;
+  msm_ssbi_write_t SsbiWrite;
 };
 
 extern EFI_GUID gHtcLeoMicropProtocolGuid;

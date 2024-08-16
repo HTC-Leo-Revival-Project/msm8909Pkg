@@ -20,7 +20,7 @@
   ENTRY_POINT                    = SsbiDxeInitialize
 
 [BuildOptions.ARM]
-  GCC:*_*_*_CC_FLAGS = -Wno-unused-variable
+  GCC:*_*_*_CC_FLAGS = -Wno-unused-variable -Wno-unused-function
 
 [Sources.common]
   SsbiDxe.c
