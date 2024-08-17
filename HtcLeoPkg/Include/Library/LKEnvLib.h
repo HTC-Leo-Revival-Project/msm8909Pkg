@@ -131,7 +131,7 @@ typedef unsigned long u_long;
 
 /* debug levels */
 #define CRITICAL DEBUG_ERROR
-#define ALWAYS DEBUG_ERROR
+#define ALWAYS EFI_D_ERROR
 #define INFO DEBUG_INFO
 #define SPEW DEBUG_VERBOSE
 

@@ -25,7 +25,6 @@
 [Sources.common]
   PmicDxe.c
   Pm8058.c
-  Ssbi.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -56,9 +55,10 @@
   gEfiDevicePathProtocolGuid
   gHardwareInterruptProtocolGuid
   gPmicProtocolGuid
+  gSsbiProtocolGuid
 
 [Pcd]
 
 
 [depex]
- TRUE
+ gSsbiProtocolGuid

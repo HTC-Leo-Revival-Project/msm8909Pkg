@@ -1,38 +1,102 @@
 #include <Chipset/pmic_msm7230.h>
 #include <Chipset/ssbi_msm7230.h>
+#include <Platform/board_vision.h>
 #include <Library/LKEnvLib.h>
+#include "ssbi.h"
 
-typedef int (*pm8058_write_func) (unsigned char *, unsigned short,
-				  unsigned short);
-extern int pa1_ssbi2_write_bytes(unsigned char *buffer, unsigned short length,
-				 unsigned short slave_addr);
-extern int pa1_ssbi2_read_bytes(unsigned char *buffer, unsigned short length,
-				unsigned short slave_addr);
-extern int pa2_ssbi2_write_bytes(unsigned char *buffer, unsigned short length,
-				 unsigned short slave_addr);
-extern int pa2_ssbi2_read_bytes(unsigned char *buffer, unsigned short length,
-				unsigned short slave_addr);
+struct pm8058_gpio gpio_pm[] = {
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_NO,
+        .vin_sel        = PM8058_GPIO_VIN_L5,
+        .out_strength   = PM_GPIO_STRENGTH_HIGH,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_TP_RSTz,  // Corresponds to VISION_TP_RSTz
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_UP_31P5,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_VOL_UP,  // Corresponds to VISION_VOL_UP
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_UP_31P5,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_VOL_DN,  // Corresponds to VISION_VOL_DN
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_UP_31P5,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_SLIDING_INTz,  // Corresponds to VISION_SLIDING_INTz
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_UP_31P5,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_OJ_ACTION,  // Corresponds to VISION_OJ_ACTION
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_UP_31P5,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_CAM_STEP1,  // Corresponds to VISION_CAM_STEP1
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_UP_31P5,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_CAM_STEP2,  // Corresponds to VISION_CAM_STEP2
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_NO,
+        .vin_sel        = PM8058_GPIO_VIN_S3,
+        .out_strength   = 0,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_AUD_HP_DETz,  // Corresponds to VISION_AUD_HP_DETz
+    },
+    {
+        .direction      = PM8058_GPIO_MODE_INPUT,
+        .pull           = PM_GPIO_PULL_NO,
+        .vin_sel        = PM8058_GPIO_VIN_L5,
+        .out_strength   = PM_GPIO_STRENGTH_HIGH,
+        .function       = PM_GPIO_FUNC_NORMAL,
+        .inv_int_pol    = 0,
+        .gpio           = VISION_GPIO_PROXIMITY_EN,  // Corresponds to VISION_GPIO_PROXIMITY_EN
+    },
+};
 
 /* PM8058 APIs */
 int pm8058_write(uint16_t addr, uint8_t * data, uint16_t length)
 {
-	return pa1_ssbi2_write_bytes(data, length, addr);
+	return gSsbi->SsbiWrite(addr,data, length);
 }
 
 int pm8058_read(uint16_t addr, uint8_t * data, uint16_t length)
 {
-	return pa1_ssbi2_read_bytes(data, length, addr);
-}
-
-void pm8058_write_one(unsigned data, unsigned address)
-{
-    pm8058_write_func wr_function = &pa1_ssbi2_write_bytes;
-    if (wr_function == NULL)
-        return;
-
-    unsigned char data_byte = (unsigned char)data;  // Convert unsigned int to unsigned char
-    if ((*wr_function) (&data_byte, 1, address))
-        dprintf(CRITICAL, "Error in initializing register\n");
+	return gSsbi->SsbiRead(addr, data, length);
 }
 
 int pm8058_get_irq_status(pm_irq_id_type irq, bool * rt_status)
@@ -43,16 +107,14 @@ int pm8058_get_irq_status(pm_irq_id_type irq, bool * rt_status)
     int errFlag;
 
     /* select the irq block */
-    errFlag = pa1_ssbi2_write_bytes(&block_index, 1, IRQ_BLOCK_SEL_USR_ADDR);
-    if (errFlag) {
-        dprintf(INFO, "Device Timeout");
+    errFlag = gSsbi->SsbiWrite(IRQ_BLOCK_SEL_USR_ADDR, &block_index, 1);
+    if (errFlag) {dprintf(ALWAYS, "Device Timeout");
         return 1;
     }
 
     /* read real time status */
-    errFlag = pa1_ssbi2_read_bytes(&reg_data, 1, IRQ_STATUS_RT_USR_ADDR);
-    if (errFlag) {
-        dprintf(INFO, "Device Timeout");
+    errFlag = gSsbi->SsbiRead(IRQ_STATUS_RT_USR_ADDR,&reg_data, 1);
+    if (errFlag) {dprintf(ALWAYS, "Device Timeout");
         return 1;
     }
 
@@ -201,7 +263,6 @@ int pm8058_vreg_enable()
 int pm8058_gpio_config(int gpio, struct pm8058_gpio *param)
 {
 	int	rc;
-        pm8058_write_func wr_function = &pa1_ssbi2_write_bytes;
 	unsigned char bank[8];
 	static int dir_map[] = {
 		PM8058_GPIO_MODE_OFF,
@@ -239,9 +300,9 @@ int pm8058_gpio_config(int gpio, struct pm8058_gpio *param)
 		((param->function << PM8058_GPIO_FUNC_SHIFT) &
 			PM8058_GPIO_FUNC_MASK);
 
-	rc = (*wr_function)(bank, 5, SSBI_REG_ADDR_GPIO(gpio));
+	rc = gSsbi->SsbiWrite(SSBI_REG_ADDR_GPIO(gpio),bank, 5);
 	if (rc) {
-	        dprintf(INFO, "Failed on 1st ssbi_write(): rc=%d.\n", rc);
+        dprintf(ALWAYS, "Failed on 1st ssbi_write(): rc=%d.\n", rc);
 		return 1;
 	}
 	return 0;
@@ -263,7 +324,7 @@ int pm8058_gpio_config_kypd_drv(int gpio_start, int num_gpios, unsigned mach_id)
 	while (num_gpios--) {
 		rc = pm8058_gpio_config(gpio_start++, &kypd_drv);
 		if (rc) {
-		        dprintf(INFO, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
+	dprintf(ALWAYS, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
 			return rc;
 		}
 	}
@@ -286,10 +347,23 @@ int pm8058_gpio_config_kypd_sns(int gpio_start, int num_gpios)
 	while (num_gpios--) {
 		rc = pm8058_gpio_config(gpio_start++, &kypd_sns);
 		if (rc) {
-		        dprintf(INFO, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
+		        dprintf(ALWAYS, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
 			return rc;
 		}
 	}
 
 	return 0;
+}
+extern UINTN EFIAPI MicroSecondDelay (IN      UINTN                     MicroSeconds);
+
+void configkeypadgpios(void){
+
+    int rc;
+    for (int i =0; i < 8; i++) {
+		rc = pm8058_gpio_config(gpio_pm[i].gpio, &gpio_pm[i]);
+		if (rc) {
+	        dprintf(ALWAYS, "FAIL pm8058_gpio_config(): rc=%d.\n", rc);
+            MicroSecondDelay(500000);
+		}
+	}
 }

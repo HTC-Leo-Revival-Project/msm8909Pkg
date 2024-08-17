@@ -58,16 +58,7 @@
 #define SSBI_CMD_REG_DATA_SHFT		(0x00)
 #define SSBI_CMD_REG_DATA_MASK		(0xFF << SSBI_CMD_REG_DATA_SHFT)
 
-/* SSBI_STATUS fields */
-#define SSBI_STATUS_DATA_IN		0x10
-#define SSBI_STATUS_RD_CLOBBERED	0x08
-#define SSBI_STATUS_RD_READY		0x04
-#define SSBI_STATUS_READY		0x02
-#define SSBI_STATUS_MCHN_BUSY		0x01
-
 /* SSBI_RD fields */
-#define SSBI_RD_USE_ENABLE		0x02000000
-#define SSBI_RD_RDWRN			0x01000000
 #define SSBI_RD_REG_ADDR_SHFT		0x10
 #define SSBI_RD_REG_ADDR_MASK		(0xFF << SSBI_RD_REG_ADDR_SHFT)
 #define SSBI_RD_REG_DATA_SHFT		(0x00)
@@ -78,7 +69,6 @@
 #define SSBI_MODE2_REG_ADDR_15_8_MASK	(0x7F << SSBI_MODE2_REG_ADDR_15_8_SHFT)
 #define SSBI_MODE2_ADDR_WIDTH_SHFT	0x01
 #define SSBI_MODE2_ADDR_WIDTH_MASK	(0x07 << SSBI_MODE2_ADDR_WIDTH_SHFT)
-#define SSBI_MODE2_SSBI2_MODE		0x00000001
 
 //Keypad controller configurations
 #define SSBI_REG_KYPD_CNTL_ADDR         0x148
@@ -158,13 +148,31 @@
 	(((MD) & 0x0F) | ((((AD) >> 8) << SSBI_MODE2_REG_ADDR_15_8_SHFT) & \
 	SSBI_MODE2_REG_ADDR_15_8_MASK))
 
-int i2c_ssbi_read_bytes(unsigned char  *buffer, unsigned short length,
-			unsigned short slave_addr);
-int i2c_ssbi_write_bytes(unsigned char  *buffer, unsigned short length,
-			 unsigned short slave_addr);
-int pa1_ssbi2_read_bytes(unsigned char  *buffer, unsigned short length,
-			 unsigned short slave_addr);
-int pa1_ssbi2_write_bytes(unsigned char  *buffer, unsigned short length,
-			  unsigned short slave_addr);
+#define SSBI_REG(offset) (MSM_SSBI_BASE + offset)
+
+/* SSBI 2.0 controller registers */
+#define SSBI2_CTL			0x0000
+#define SSBI2_RESET			0x0004
+#define SSBI2_CMD			0x0008
+#define SSBI2_RD			0x0010
+#define SSBI2_STATUS			0x0014
+#define SSBI2_PRIORITIES		0x0018
+#define SSBI2_MODE2			0x001C
+
+/* SSBI_STATUS fields */
+#define SSBI_STATUS_DATA_IN		(1 << 4)
+#define SSBI_STATUS_RD_CLOBBERED	(1 << 3)
+#define SSBI_STATUS_RD_READY		(1 << 2)
+#define SSBI_STATUS_READY		(1 << 1)
+#define SSBI_STATUS_MCHN_BUSY		(1 << 0)
+
+/* SSBI_RD fields */
+#define SSBI_RD_USE_ENABLE		(1 << 25)
+#define SSBI_RD_RDWRN			(1 << 24)
+
+/* SSBI_MODE2 fields */
+#define SSBI_MODE2_SSBI2_MODE		(1 << 0)
+
+#define SSBI_TIMEOUT_US			100
 
 #endif

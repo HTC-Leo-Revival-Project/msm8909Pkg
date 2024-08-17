@@ -163,6 +163,24 @@
 #define LDO_CTRL_VPROG_MASK		0x1F
 #define REGULATOR_EN_MASK		0x80
 
+/* vin_sel: Voltage Input select on PM8058 */
+#define PM8058_GPIO_VIN_VPH		0
+#define PM8058_GPIO_VIN_BB		1
+#define PM8058_GPIO_VIN_S3		2
+#define PM8058_GPIO_VIN_L3		3
+#define PM8058_GPIO_VIN_L7		4
+#define PM8058_GPIO_VIN_L6		5
+#define PM8058_GPIO_VIN_L5		6
+#define PM8058_GPIO_VIN_L2		7
+
+/* pull */
+#define	PM_GPIO_PULL_UP_30		0
+#define	PM_GPIO_PULL_UP_1P5		1
+#define	PM_GPIO_PULL_UP_31P5		2
+#define	PM_GPIO_PULL_UP_1P5_30		3
+#define	PM_GPIO_PULL_DN			4
+#define	PM_GPIO_PULL_NO			5
+
 typedef enum {
 	PM_KYPD_PWRON_IRQ_ID = 51,
 
@@ -225,6 +243,7 @@ struct pm8058_gpio {
 	int		out_strength;
 	int		function;
 	int		inv_int_pol;	/* invert interrupt polarity */
+	int 	gpio;
 };
 
 #endif

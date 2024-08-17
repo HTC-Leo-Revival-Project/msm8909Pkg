@@ -40,6 +40,8 @@
 #include <Chipset/ssbi_msm7230.h>
 #include <Library/LKEnvLib.h>
 
+#include "ssbi.h"
+
 EFI_TPL oldTpl;
 
 int i2c_ssbi_poll_for_device_ready(void)
@@ -48,7 +50,7 @@ int i2c_ssbi_poll_for_device_ready(void)
 
 	while (!(readl(MSM_SSBI_BASE + SSBI2_STATUS) & SSBI_STATUS_READY)) {
 		if (--timeout == 0) {
-		        dprintf(INFO, "In Device ready function:Timeout, status %x\n", readl(MSM_SSBI_BASE + SSBI2_STATUS));
+		        dprintf(ALWAYS, "In Device ready function:Timeout, status %x\n", readl(MSM_SSBI_BASE + SSBI2_STATUS));
 			return 1;
 		}
 	}
@@ -62,7 +64,7 @@ int i2c_ssbi_poll_for_read_completed(void)
 
 	while (!(readl(MSM_SSBI_BASE + SSBI2_STATUS) & SSBI_STATUS_RD_READY)) {
 		if (--timeout == 0) {
-		        dprintf(INFO, "In read completed function:Timeout, status %x\n", readl(MSM_SSBI_BASE + SSBI2_STATUS));
+		        dprintf(ALWAYS, "In read completed function:Timeout, status %x\n", readl(MSM_SSBI_BASE + SSBI2_STATUS));
 			return 1;
 		}
 	}
@@ -165,12 +167,11 @@ int pa1_ssbi2_read_bytes(unsigned char  *buffer, unsigned short length,
 
     while(len)
     {
-        val |= ((addr << PA1_SSBI2_REG_ADDR_SHIFT) |
-		(PA1_SSBI2_CMD_READ << PA1_SSBI2_CMD_RDWRN_SHIFT));
+        val |= ((addr << PA1_SSBI2_REG_ADDR_SHIFT) | (PA1_SSBI2_CMD_READ << PA1_SSBI2_CMD_RDWRN_SHIFT));
         writel(val, PA1_SSBI2_CMD);
         while(!((temp = readl(PA1_SSBI2_RD_STATUS)) & (1 << PA1_SSBI2_TRANS_DONE_SHIFT))) {
             if (--timeout == 0) {
-	        dprintf(INFO, "In Device ready function:Timeout\n");
+	        dprintf(ALWAYS, "In Device ready function:Timeout\n");
 	        return 1;
 	    }
 	}
@@ -196,13 +197,11 @@ int pa1_ssbi2_write_bytes(unsigned char  *buffer, unsigned short length,
     {
         temp = 0x00;
         written_data1 = 0x00;
-        val = (addr << PA1_SSBI2_REG_ADDR_SHIFT) |
-	  (PA1_SSBI2_CMD_WRITE << PA1_SSBI2_CMD_RDWRN_SHIFT) |
- (*buf & 0xFF);
+        val = (addr << PA1_SSBI2_REG_ADDR_SHIFT) | (PA1_SSBI2_CMD_WRITE << PA1_SSBI2_CMD_RDWRN_SHIFT) | (*buf & 0xFF);
         writel(val, PA1_SSBI2_CMD);
         while(!((temp = readl(PA1_SSBI2_RD_STATUS)) & (1 << PA1_SSBI2_TRANS_DONE_SHIFT))) {
             if (--timeout == 0) {
-	        dprintf(INFO, "In Device write function:Timeout\n");
+	        dprintf(ALWAYS, "In Device write function:Timeout\n");
 	        return 1;
 	    }
 	}
@@ -229,7 +228,7 @@ int pa2_ssbi2_read_bytes(unsigned char  *buffer, unsigned short length,
         writel(val, PA2_SSBI2_CMD);
         while(!((temp = readl(PA2_SSBI2_RD_STATUS)) & (1 << PA2_SSBI2_TRANS_DONE_SHIFT))) {
             if (--timeout == 0) {
-                dprintf(INFO, "In Device ready function:Timeout\n");
+                dprintf(ALWAYS, "In Device ready function:Timeout\n");
                 return 1;
             }
         }
@@ -260,7 +259,7 @@ int pa2_ssbi2_write_bytes(unsigned char  *buffer, unsigned short length,
         writel(val, PA2_SSBI2_CMD);
         while(!((temp = readl(PA2_SSBI2_RD_STATUS)) & (1 << PA2_SSBI2_TRANS_DONE_SHIFT))) {
             if (--timeout == 0) {
-                dprintf(INFO, "In Device write function:Timeout\n");
+                dprintf(ALWAYS, "In Device write function:Timeout\n");
                 return 1;
             }
         }
