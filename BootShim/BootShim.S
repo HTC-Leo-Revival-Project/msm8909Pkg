@@ -64,11 +64,16 @@ romhdr:
 
 _Reset:
 	/* do some cpu setup */
-	mrc		p15, 0, r0, c1, c0, 0
-	bic		r0, r0, #(1<<15| 1<<13 | 1<<12)
-	bic		r0, r0, #(1<<2 | 1<<0)
-	orr		r0, r0, #(1<<1)
-	mcr		p15, 0, r0, c1, c0, 0
+	mrc		p15, 0, r0, c1, c0, 0   /* read cp15 register */
+	bic		r0, r0, #0x0000b000     /* (1<<15| 1<<13 | 1<<12) */
+_UefiSetup:
+	// From PrimeG2Pkg
+	// Disable Strict alignment checking & Enable Instruction cache
+	bic     r0, r0, #0x00002300     /* clear bits 13, 9:8 (--V- --RS) */
+  	bic     r0, r0, #0x00000005     /* clear bits 0, 2 (---- -C-M) */
+  	bic     r0, r0, #0x00000002     /* Clear bit 1 (Alignment faults) */
+  	orr     r0, r0, #0x00001000     /* set bit 12 (I) enable I-Cache */
+	mcr		p15, 0, r0, c1, c0, 0   /* write cp15 */
 
 _PrepareForBoot:
 	// Martijn Stolk's code so kernel will not crash. aux control register
@@ -81,7 +86,7 @@ _PrepareForBoot:
 	MOV R0, #0
 	FMXR FPEXC, r0
 
-        // disable mmu
+    // disable mmu
 	MRC p15, 0, r0, c1, c0, 0
 	BIC r0, r0, #(1<<0)
 	MCR p15, 0, r0, c1, c0, 0
@@ -95,15 +100,6 @@ _PrepareForBoot:
 	MOV R0, #0
 	DSB
 	ISB
-
-_UefiSetup:
-	// From PrimeG2Pkg
-	// Disable Strict alignment checking & Enable Instruction cache
-  	bic     r0, r0, #0x00002300     /* clear bits 13, 9:8 (--V- --RS) */
-  	bic     r0, r0, #0x00000005     /* clear bits 0, 2 (---- -C-M) */
-  	bic     r0, r0, #0x00000002     /* Clear bit 1 (Alignment faults) */
-  	orr     r0, r0, #0x00001000     /* set bit 12 (I) enable I-Cache */
-  	mcr     p15, 0, r0, c1, c0, 0
 
 _Relocate:
 	/* see if we need to relocate */
