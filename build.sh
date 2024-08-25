@@ -4,7 +4,7 @@ set -e
 export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
 export WORKSPACE=$PWD/workspace
 
-AvailablePlatforms=("Leo" "Schubert" "Gold" "All")
+AvailablePlatforms=("Leo" "Schubert" "All")
 IsValid=0
 
 while getopts d: flag
@@ -71,7 +71,7 @@ if [ $DEVICE == 'All' ]; then
 else
     echo "Building uefi for $DEVICE"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
-	mkdir -p "ImageResources/$DEVICE"
+
 	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE
 fi
