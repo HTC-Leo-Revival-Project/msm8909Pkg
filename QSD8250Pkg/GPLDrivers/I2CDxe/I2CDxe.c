@@ -24,7 +24,7 @@
 #include <Library/pcom.h>
 #include <Library/gpio.h>
 #include <Library/LKEnvLib.h>
-#include <Library/reg.h>
+#include <Chipset/reg.h>
 #include <Device/Gpio.h>
 
 #include <Chipset/msm_i2c.h>

@@ -3,8 +3,9 @@
 //#define USE_DM
 //#define USE_HIGH_SPEED_MODE
 
-#include <Library/UbootEnvLib.h>
 // must come in order
+#include <Library/LKEnvLib.h>
+#include <Library/UbootEnvLib.h>
 #include <Library/part.h>
 #include <Library/mmc.h>
 #include <Library/adm.h>
@@ -14,7 +15,7 @@
 
 #include <Library/gpio.h>
 #include <Chipset/iomap.h>
-#include <Library/reg.h>
+#include <Chipset/reg.h>
 #include <Chipset/gpio.h>
 
 #define BLOCK_SIZE 512

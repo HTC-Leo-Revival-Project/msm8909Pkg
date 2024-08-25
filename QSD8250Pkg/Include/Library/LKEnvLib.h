@@ -58,7 +58,9 @@ typedef unsigned long u_long;
 #define readb(a) MmioRead8((UINTN)(a))
 #define writehw(v, a) MmioWrite16((UINTN)(a), (UINT16)(v))
 #define readhw(a) MmioRead16((UINTN)(a))
-//#define RMWREG32(addr, startbit, width, val) writel((readl(addr) & ~(((1<<(width)) - 1) << (startbit))) | ((val) << (startbit)), addr)
+
+#define mdelay(a) MicroSecondDelay(a)
+#define udelay(a) NanoSecondDelay(a)
 
 #define BIT(bit) (1U << (bit))
 #define BIT_GET(x, bit) ((x)& (1 << (bit)))
@@ -114,7 +116,6 @@ typedef unsigned long u_long;
 #define memcmp(s1, s2, n) ((int)CompareMem((s1), (s2), (n)))
 
 #define va_list VA_LIST
-//#define offsetof(type, member) OFFSET_OF (type, member)
 #define __PACKED __attribute__((packed))
 
 #define ROUNDUP(a, b) (((a) + ((b)-1)) & ~((b)-1))
@@ -130,7 +131,7 @@ typedef unsigned long u_long;
 #define INFO DEBUG_INFO
 #define SPEW DEBUG_VERBOSE
 
-//#if !defined(MDEPKG_NDEBUG)
+#if !defined(MDEPKG_NDEBUG)
 #define dprintf(level, fmt, ...) do { \
                                    if (DebugPrintEnabled ()) { \
                                      CHAR8 __printbuf[100]; \
@@ -146,15 +147,14 @@ typedef unsigned long u_long;
                                      DEBUG(((level), __printbuf, ##__VA_ARGS__)); \
                                    } \
                                  } while(0)
-//#else
-//#define dprintf(level, fmt, ...)
-//#endif
+#else
+#define dprintf(level, fmt, ...)
+#endif
 
 #define ntohl(n) SwapBytes32(n)
 
 #define dmb() ArmDataMemoryBarrier()
 #define dsb() ArmDataSynchronizationBarrier()
-
 
 #define arch_clean_invalidate_cache_range(start, len) WriteBackInvalidateDataCacheRange ((VOID *)(UINTN)(start), (UINTN)(len))
 #define arch_invalidate_cache_range(start, len) InvalidateDataCacheRange ((VOID *)(UINTN)(start), (UINTN)(len));
@@ -178,12 +178,6 @@ typedef unsigned long u_long;
 #define LE16SWAP(var) (var) = LE16(var);
 #define BE32SWAP(var) (var) = BE32(var);
 #define BE16SWAP(var) (var) = BE16(var);
-
-/* classic network byte swap stuff */
-/*#define ntohs(n) BE16(n)
-#define htons(h) BE16(h)
-#define ntohl(n) BE32(n)
-#define htonl(h) BE32(h)*/
 
 /* low level macros for accessing memory mapped hardware registers */
 #define REG64(addr) ((volatile UINT64 *)(addr))

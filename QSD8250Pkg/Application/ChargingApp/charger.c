@@ -28,7 +28,7 @@
 #include <Chipset/timer.h>
 #include <Library/gpio.h>
 #include <Library/DS2746.h>
-#include <Library/hsusb.h>
+#include <Chipset/hsusb.h>
 
 #include <Device/Gpio.h>
 #include <Device/microp.h>

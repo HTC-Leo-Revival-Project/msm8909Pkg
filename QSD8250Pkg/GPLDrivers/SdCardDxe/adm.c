@@ -57,9 +57,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// must come in order
+#include <Library/LKEnvLib.h>
 #include <Library/UbootEnvLib.h>
 #include <Library/adm.h>
-#include <Library/reg.h>
+#include <Chipset/reg.h>
 
 
 int adm_start_transfer(uint32_t adm_chn, uint32_t *cmd_ptr_list)

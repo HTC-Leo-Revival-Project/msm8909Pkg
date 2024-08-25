@@ -43,7 +43,7 @@
 #include <Protocol/DevicePath.h>
 
 #include <Library/LKEnvLib.h>
-#include <Library/reg.h>
+#include <Chipset/reg.h>
 #include <Library/adm.h>
 #include <Library/gpio.h>
 #include <Library/pcom.h>

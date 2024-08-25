@@ -15,7 +15,7 @@
 #include <Library/ArmLib.h>
 #include <Library/DebugLib.h>
 #include <Library/LKEnvLib.h>
-#include <Library/reg.h>
+#include <Chipset/reg.h>
 #include <Library/pcom.h>
 #include <Chipset/clock.h>
 #include <Chipset/gpio.h>
