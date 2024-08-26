@@ -1,10 +1,10 @@
 BootShim/*.bin
 BootShim/*.elf
-ImageResources/*/nbgen
-ImageResources/*/yangbin
 ImageResources/*/*.nbh
 ImageResources/*/os.nb
 ImageResources/*/*.bin
 ImageResources/*/*.img
+Tools/nbgen/nbgen
+Tools/yang/yang
 .vscode
 workspace/Build/
