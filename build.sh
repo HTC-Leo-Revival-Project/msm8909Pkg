@@ -1,8 +1,12 @@
 #!/bin/bash
 # based on the instructions from edk2-platform
 set -e
-export PACKAGES_PATH=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
-export WORKSPACE=$PWD/workspace
+
+# only set vars when unset (allow overriding them)
+PACKAGES_PATH_DEFAULT=$PWD/../edk2:$PWD/../edk2-platforms:$PWD
+WORKSPACE_DEFAULT=$PWD/workspace
+export PACKAGES_PATH=${PACKAGES_PATH:-$PACKAGES_PATH_DEFAULT}
+export WORKSPACE=${WORKSPACE:-$WORKSPACE_DEFAULT}
 
 AvailablePlatforms=("Leo" "Schubert" "Gold" "All")
 IsValid=0
