@@ -10,7 +10,7 @@ if [ $1 == 'Leo' ]; then
     fi
     # We're using a prebuild yang binary for now, since the compiled version doesn't seem to produce a valid NBH for Leo
     if [ ! -f ImageResources/Leo/yang ]; then
-        gcc ImageResources/Leo/yang/nbh.c ImageResources/Leo/yang/nbhextract.c ImageResources/Leo/yang/yang.c -o ImageResources/Leo/yangbin
+        gcc ImageResources/Leo/yang_src/nbh.c ImageResources/Leo/yang_src/nbhextract.c ImageResources/Leo/yang_src/yang.c -o ImageResources/Leo/yangbin
     fi
 
     cd ImageResources/Leo/
