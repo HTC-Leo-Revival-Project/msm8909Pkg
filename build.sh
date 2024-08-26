@@ -38,8 +38,9 @@ function _check_args(){
 
 function _clean() {
 	local PlatformName="${1}"
-	if [ -f ImageResources/$PlatformName/bootpayload.bin ]; then
-		rm ImageResources/$PlatformName/bootpayload.bin
+	make -C BootShim PLATFORM=$PlatformName clean
+	if [ -f ImageResources/$PlatformName/*.nbh ]; then
+		rm ImageResources/$PlatformName/*.nbh
 	fi
 	if [ -f ImageResources/$PlatformName/os.nb ]; then
 		rm ImageResources/$PlatformName/os.nb
@@ -65,7 +66,6 @@ function _build(){
     echo "Building uefi for $DEVICE"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
 	mkdir -p "ImageResources/$DEVICE"
-	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE
 }
 

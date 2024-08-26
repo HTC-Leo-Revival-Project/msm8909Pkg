@@ -1,9 +1,10 @@
-BootShim/*.bin
-BootShim/*.elf
-ImageResources/*/*.nbh
-ImageResources/*/os.nb
 ImageResources/*/*.bin
+ImageResources/*/*.elf
+ImageResources/*/*.fd
 ImageResources/*/*.img
+ImageResources/*/*.nbh
+ImageResources/*/*.o
+ImageResources/*/os.nb
 Tools/nbgen/nbgen
 Tools/yang/yang
 .vscode
