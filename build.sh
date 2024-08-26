@@ -49,7 +49,7 @@ function _clean() {
 		rm ImageResources/$PlatformName/*.img
 	fi
 	if [ -d $WORKSPACE/Build ]; then
-		rm -rf $WORKSDPACE/Build/Htc$PlatformName
+		rm -rf $WORKSPACE/Build/Htc$PlatformName
 	fi
 }
 
