@@ -8,25 +8,32 @@ WORKSPACE_DEFAULT=$PWD/workspace
 export PACKAGES_PATH=${PACKAGES_PATH:-$PACKAGES_PATH_DEFAULT}
 export WORKSPACE=${WORKSPACE:-$WORKSPACE_DEFAULT}
 
-AvailablePlatforms=("Leo" "Schubert" "Gold" "All")
+AvailablePlatforms=("Leo" "Schubert" "Gold")
+DevicesToBuild=()
 IsValid=0
 
 while getopts d: flag
 do
     case "${flag}" in
-        d) device=${OPTARG};;
+        d) device=$(echo ${OPTARG} | tr '[:upper:]' '[:lower:]');;
     esac
 done
 
 function _check_args(){
 	local DEVICE="${1}"
-	for Name in "${AvailablePlatforms[@]}"
-	do
-		if [[ $DEVICE == "$Name" ]]; then
-			IsValid=1
-			break;
-		fi
-	done
+	if [[ $DEVICE == 'all' ]]; then
+		IsValid=1
+		DevicesToBuild=(${AvailablePlatforms[@]})
+	else
+		for Name in "${AvailablePlatforms[@]}"
+		do
+			if [[ $DEVICE == $(echo "$Name" | tr '[:upper:]' '[:lower:]') ]]; then
+				IsValid=1
+				DevicesToBuild=("$Name")
+				break;
+			fi
+		done
+	fi
 }
 
 function _clean() {
@@ -57,35 +64,26 @@ function _build(){
 	local DEVICE="${1}"
 	shift
 	source "../edk2/edksetup.sh"
-
+	
 	# Clean artifacts if needed
 	_clean
 	echo "Artifacts removed"
-if [ $DEVICE == 'All' ]; then
-    echo "Building uefi for all platforms"
-	for PlatformName in "${AvailablePlatforms[@]}"
-	do
-		if [ $PlatformName != 'All' ]; then
-			# Build
-			GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
-			./build_boot_shim.sh
-			./build_boot_images.sh $PlatformName
-		fi
-	done
-else
+
     echo "Building uefi for $DEVICE"
 	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
 	mkdir -p "ImageResources/$DEVICE"
 	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE
-fi
 }
 
 _check_args "$device"
 if [ $IsValid == 1 ]; then
-	_build "$device"
+	for Name in "${DevicesToBuild[@]}"
+	do
+		_build "$Name"
+	done
 else
-	echo "Build: Invalid platform"
+	echo "Build: Invalid platform: $device"
 	echo "Available targets: "
 	for Name in "${AvailablePlatforms[@]}"
 	do
