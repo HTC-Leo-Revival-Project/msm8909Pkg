@@ -178,7 +178,7 @@ int32_t extractNB(FILE *input, int32_t index, uint32_t type, uint32_t start, uin
 	char filename[1024];
 	FILE *output;
 
-	sprintf(filename, "%02d_%s_0x%03lx.nb", index, getSectionName(type), type);
+	sprintf(filename, "%02d_%s_0x%03x.nb", index, getSectionName(type), type);
 	printf("[] Extracting: %s\n", filename);
 
 	output = fopen(filename, "wb");
@@ -186,7 +186,7 @@ int32_t extractNB(FILE *input, int32_t index, uint32_t type, uint32_t start, uin
 		fprintf(stderr, "[!!] Could not open '%s'\n", filename);
 
 	if (fseek(input, start, SEEK_SET) != 0)
-		fprintf(stderr, "[!!] Could not seek to position %08lX\n", start);
+		fprintf(stderr, "[!!] Could not seek to position %08X\n", start);
 
 	if (bufferedReadWrite(input, output, len))
 		retval = 1;
@@ -264,7 +264,7 @@ void extractNBH(char *filename)
 		// OLD format
 		initsign = 16;
 	}
-	if (DEBUG) printf("initsign: %ld\n",initsign);
+	if (DEBUG) printf("initsign: %d\n",initsign);
 
 	if (fread(signature, 1, initsign, input) != initsign) {
 		fprintf(stderr, "[!!] Could not read initial signature\n");
@@ -294,32 +294,32 @@ void extractNBH(char *filename)
 
 		if (fread(&blockLen, 4, 1, input) && fread(&signLen, 4, 1, input) && fread(&flag, 1, 1, input)) {
 
-			if (DEBUG) printf("blockLen: %08lX\nsignLen: %08lX\nflag: %i\n", blockLen, signLen, flag);
+			if (DEBUG) printf("blockLen: %08X\nsignLen: %08X\nflag: %i\n", blockLen, signLen, flag);
 
 			if (initsign!=16 && blockIndex==0) {
 				printf("[] Android NBH detected, adjusting first block length.\n");
 				blockLen=999999999;
 			}
 			if (!bufferedReadWrite(input, output, blockLen)) {
-				if (initsign!=16 && blockIndex!=0) fprintf(stderr, "[!!] Error in block %ld (%08lX - %08lX)\n", blockIndex, offset, offset + blockLen);
+				if (initsign!=16 && blockIndex!=0) fprintf(stderr, "[!!] Error in block %d (%08X - %08X)\n", blockIndex, offset, offset + blockLen);
 				break;
 			}
 
 			if (fread(blockSign, 1, signLen, input) != signLen) {
-				fprintf(stderr, "Error in block signature %ld\n",blockIndex);
+				fprintf(stderr, "Error in block signature %d\n",blockIndex);
 				memset(blockSign, 0, sizeof(blockSign));
 				break;
 			}
 
 			if (DEBUG) {
-				printf("Signature for block %04ld (%08lX - %08lX): ", blockIndex, offset, offset + blockLen);
+				printf("Signature for block %04d (%08X - %08X): ", blockIndex, offset, offset + blockLen);
 				for (i = 0; i < signLen; i++)
 					printf("%02X", blockSign[i]);
 				printf("\n");
 			}
 
 		} else {
-			fprintf(stderr, "[!!] Error in block %ld\n", blockIndex);
+			fprintf(stderr, "[!!] Error in block %d\n", blockIndex);
 			break;
 		}
 

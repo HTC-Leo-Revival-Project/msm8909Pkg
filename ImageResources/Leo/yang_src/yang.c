@@ -177,7 +177,7 @@ int32_t main(int32_t argc, char **argv)
 		}
 
 		//printf("\n[] Section type: %s\n", type);
-		sscanf(type, "0x%lx", &header.sectiontypes[i]);
+		sscanf(type, "0x%x", &header.sectiontypes[i]);
 	}
 
 
@@ -246,7 +246,7 @@ int32_t main(int32_t argc, char **argv)
 
 		if (nbfile == NULL) break;
 
-		printf("[] 0x%lx --> %s\n", header.sectiontypes[i],nbfile);
+		printf("[] 0x%x --> %s\n", header.sectiontypes[i],nbfile);
 
 		nb = fopen(nbfile, "rb");
 		if (nb == NULL) {
