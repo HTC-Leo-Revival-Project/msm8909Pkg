@@ -37,26 +37,19 @@ function _check_args(){
 }
 
 function _clean() {
-	for PlatformName in "${AvailablePlatforms[@]}"
-		do
-			if [ $PlatformName != 'All' ]; then
-				if [ -f ImageResources/$DEVICE/bootpayload.bin ]; then
-					rm ImageResources/$DEVICE/bootpayload.bin
-				fi
-				if [ -f ImageResources/$DEVICE/os.nb ]; then
-					rm ImageResources/$DEVICE/os.nb
-				fi
-				if [ -f ImageResources/$DEVICE/*.img ]; then
-					rm ImageResources/$DEVICE/*.img
-				fi
-			fi
-		if [ -f BootShim/BootShim.bin ]; then
-			rm BootShim/BootShim.bin
-		fi
-		if [ -d workspace/Build ]; then
-			rm -r workspace/Build
-		fi
-	done
+	local PlatformName="${1}"
+	if [ -f ImageResources/$PlatformName/bootpayload.bin ]; then
+		rm ImageResources/$PlatformName/bootpayload.bin
+	fi
+	if [ -f ImageResources/$PlatformName/os.nb ]; then
+		rm ImageResources/$PlatformName/os.nb
+	fi
+	if [ -f ImageResources/$PlatformName/*.img ]; then
+		rm ImageResources/$PlatformName/*.img
+	fi
+	if [ -d $WORKSPACE/Build ]; then
+		rm -rf $WORKSDPACE/Build/Htc$PlatformName
+	fi
 }
 
 # based on https://github.com/edk2-porting/edk2-msm/blob/master/build.sh#L47 
@@ -66,7 +59,7 @@ function _build(){
 	source "../edk2/edksetup.sh"
 	
 	# Clean artifacts if needed
-	_clean
+	_clean $DEVICE
 	echo "Artifacts removed"
 
     echo "Building uefi for $DEVICE"
