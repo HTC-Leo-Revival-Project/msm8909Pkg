@@ -27,4 +27,6 @@ elif [ $1 == 'Gold' ]; then
     mkbootimg --kernel ImageResources/$1/bootpayload.bin --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/$1/uefi.img
 else
     echo "Bootimages: Invalid platform ($1)"
+    exit 1
 fi
+exit 0
