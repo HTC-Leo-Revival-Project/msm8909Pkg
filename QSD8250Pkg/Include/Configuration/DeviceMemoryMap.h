@@ -80,7 +80,7 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
   {"UEFI FD",           0x02500000, 0x00100000, AddMem, SYS_MEM, SYS_MEM_CAP,   BsCode, WRITE_BACK},
   {"HLOS 0",            0x02600000, 0x00400000, AddMem, SYS_MEM, SYS_MEM_CAP,   Conv,   WRITE_BACK},
   {"Display Reserved",  0x02A00000, 0x000C0000, AddMem, MEM_RES, WRITE_THROUGH, MaxMem, WRITE_THROUGH},
-  {"HLOS 1",            0x02AC0000, 0x01540000, AddMem, SYS_MEM, SYS_MEM_CAP,   Conv,   WRITE_BACK
+  {"HLOS 1",            0x02AC0000, 0x01540000, AddMem, SYS_MEM, SYS_MEM_CAP,   Conv,   WRITE_BACK},
 
   //QDSP6: 0x10000000, 0x01800000 MPU'd
 
