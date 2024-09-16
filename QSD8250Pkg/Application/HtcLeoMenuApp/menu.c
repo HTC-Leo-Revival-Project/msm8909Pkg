@@ -125,7 +125,7 @@ void HandleKeyInput(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
         // home button
         MainMenu(ImageHandle, SystemTable);
         break;
-      case SCAN_UP:
+      case SCAN_PAGE_UP:
         // volume up button
         if (SelectedIndex == 0) {
           SelectedIndex = MenuOptionCount - 1;
@@ -134,7 +134,7 @@ void HandleKeyInput(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
           SelectedIndex--;
         }
         break;
-      case SCAN_DOWN:
+      case SCAN_PAGE_DOWN:
         // volume down button
         if (SelectedIndex == MenuOptionCount - 1) {
           SelectedIndex = 0;

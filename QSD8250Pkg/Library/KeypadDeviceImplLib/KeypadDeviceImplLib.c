@@ -274,10 +274,10 @@ EFI_STATUS EFIAPI KeypadDeviceImplReset(KEYPAD_DEVICE_PROTOCOL *This)
   KeyContextPower.EfiKeyContext.KeyData.Key.ScanCode = SCAN_ESC;
 
   LibKeyInitializeKeyContext(&KeyContextVolumeUp.EfiKeyContext);
-  KeyContextVolumeUp.EfiKeyContext.KeyData.Key.ScanCode = SCAN_UP;
+  KeyContextVolumeUp.EfiKeyContext.KeyData.Key.ScanCode = SCAN_PAGE_UP;
 
   LibKeyInitializeKeyContext(&KeyContextVolumeDown.EfiKeyContext);
-  KeyContextVolumeDown.EfiKeyContext.KeyData.Key.ScanCode = SCAN_DOWN;
+  KeyContextVolumeDown.EfiKeyContext.KeyData.Key.ScanCode = SCAN_PAGE_DOWN;
 
   LibKeyInitializeKeyContext(&KeyContextBack.EfiKeyContext);
   KeyContextBack.EfiKeyContext.KeyData.Key.UnicodeChar = CHAR_BACKSPACE;
