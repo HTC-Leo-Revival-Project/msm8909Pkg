@@ -25,6 +25,122 @@
 UINT64  mSystemMemoryEnd = FixedPcdGet64 (PcdSystemMemoryBase) +
                            FixedPcdGet64 (PcdSystemMemorySize) - 1;
 
+UINTN Width = FixedPcdGet32(PcdMipiFrameBufferWidth);
+UINTN Height = FixedPcdGet32(PcdMipiFrameBufferHeight);
+UINTN Bpp = FixedPcdGet32(PcdMipiFrameBufferPixelBpp);
+UINTN FbAddr = FixedPcdGet32(PcdMipiFrameBufferAddress);
+
+VOID
+PaintScreen(
+  IN  UINTN   BgColor
+)
+{
+  // Code from FramebufferSerialPortLib
+	char* Pixels = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
+
+	// Set color.
+	for (UINTN i = 0; i < Width; i++)
+	{
+		for (UINTN j = 0; j < Height; j++)
+		{
+			// Set pixel bit
+			for (UINTN p = 0; p < (Bpp / 8); p++)
+			{
+				*Pixels = (unsigned char)BgColor;
+				BgColor = BgColor >> 8;
+				Pixels++;
+			}
+		}
+	}
+}
+
+VOID
+ReconfigFb()
+{
+  UINT32 dma_cfg = 0;
+
+  PaintScreen(0);
+
+  // Stop any previous transfers
+  MmioWrite32(MDP_LCDC_EN, 0);
+
+  ArmInstructionSynchronizationBarrier();
+  ArmDataMemoryBarrier();
+
+  // Format
+  // https://github.com/marc1706/hd2_kernel/blob/f4951cda4525e4cba87a3de83fd00aee61bb2897/drivers/video/msm/mdp_lcdc.c#L152
+  dma_cfg |= (DMA_PACK_ALIGN_LSB |
+          DMA_PACK_PATTERN_RGB |
+          DMA_DITHER_EN);
+  
+  dma_cfg |= DMA_OUT_SEL_LCDC; // Select the DMA channel for LCDC
+  
+  // Format
+  if(Bpp == 16) {
+      dma_cfg |= DMA_IBUF_FORMAT_RGB565;
+  }
+  else if(Bpp == 24) {
+      dma_cfg |= DMA_IBUF_FORMAT_RGB888;
+  }
+  else if(Bpp == 32) {
+      dma_cfg |= DMA_IBUF_FORMAT_XRGB8888;
+  }
+
+  dma_cfg &= ~DMA_DST_BITS_MASK;
+  dma_cfg |= DMA_DSTC0G_8BITS|DMA_DSTC1B_8BITS|DMA_DSTC2R_8BITS;
+
+  MmioWrite32(MDP_DMA_P_CONFIG, dma_cfg);
+
+  // Stride
+  MmioWrite32(MDP_DMA_P_BUF_Y_STRIDE, (Bpp / 8) * Width);
+
+  // Write fb addr (relocates fb to 0x02A00000 on schubert)
+  MmioWrite32(MDP_DMA_P_BUF_ADDR, FixedPcdGet32(PcdMipiFrameBufferAddress));
+
+  // Ensure all transfers finished
+  ArmInstructionSynchronizationBarrier();
+  ArmDataMemoryBarrier();
+
+  // Enable LCDC
+  MmioWrite32(MDP_LCDC_EN, 0x1);
+}
+
+VOID
+EnableCounter()
+{
+  /* enable cp10 and cp11 */
+	UINT32 val;
+	__asm__ volatile("mrc	p15, 0, %0, c1, c0, 2" : "=r" (val));
+	val |= (3<<22)|(3<<20);
+	__asm__ volatile("mcr	p15, 0, %0, c1, c0, 2" :: "r" (val));
+
+  ArmInstructionSynchronizationBarrier();
+  ArmDataMemoryBarrier();
+
+	/* set enable bit in fpexc */
+	__asm__ volatile("mrc  p10, 7, %0, c8, c0, 0" : "=r" (val));
+	val |= (1<<30);
+	__asm__ volatile("mcr  p10, 7, %0, c8, c0, 0" :: "r" (val));
+
+  /* enable the cycle count register */
+	UINT32 en;
+	__asm__ volatile("mrc	p15, 0, %0, c9, c12, 0" : "=r" (en));
+	en &= ~(1<<3); /* cycle count every cycle */
+	en |= 1; /* enable all performance counters */
+	__asm__ volatile("mcr	p15, 0, %0, c9, c12, 0" :: "r" (en));
+
+	/* enable cycle counter */
+	en = (1<<31);
+	__asm__ volatile("mcr	p15, 0, %0, c9, c12, 1" :: "r" (en));
+}
+
+/**
+  SEC main routine.
+  @param[in]  UefiMemoryBase  Start of the PI/UEFI memory region
+  @param[in]  StacksBase      Start of the stack
+  @param[in]  StartTimeStamp  Timer value at start of execution
+**/
+STATIC
 VOID
 PrePiMain (
   IN  UINTN   UefiMemoryBase,
@@ -42,13 +158,14 @@ PrePiMain (
   // Initialize the architecture specific bits
   ArchInitialize ();
 
-  // Paint the screen to black
-  UINT8 *start = (UINT8 *)0x2fd00000;
-  UINT8 *end = (UINT8 *)0x2fdbbb00;  
+  // Reconfigure the framebuffer based on PCD
+  ReconfigFb();
 
-  for (UINT8 *ptr = start; ptr < end; ptr++) {
-    *ptr = 0;
-  }
+  // Paint screen to red
+  PaintScreen(FB_BGRA8888_BLACK);
+
+  // Enable the counter (code from PrimeG2Pkg)
+  EnableCounter();
 
   // Initialize the Serial Port
   SerialPortInitialize ();
@@ -68,10 +185,10 @@ PrePiMain (
         UefiMemoryBase,
         StacksBase
     ));
-//here
+
   // Initialize the Debug Agent for Source Level Debugging
-  //InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
-  //SaveAndSetDebugTimerInterrupt (TRUE);
+  InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
+  SaveAndSetDebugTimerInterrupt (TRUE);
 
   // Declare the PI/UEFI memory region
   HobList = HobConstructor (
@@ -86,13 +203,8 @@ PrePiMain (
   Status = MemoryPeim (UefiMemoryBase, FixedPcdGet32 (PcdSystemMemoryUefiRegionSize));
   ASSERT_EFI_ERROR (Status);
 
-  // Create the Stacks HOB (reserve the memory for all stacks)
-  if (ArmIsMpCore ()) {
-    StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize) +
-                 ((FixedPcdGet32 (PcdCoreCount) - 1) * FixedPcdGet32 (PcdCPUCoreSecondaryStackSize));
-  } else {
-    StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
-  }
+  // Create the Stacks HOB
+  StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
 
   BuildStackHob (StacksBase, StacksSize);
 
@@ -100,7 +212,7 @@ PrePiMain (
   BuildCpuHob (ArmGetPhysicalAddressBits (), PcdGet8 (PcdPrePiCpuIoSize));
 
   // Store timer value logged at the beginning of firmware image execution
-  //Performance.ResetEnd = GetTimeInNanoSecond (StartTimeStamp);
+  Performance.ResetEnd = GetTimeInNanoSecond (StartTimeStamp);
 
   // Build SEC Performance Data Hob
   BuildGuidDataHob (&gEfiFirmwarePerformanceGuid, &Performance, sizeof (Performance));
@@ -113,7 +225,7 @@ PrePiMain (
   ASSERT_EFI_ERROR (Status);
 
   // Now, the HOB List has been initialized, we can register performance information
-  //PERF_START (NULL, "PEI", NULL, StartTimeStamp);
+  PERF_START (NULL, "PEI", NULL, StartTimeStamp);
 
   // SEC phase needs to run library constructors by hand.
   ProcessLibraryConstructorList ();
@@ -151,8 +263,6 @@ CEntryPoint (
   // Wait the Primary core has defined the address of the Global Variable region (event: ARM_CPU_EVENT_DEFAULT)
   ArmCallWFE ();
 
-  // Goto primary Main.
-  //PrimaryMain (UefiMemoryBase, StacksBase, StartTimeStamp);
   PrePiMain (UefiMemoryBase, StacksBase, StartTimeStamp);
 
   // DXE Core should always load and never return

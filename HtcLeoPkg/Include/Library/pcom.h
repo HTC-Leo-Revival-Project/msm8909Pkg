@@ -1,10 +1,6 @@
 #ifndef __PCOM_H_
 #define __PCOM_H_
-#if SOC == 1
-#include <Chipset/iomap_qsd8250.h>
-#elif SOC == 2
 #include <Chipset/iomap_msm7230.h>
-#endif
 #define PCOM_ENABLE 	1
 #define PCOM_DISABLE 	0
 

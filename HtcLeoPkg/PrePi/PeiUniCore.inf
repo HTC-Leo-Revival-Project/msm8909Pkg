@@ -18,7 +18,6 @@
 [Sources]
   PrePi.h
   PrePi.c
-  MainUniCore.c
 
 [Sources.ARM]
   Arm/ArchPrePi.c
@@ -34,6 +33,7 @@
   EmbeddedPkg/EmbeddedPkg.dec
   ArmPkg/ArmPkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
+  HtcLeoPkg/HtcLeoPkg.dec
 
 [LibraryClasses]
   BaseLib
@@ -49,7 +49,6 @@
   DebugAgentLib
   PrePiLib
   ArmPlatformLib
-  ArmPlatformStackLib
   MemoryAllocationLib
   HobLib
   PrePiHobListPointerLib
@@ -65,7 +64,6 @@
 
 [FeaturePcd]
   gEmbeddedTokenSpaceGuid.PcdPrePiProduceMemoryTypeInformationHob
-  gArmPlatformTokenSpaceGuid.PcdSendSgiToBringUpSecondaryCores
 
 [Pcd]
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
@@ -80,7 +78,6 @@
   gArmTokenSpaceGuid.PcdFvSize
 
   gArmPlatformTokenSpaceGuid.PcdCPUCorePrimaryStackSize
-  gArmPlatformTokenSpaceGuid.PcdCPUCoreSecondaryStackSize
 
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
 
@@ -97,6 +94,11 @@
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiBootServicesData
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiLoaderCode
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiLoaderData
+
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferAddress
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferWidth
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferHeight
+  gHtcLeoPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp
 
 [Pcd]
   gArmTokenSpaceGuid.PcdSystemMemoryBase
