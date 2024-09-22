@@ -13,6 +13,8 @@
 #
 #
 
+!include MdePkg/MdeLibs.dsc.inc
+
 [LibraryClasses.common]
 !if $(TARGET) == RELEASE
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
@@ -125,7 +127,6 @@
   ArmLib|ArmPkg/Library/ArmLib/ArmBaseLib.inf
   ArmPlatformLib|QSD8250Pkg/Library/QSD8250PkgLib/QSD8250PkgLib.inf
   TimerLib|QSD8250Pkg/Library/GPTTimerLib/GPTTimerLib.inf
-  CompilerIntrinsicsLib|MdePkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
   CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
   PlatformBootManagerLib|QSD8250Pkg/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
   UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
@@ -159,7 +160,7 @@
   # Framebuffer
   FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
   MemoryInitPeiLib|ArmPlatformPkg/MemoryInitPei/MemoryInitPeiLib.inf
-  CompilerIntrinsicsLib|MdePkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
+
   # Little kernel libraries
   MsmPcomLib|QSD8250Pkg/Library/MsmPcomLib/MsmPcomLib.inf
   MsmPcomClientLib|QSD8250Pkg/Library/MsmPcomClientLib/MsmPcomClientLib.inf
