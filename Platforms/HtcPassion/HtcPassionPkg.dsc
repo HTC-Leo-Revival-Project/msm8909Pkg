@@ -26,21 +26,21 @@
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = Platforms/$(PLATFORM_NAME)/$(PLATFORM_NAME)Pkg.fdf
 
-  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = 0
-  DEFINE USE_UART_FOR_SERIAL_OUTPUT = 1
+  DEFINE USE_SCREEN_FOR_SERIAL_OUTPUT = FALSE
+  DEFINE USE_UART_FOR_SERIAL_OUTPUT = TRUE
 
 !include QSD8250Pkg/CommonDsc.dsc.inc
 
 [BuildOptions.common]
-  GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=3 -DDEVICETYPE=1 #i2c
+  GCC:*_*_ARM_CC_FLAGS = -DKP_LED_ENABLE_METHOD=3 -DDEVICETYPE=2 # Gpio
 
 [PcdsFixedAtBuild.common]
-  gQSD8250PkgTokenSpaceGuid.PcdKdUartInstance|1                # UART1
-  gQSD8250PkgTokenSpaceGuid.PcdSerialRegisterBase|0xA9A00000   # UART1 BASE from iomap_qsd8k.h
-
-[PcdsFixedAtBuild.common]
-  # System Memory (512MB)
+  # System Memory (243MB for now)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x20000000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x1B700000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x0E800000
 
-  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x03B00000
+  gQSD8250PkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0x02A00000
+
+  # SMBIOS
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemModel|"HTC Nexus One"
+  gQSD8250PkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"HTC Passion"
