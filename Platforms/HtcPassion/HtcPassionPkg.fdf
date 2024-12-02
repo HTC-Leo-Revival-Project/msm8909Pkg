@@ -32,7 +32,7 @@ FV = FVMAIN_COMPACT
 
   // Mainline device tree blob
   FILE FREEFORM = 25462CDA-221F-47DF-AC1D-259CFAA4E326 {
-  SECTION RAW = Platforms/HtcPassion/FdtBlob/qcom-qsd8250-htc-schubert.dtb
+  SECTION RAW = Platforms/HtcPassion/FdtBlob/qcom-qsd8250-htc-passion.dtb
   }
 
 !include QSD8250Pkg/CommonFv.fdf.inc
