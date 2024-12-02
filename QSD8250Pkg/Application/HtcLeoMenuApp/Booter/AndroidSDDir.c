@@ -66,7 +66,7 @@ EFI_STATUS DisplayAndSelectDirectory(CHAR16 **DirList, UINTN DirCount, CHAR16 **
         Print(L"Select a directory:\n");
         ConOut->SetAttribute(ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
         ConOut->SetCursorPosition(ConOut, CentreColumn - 10, 3);
-        for (UINTN i = 0; i < DirCount; i++) { // Changed loop starting point to 0
+        for (UINTN i = 0; i < DirCount; i++) { 
             ConOut->SetCursorPosition(ConOut, CentreColumn - 10, i + 3); // Adjust the x-axis position as needed
             if (i == Index) {
                 ConOut->SetAttribute(ConOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLACK));

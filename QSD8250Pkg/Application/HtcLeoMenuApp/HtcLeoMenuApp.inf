@@ -17,6 +17,7 @@
   Booter/LinuxShim.S
   Booter/AndroidSDDir.c
   Booter/AndroidKernel.c
+  Booter/BootimageTools.c
 
 [Packages]
   ArmPkg/ArmPkg.dec

@@ -4,6 +4,7 @@
 #include "LinuxShim.h"
 #include "AndroidSDDir.h"
 #include "LinuxHeader.h"
+#include "BootimageTools.h"
 
 #define BASE_ADDR FixedPcdGet32(PcdSystemMemoryBase)
 
@@ -11,6 +12,7 @@ VOID *KernelLoadAddress = (VOID *)(BASE_ADDR + KERNEL_OFFSET);
 VOID *RamdiskLoadAddress = (VOID *)(BASE_ADDR + RAMDISK_OFFSET);
 UINTN *AtagsAddress = (unsigned *)(BASE_ADDR + TAGS_OFFSET);
 UINTN MachType = 0x9DC;
+EFI_FILE_PROTOCOL *BootFile;
 //UINTN MachType = FixedPcdGet32(PcdMachType);
 
 unsigned* target_atag_mem(unsigned* ptr)
@@ -156,19 +158,6 @@ BootLinux(
 			src = cmdline;
 			while ((*dst++ = *src++));
 		}
-        /*J0SH1X: leo is never emmc boot, even tho sdsupport in clk would be cool*/
-		// if (target_is_emmc_boot()) {
-		// 	src = emmc_cmdline;
-		// 	if (have_cmdline) --dst;
-		// 	have_cmdline = 1;
-		// 	while ((*dst++ = *src++));
-		// }
-        /*J0SH1X: we dont need clks charging since menu already handles charging itself*/
-		// if (pause_at_bootup) {
-		// 	src = battchg_pause;
-		// 	if (have_cmdline) --dst;
-		// 	while ((*dst++ = *src++));
-		// }
 		ptr += (n / 4);
 	}
 
@@ -198,18 +187,12 @@ EFIAPI
 LoadFileFromSDCard(
     IN EFI_HANDLE ImageHandle,
     IN EFI_SYSTEM_TABLE *SystemTable,
-    IN CHAR16 *KernelFileName,
-    IN VOID *LoadAddress, // New parameter for custom load address
-    OUT VOID **KernelBuffer,
-    OUT UINTN *KernelSize
+    IN CHAR16 *KernelFileName
 )
 {
     EFI_STATUS Status;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SimpleFileSystem;
     EFI_FILE_PROTOCOL *Root;
-    EFI_FILE_PROTOCOL *KernelFile;
-    UINTN BufferSize;
-    VOID *Buffer = NULL;
 
     // Locate the handle for the SD card
     EFI_HANDLE *Handles;
@@ -247,7 +230,7 @@ LoadFileFromSDCard(
     // Open the kernel file specified by KernelFileName
     Status = Root->Open(
                 Root,
-                &KernelFile,
+                BootFile,
                 KernelFileName,
                 EFI_FILE_MODE_READ,
                 0
@@ -257,11 +240,27 @@ LoadFileFromSDCard(
         return Status;
     }
 
-    // Get the file size
+    return EFI_SUCCESS;
+}
+
+EFI_STATUS
+EFIAPI
+ReadBootFileIntoMemory(
+    IN EFI_SYSTEM_TABLE *SystemTable,
+    IN VOID *LoadAddress, // New parameter for custom load address
+    OUT VOID **KernelBuffer,
+    OUT UINTN *KernelSize
+)
+{
+    EFI_STATUS Status;
+    UINTN BufferSize;
     EFI_FILE_INFO *FileInfo;
     UINTN FileInfoSize = sizeof(EFI_FILE_INFO);
-    Status = KernelFile->GetInfo(
-                KernelFile,
+    VOID *Buffer = NULL;
+
+    // Get the file size
+    Status = BootFile->GetInfo(
+                BootFile,
                 &gEfiFileInfoGuid,
                 &FileInfoSize,
                 NULL
@@ -277,8 +276,8 @@ LoadFileFromSDCard(
         return EFI_OUT_OF_RESOURCES;
     }
 
-    Status = KernelFile->GetInfo(
-                KernelFile,
+    Status = BootFile->GetInfo(
+                BootFile,
                 &gEfiFileInfoGuid,
                 &FileInfoSize,
                 FileInfo
@@ -299,8 +298,8 @@ LoadFileFromSDCard(
     }
 
     // Read the kernel file into the buffer
-    Status = KernelFile->Read(
-                KernelFile,
+    Status = BootFile->Read(
+                BootFile,
                 &BufferSize,
                 Buffer
              );
@@ -312,13 +311,14 @@ LoadFileFromSDCard(
 
     // Clean up and return the buffer
     FreePool(FileInfo);
-    KernelFile->Close(KernelFile);
+    BootFile->Close(BootFile);
 
     *KernelBuffer = Buffer;
     *KernelSize = BufferSize;
 
     return EFI_SUCCESS;
 }
+
 
 void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
     EFI_STATUS Status;
@@ -337,6 +337,7 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
     Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
     ASSERT_EFI_ERROR(Status);
 
+    //toDo: add support for boot.img
     if (!FallBack) {
         // Build the paths based on SelectedDir
         UnicodeSPrint(KernelPath, sizeof(KernelPath), L"\\%s\\zImage", SelectedDir);
@@ -347,14 +348,40 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
         StrCpyS(RamdiskPath, sizeof(RamdiskPath) / sizeof(CHAR16), L"\\initrd.img");
     }
     // Print the path that was generated
-    DEBUG((EFI_D_INFO, "KernelDir is %s\n", KernelPath, Status));
+    DEBUG((EFI_D_INFO, "BootDir is %s\n", KernelPath, Status));
 
-    Status = LoadFileFromSDCard(ImageHandle, SystemTable, KernelPath, KernelLoadAddress, &KernelBuffer, &KernelSize);
+    Status = LoadFileFromSDCard(ImageHandle, SystemTable, KernelPath);
     if (EFI_ERROR(Status)) {
-        Print(L"Failed to load kernel from path %s: %r\n", KernelPath, Status);
+        Print(L"Failed to load Boot File from path %s: %r\n", KernelPath, Status);
     } else {
-        Print(L"Kernel loaded successfully from path %s at address %p. Size: %d bytes\n", KernelPath, KernelBuffer, KernelSize);
+        Print(L"Boot File loaded successfully from path %s\n", KernelPath);
         
+        BOOT_IMG_HDR* Header = ParseBootImageHeader(BootFile);
+        //since we never load the file into memory here the handle would never be closed so close it manually
+        BootFile->Close(BootFile);
+        if (Header){
+            DEBUG((EFI_D_INFO, "Image is an Android Bootimage!\n"));
+            //take needed values here
+            cmdline = Header->cmdline;
+            KernelSize = Header->kernel_size;
+            KernelLoadAddress = (VOID *)Header->kernel_addr;
+            RamdiskLoadAddress = (VOID *)Header->ramdisk_addr;
+
+
+            //somehow load only the kernel and ramdisk here to the correct adresses read from bootimage and then boot
+            //boot the kernel
+            BootImage(ImageHandle, SystemTable, KernelBuffer);
+        }else {
+            //load the image into the correct adress
+
+            Status = ReadBootFileIntoMemory(SystemTable, KernelLoadAddress, &KernelBuffer, &KernelSize);
+            if (Status != EFI_SUCCESS){
+                DEBUG((EFI_D_INFO, "Image loading into address %p\n", KernelLoadAddress));
+                goto cleanup;
+            }else {
+                DEBUG((EFI_D_INFO, "Image loaded into memory adress %p. Size: %d bytes\n", KernelBuffer, KernelSize));
+            }
+            DEBUG((EFI_D_INFO, "Image is not an Android Bootimage, testing for zImage\n"));
         /* Check if the image is a linux kernel 
          * source: https://github.com/ARM-software/u-boot/blob/master/arch/arm/lib/zimage.c
          */
@@ -372,13 +399,20 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
             goto cleanup;
         }
 
-        Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath, 
-                                RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
+        Status = LoadFileFromSDCard(ImageHandle, SystemTable, RamdiskPath);
         if (EFI_ERROR(Status)) {
             Print(L"Failed to load ramdisk from path %s: %r\n", RamdiskPath, Status);
         } else {
-            Print(L"Ramdisk loaded successfully from path %s at address %p. Size: %d bytes\n", RamdiskPath, RamdiskLoadAddress, RamdiskSize);
+            Print(L"Ramdisk opened successfully from path %s\n", RamdiskPath);
         }
+
+        Status = ReadBootFileIntoMemory(SystemTable, RamdiskLoadAddress, &RamdiskBuffer, &RamdiskSize);
+        if (Status != EFI_SUCCESS){
+            DEBUG((EFI_D_INFO, "Ramdisk loading into address %p failed\n", KernelLoadAddress));
+            goto cleanup;
+        }else {
+            DEBUG((EFI_D_INFO, "Ramdisk loaded into memory adress %p. Size: %d bytes\n", KernelBuffer, KernelSize));
+            }
         // Allocate memory for cmdline
         CmdlineSize = AsciiStrLen(cmdline) + 1; // +1 for the null terminator
         Status = SystemTable->BootServices->AllocatePool(EfiLoaderData, CmdlineSize, (void **)&AllocatedCmdline);
@@ -394,10 +428,11 @@ void BootAndroidKernel(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTab
             // Boot Linux with the allocated cmdline
             BootLinux(ImageHandle, SystemTable, KernelBuffer, AtagsAddress, 
                     AllocatedCmdline, MachType, RamdiskBuffer, RamdiskSize);
-cleanup:
+        }
+            }
+        cleanup:
             // Clean up allocated cmdline
             SystemTable->BootServices->FreePool(AllocatedCmdline);
-        }
         
         // Clean up the kernel buffer when no longer needed, but we should never reach here essentially halt the platform
         FreePool(KernelBuffer);
