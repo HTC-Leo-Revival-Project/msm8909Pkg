@@ -7,6 +7,8 @@
 #define BOOT_NAME_SIZE 16
 #define BOOT_ARGS_SIZE 512
 
+#define ALIGN_TO_PAGE(size, page_size) (((size) + (page_size) - 1) / (page_size)) * (page_size)
+
 typedef struct {
     CHAR8 magic[BOOT_MAGIC_SIZE];
     UINT32 kernel_size;  /* size in bytes */
@@ -24,6 +26,11 @@ typedef struct {
 } BOOT_IMG_HDR;
 
 BOOT_IMG_HDR* ParseBootImageHeader (IN EFI_FILE_PROTOCOL *File);
-
+EFI_STATUS LoadBootImageParts(
+    BOOT_IMG_HDR *Header,
+    EFI_FILE_PROTOCOL *BootImageFile,
+    VOID **KernelBuffer,
+    VOID **RamdiskBuffer
+);
 
 #endif
