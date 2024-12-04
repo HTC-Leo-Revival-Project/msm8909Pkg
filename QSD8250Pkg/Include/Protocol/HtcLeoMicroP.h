@@ -15,16 +15,22 @@ typedef struct _HTCLEO_MICROP_PROTOCOL HTCLEO_MICROP_PROTOCOL;
 typedef INTN(*microp_i2c_write_t)(UINT8 addr, UINT8 *cmd, INTN length);
 typedef INTN(*microp_i2c_read_t)(UINT8 addr, UINT8 *data, INTN length);
 typedef VOID(*microp_led_set_mode_t)(UINT8 mode);
-#if KP_LED_ENABLE_METHOD == 2
+#if DEVICETYPE == 3
 typedef VOID(*microp_kp_led_set_brightness_t)(UINT8 brightness);
+#endif
+#if DEVICETYPE == 4
+typedef VOID(*trackball_led_set_mode_t)(int rpwm, int gpwm, int bpwm);
 #endif
 
 struct _HTCLEO_MICROP_PROTOCOL {
   microp_i2c_write_t  Write;
   microp_i2c_read_t Read;
   microp_led_set_mode_t LedSetMode;
-#if KP_LED_ENABLE_METHOD == 2
+#if DEVICETYPE == 3
   microp_kp_led_set_brightness_t KpLedSetBrightness;
+#endif
+#if DEVICETYPE == 4
+  trackball_led_set_mode_t JogBallLedSetColor;
 #endif
 };
 

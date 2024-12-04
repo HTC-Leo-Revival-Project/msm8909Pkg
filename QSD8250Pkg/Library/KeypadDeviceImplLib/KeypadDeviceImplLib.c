@@ -34,9 +34,7 @@ typedef enum {
   KEY_DEVICE_TYPE_UNKNOWN,
   KEY_DEVICE_TYPE_LEGACY,
   KEY_DEVICE_TYPE_KEYMATRIX,
-  KEY_DEVICE_TYPE_TLMM,
-  KEY_DEVICE_TYPE_PM8X41,
-  KEY_DEVICE_TYPE_PM8X41_PON,
+  KEY_DEVICE_TYPE_TRACKBALL
 } KEY_DEVICE_TYPE;
 
 typedef struct {
@@ -54,6 +52,7 @@ typedef struct {
 
   // pon
   BOOLEAN EnableKeyPadLed;
+  BOOLEAN EnableTrackballLed;
 } KEY_CONTEXT_PRIVATE;
 
 STATIC KEY_CONTEXT_PRIVATE KeyContextPower;
@@ -110,9 +109,10 @@ ExitBootServicesEvent (
   )
 {
   // Make sure the LED is disabled
-#if KP_LED_ENABLE_METHOD == 2
+#if DEVICETYPE == 3
   gMicroP->KpLedSetBrightness(0);
-#else
+#endif
+#if DEVICETYPE == 1 
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
 #endif
 }
@@ -161,6 +161,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
 
   // volume down button
     StaticContext                  = KeypadKeyCodeToKeyContext(114);
@@ -169,6 +170,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
 
     // camera button
     StaticContext                  = KeypadKeyCodeToKeyContext(120);
@@ -177,6 +179,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
 
     // power button
     StaticContext                  = KeypadKeyCodeToKeyContext(118);
@@ -185,6 +188,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = TRUE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
     break;
   case LEO:
   // power button
@@ -194,6 +198,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = TRUE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
 
     // back button
     StaticContext                  = KeypadKeyCodeToKeyContext(117);
@@ -203,6 +208,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = TRUE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
 
   // windows button
     StaticContext                  = KeypadKeyCodeToKeyContext(118);
@@ -212,6 +218,7 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = TRUE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
 
     // home button
     StaticContext                  = KeypadKeyCodeToKeyContext(119);
@@ -221,10 +228,49 @@ switch(Device){
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = TRUE;
     StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = FALSE;
   case BRAVO:
     //bravo has no support for its capative touch buttons yet
     break;
   case PASSION:
+    // trackball up
+    StaticContext                  = KeypadKeyCodeToKeyContext(116);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
+    StaticContext->Gpio            = 94;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = TRUE;
+
+    // trackball down
+    StaticContext                  = KeypadKeyCodeToKeyContext(117);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
+    StaticContext->GpioOut         = 31;
+    StaticContext->GpioIn          = 42;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = TRUE;
+
+  // trackball left
+    StaticContext                  = KeypadKeyCodeToKeyContext(118);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
+    StaticContext->GpioOut         = 32;
+    StaticContext->GpioIn          = 42;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = TRUE;
+
+    // trackball right
+    StaticContext                  = KeypadKeyCodeToKeyContext(119);
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
+    StaticContext->GpioOut         = 31;
+    StaticContext->GpioIn          = 41;
+    StaticContext->ActiveLow       = 0x1 & 0x1;
+    StaticContext->EnableKeyPadLed = FALSE;
+    StaticContext->IsValid         = TRUE;
+    StaticContext->EnableTrackballLed = TRUE;
     //passion has no support for its capative touch buttons yet
     break;
 }
@@ -297,10 +343,11 @@ EFI_STATUS EFIAPI KeypadDeviceImplReset(KEYPAD_DEVICE_PROTOCOL *This)
 // Callback function to turn off the LED after a certain time
 VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
 {
-#if KP_LED_ENABLE_METHOD == 2
+#if DEVICETYPE == 3
   // Disable keypad LED brightness
   gMicroP->KpLedSetBrightness(0);
-#else
+#endif
+#if DEVICETYPE ==1 
   // Disable the GPIO
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
 #endif
@@ -315,9 +362,10 @@ VOID EnableKeypadLedWithTimer(VOID)
         gBS->SetTimer(m_CallbackTimer, TimerCancel, 0);
         timerRunning = FALSE;
     }
-#if KP_LED_ENABLE_METHOD == 2
+#if DEVICETYPE == 3
     gMicroP->KpLedSetBrightness(255);
-#else
+#endif
+#if DEVICETYPE == 1
     gGpio->Set(HTCLEO_GPIO_KP_LED, 1);
 #endif
     EFI_STATUS Status;

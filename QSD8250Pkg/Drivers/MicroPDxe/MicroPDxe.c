@@ -19,6 +19,9 @@
 #include <Device/microp.h>
 #include <Protocol/HtcLeoMicroP.h>
 #include <Protocol/HtcLeoI2C.h>
+#include <Device/DeviceType.h>
+
+DeviceType Device;
 
 // Cached copy of the i2c protocol
 HTCLEO_I2C_PROTOCOL *gI2C = NULL;
@@ -335,8 +338,33 @@ void microp_i2c_probe(struct microp_platform_data *kpdata)
 	
 	//microp_function_initialize();
 }
-#if KP_LED_ENABLE_METHOD == 2
-void htcbravo_led_set_mode(uint8_t mode)
+
+#if DEVICETYPE == 4
+
+void trackball_led_set_mode(int rpwm, int gpwm, int bpwm){
+	uint8_t data[4];
+	if (rpwm < 0 || rpwm > 255)
+		DEBUG((EFI_D_ERROR,"Invalid color strength, min 0 max 255"));
+	if (gpwm < 0 || gpwm > 255)
+		DEBUG((EFI_D_ERROR,"Invalid color strength, min 0 max 255"));
+	if (bpwm < 0 || bpwm > 255)
+		DEBUG((EFI_D_ERROR,"Invalid color strength, min 0 max 255"));
+
+	data[0] = rpwm;
+	data[1] = gpwm;
+	data[2] = bpwm;
+	data[3] = 0x00;
+
+	microp_i2c_write(MICROP_I2C_WCMD_JOGBALL_LED_PWM_SET, data, 4);
+
+}
+
+#endif
+
+#if DEVICETYPE == 3 || DEVICETYPE == 4
+
+
+void htcmicrop_led_set_mode(uint8_t mode)
 {
     /* Mode
     * 0 => All off
@@ -358,7 +386,11 @@ void htcbravo_led_set_mode(uint8_t mode)
 			data[0] = 0x01;
 			break;
 		case 0x02:
+		if (Device == BRAVO){
 			data[1] = 0x04;
+			}else if(Device == PASSION){
+			data[1] = 0x02;
+			}
 			break;
 		case 0x00:
 		default:
@@ -366,7 +398,8 @@ void htcbravo_led_set_mode(uint8_t mode)
 	}
 	microp_i2c_write(MICROP_I2C_WCMD_LED_CTRL, data, 7);
 }
-
+#endif
+#if KP_LED_ENABLE_METHOD == 2 && DEVICETYPE == 3
 void htcbravo_kp_led_set_brightness(uint8_t brightness)
 {
         uint8_t data[4];
@@ -411,10 +444,16 @@ void htcleo_led_set_mode(uint8_t mode)
 HTCLEO_MICROP_PROTOCOL gHtcLeoMicropProtocol = {
   microp_i2c_write,
   microp_i2c_read,
-#if KP_LED_ENABLE_METHOD == 2
-  htcbravo_led_set_mode,
+  
+  #if DEVICETYPE == 3
+  htcmicrop_led_set_mode,
   htcbravo_kp_led_set_brightness
-#else
+  #endif
+  #if DEVICETYPE == 4
+  htcmicrop_led_set_mode,
+  trackball_led_set_mode
+  #endif
+#if DEVICETYPE == 1
   htcleo_led_set_mode
 #endif
 };
@@ -441,6 +480,19 @@ MicroPDxeInitialize(
 		&Handle, &gHtcLeoMicropProtocolGuid, &gHtcLeoMicropProtocol, NULL);
 		ASSERT_EFI_ERROR(Status);
 	}
+
+	#if DEVICETYPE == 1
+  		Device = LEO;
+	#endif
+	#if DEVICETYPE == 2
+  		Device = SCHUBERT;
+	#endif
+	#if DEVICETYPE == 3
+  		Device = BRAVO;
+	#endif
+	#if DEVICETYPE== 4
+  		Device = PASSION;
+	#endif
 
 	return Status;
 }
