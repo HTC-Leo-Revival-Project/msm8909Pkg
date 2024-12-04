@@ -112,6 +112,9 @@ ExitBootServicesEvent (
 #if DEVICETYPE == 3
   gMicroP->KpLedSetBrightness(0);
 #endif
+#if DEVICETYPE == 4
+  gMicroP->JogBallLedSetColor(0,0,0);
+#endif
 #if DEVICETYPE == 1 
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
 #endif
@@ -235,8 +238,8 @@ switch(Device){
   case PASSION:
     // trackball up
     StaticContext                  = KeypadKeyCodeToKeyContext(116);
-    StaticContext->DeviceType      = KEY_DEVICE_TYPE_LEGACY;
-    StaticContext->Gpio            = 94;
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_TRACKBALL;
+    StaticContext->Gpio            = 38;
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
@@ -244,9 +247,8 @@ switch(Device){
 
     // trackball down
     StaticContext                  = KeypadKeyCodeToKeyContext(117);
-    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
-    StaticContext->GpioOut         = 31;
-    StaticContext->GpioIn          = 42;
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_TRACKBALL;
+    StaticContext->Gpio            = 37;
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
@@ -254,9 +256,8 @@ switch(Device){
 
   // trackball left
     StaticContext                  = KeypadKeyCodeToKeyContext(118);
-    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
-    StaticContext->GpioOut         = 32;
-    StaticContext->GpioIn          = 42;
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_TRACKBALL;
+    StaticContext->Gpio            = 145;
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
@@ -264,9 +265,8 @@ switch(Device){
 
     // trackball right
     StaticContext                  = KeypadKeyCodeToKeyContext(119);
-    StaticContext->DeviceType      = KEY_DEVICE_TYPE_KEYMATRIX;
-    StaticContext->GpioOut         = 31;
-    StaticContext->GpioIn          = 41;
+    StaticContext->DeviceType      = KEY_DEVICE_TYPE_TRACKBALL;
+    StaticContext->Gpio            = 21;
     StaticContext->ActiveLow       = 0x1 & 0x1;
     StaticContext->EnableKeyPadLed = FALSE;
     StaticContext->IsValid         = TRUE;
@@ -347,6 +347,9 @@ VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
   // Disable keypad LED brightness
   gMicroP->KpLedSetBrightness(0);
 #endif
+#if DEVICETYPE == 4
+  gMicroP->JogBallLedSetColor(0,0,0);
+#endif
 #if DEVICETYPE ==1 
   // Disable the GPIO
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
@@ -364,6 +367,9 @@ VOID EnableKeypadLedWithTimer(VOID)
     }
 #if DEVICETYPE == 3
     gMicroP->KpLedSetBrightness(255);
+#endif
+#if DEVICETYPE == 4
+  gMicroP->JogBallLedSetColor(0,0,255);
 #endif
 #if DEVICETYPE == 1
     gGpio->Set(HTCLEO_GPIO_KP_LED, 1);
@@ -402,6 +408,8 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         // get status
         if (Context->DeviceType == KEY_DEVICE_TYPE_LEGACY) {
             // implement hd2 gpio stuff here
+            GpioStatus = gGpio->Get(Context->Gpio);
+        }else if (Context->DeviceType == KEY_DEVICE_TYPE_TRACKBALL){
             GpioStatus = gGpio->Get(Context->Gpio);
         } else if (Context->DeviceType == KEY_DEVICE_TYPE_KEYMATRIX) {
             gGpio->Set(Context->GpioOut, 0);
