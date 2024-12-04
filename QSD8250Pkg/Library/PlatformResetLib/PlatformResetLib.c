@@ -20,17 +20,37 @@
 
 #include <Library/pcom.h>
 #include <Library/BootReason.h>
+#include <Device/DeviceType.h>
 
+DeviceType Device;
 VOID
 EFIAPI 
 PlatformReboot(
   unsigned RebootReason
 )
 {
-  MmioWrite32(LK_BOOTREASON_ADDR, RebootReason);
-	MmioWrite32(LK_BOOTREASON_ADDR + 4, RebootReason^MARK_LK_TAG);
-  msm_proc_comm(PCOM_RESET_CHIP, &RebootReason, 0);
-
+  #if DEVICETYPE == 1
+  Device = LEO;
+  #endif
+  #if DEVICETYPE == 2
+  Device = SCHUBERT;
+  #endif
+  #if DEVICETYPE == 3
+  Device = BRAVO;
+  #endif
+  #if DEVICETYPE== 4
+  Device = PASSION;
+  #endif
+  switch(Device){
+    case LEO:
+      MmioWrite32(LK_BOOTREASON_ADDR, RebootReason);
+	    MmioWrite32(LK_BOOTREASON_ADDR + 4, RebootReason^MARK_LK_TAG);
+      msm_proc_comm(PCOM_RESET_CHIP, &RebootReason, 0);
+      break;
+    default:
+      msm_proc_comm(PCOM_RESET_CHIP, NULL, 0);
+      break;
+}
   CpuDeadLoop();
 }
 
