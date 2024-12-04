@@ -21,7 +21,12 @@
 TLMM_GPIO *gGpio = NULL;
 
 VOID EFIAPI htcleo_vibrate(unsigned enable) {
+#if DEVICETYPE == 1
   gGpio->Set(HTCLEO_GPIO_VIBRATOR_ON, enable);
+#endif
+#if DEVICETYPE == 2
+  gGpio->Set(89, enable);
+#endif
 }
 
 VOID EFIAPI htcleo_vibrate_once(){
