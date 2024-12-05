@@ -158,11 +158,8 @@ void HandleKeyInput(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
           }
           break;
         case CHAR_TAB:
-          // windows button
-          DEBUG(
-              (EFI_D_ERROR, "%d Menuentries are marked as active\n",
-              GetActiveMenuEntryLength()));
-          DEBUG((EFI_D_ERROR, "SelectedIndex is: %d\n", SelectedIndex));
+          //Leo - windows button
+          //Passion - Trackball right
           break;
         case CHAR_BACKSPACE:
           // back button
@@ -279,11 +276,19 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   UINT32 Timeout = 400; //TODO: Get from pcd
   CHAR16 *LoadedDir;
 
+  Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
+  ASSERT_EFI_ERROR(Status);
+
   Print(L" Press Home within %d seconds to boot to menu\n", (Timeout / 100));
   Print(L" Back key to boot from ESP\n");
   Print(L" Power key to boot to builtin UEFI Shell\n");
 
   do {
+    Status = SystemTable->ConOut->SetCursorPosition(SystemTable->ConOut, 0, 0);
+    ASSERT_EFI_ERROR(Status);
+
+    Print(L" Press Home within %d seconds to boot to menu\n", (Timeout / 100));
+
     Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
 
     if (Status != EFI_NOT_READY) {
@@ -307,7 +312,7 @@ ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     // TODO: Use events?
     MicroSecondDelay(10000);
     Timeout--;
-  }while(Timeout);
+  } while (Timeout > 0);
 
 boot_esp:
   BootDefault(ImageHandle, SystemTable);
@@ -316,15 +321,15 @@ boot_esp:
   Print(L" Could not boot from ESP, loading menu\n");
 
 menu:
-      // Load previously selected directory
-    Status = LoadSelectedDirFromFile(&SelectedDir);
-    if (EFI_ERROR(Status)) {
-        DEBUG((EFI_D_ERROR, "Failed to load selected directory from file: %r\n", Status));
-        //fallback to root dir of sdcard
-        CHAR16* FallBackPath = L"\\";
-        FallBack = TRUE;
-        *SelectedDir = *FallBackPath;
-    }
+  // Load previously selected directory
+  Status = LoadSelectedDirFromFile(&SelectedDir);
+  if (EFI_ERROR(Status)) {
+    DEBUG((EFI_D_ERROR, "Failed to load selected directory from file: %r\n", Status));
+    // fallback to root dir of sdcard
+    CHAR16* FallBackPath = L"\\";
+    FallBack = TRUE;
+    *SelectedDir = *FallBackPath;
+  }
   // Fill main menu
   FillMenu();
 
