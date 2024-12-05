@@ -113,7 +113,7 @@ ExitBootServicesEvent (
   gMicroP->KpLedSetBrightness(0);
 #endif
 #if DEVICETYPE == 4
-  gMicroP->JogBallLedSetColor(0,0,0);
+  gMicroP->JogBallLedSetColor(0,0,0,0,0);
 #endif
 #if DEVICETYPE == 1 
   gGpio->Set(HTCLEO_GPIO_KP_LED, 0);
@@ -348,7 +348,7 @@ VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
   gMicroP->KpLedSetBrightness(0);
 #endif
 #if DEVICETYPE == 4
-  gMicroP->JogBallLedSetColor(0,0,0);
+  gMicroP->JogBallLedSetColor(0,0,0,0,0);
 #endif
 #if DEVICETYPE ==1 
   // Disable the GPIO
@@ -358,7 +358,7 @@ VOID EFIAPI DisableKeyPadLed(IN EFI_EVENT Event, IN VOID *Context)
 }
 
 // Function to enable the LED and schedule the callback
-VOID EnableKeypadLedWithTimer(VOID)
+VOID EnableKeypadLedWithTimer(KEY_CONTEXT_PRIVATE *Context)
 {
     if (timerRunning) {
         // Cancel the running timer
@@ -369,7 +369,9 @@ VOID EnableKeypadLedWithTimer(VOID)
     gMicroP->KpLedSetBrightness(255);
 #endif
 #if DEVICETYPE == 4
-  gMicroP->JogBallLedSetColor(0,0,255);
+  if (Context->EnableTrackballLed){
+  gMicroP->JogBallLedSetColor(0,0,255,3,255);
+  }
 #endif
 #if DEVICETYPE == 1
     gGpio->Set(HTCLEO_GPIO_KP_LED, 1);
@@ -422,8 +424,8 @@ EFI_STATUS KeypadDeviceImplGetKeys(
         // update key status
         IsPressed = (GpioStatus ? 1 : 0) ^ Context->ActiveLow;
 
-        if (IsPressed && Context->EnableKeyPadLed) {
-            EnableKeypadLedWithTimer();
+        if (IsPressed && (Context->EnableKeyPadLed || Context->EnableTrackballLed)) {
+            EnableKeypadLedWithTimer(Context);
         }
 
 
