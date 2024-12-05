@@ -341,8 +341,10 @@ void microp_i2c_probe(struct microp_platform_data *kpdata)
 
 #if DEVICETYPE == 4
 
-void trackball_led_set_mode(int rpwm, int gpwm, int bpwm){
-	uint8_t data[4];
+void trackball_led_set_mode(int rpwm, int gpwm, int bpwm, int brightness, int period){
+	uint8_t color_data[4];
+	uint8_t brightness_data[3] = {0, 0, 0};;
+	uint8_t period_data[4];
 	if (rpwm < 0 || rpwm > 255)
 		DEBUG((EFI_D_ERROR,"Invalid color strength, min 0 max 255"));
 	if (gpwm < 0 || gpwm > 255)
@@ -350,13 +352,35 @@ void trackball_led_set_mode(int rpwm, int gpwm, int bpwm){
 	if (bpwm < 0 || bpwm > 255)
 		DEBUG((EFI_D_ERROR,"Invalid color strength, min 0 max 255"));
 
-	data[0] = rpwm;
-	data[1] = gpwm;
-	data[2] = bpwm;
-	data[3] = 0x00;
+	color_data[0] = rpwm;
+	color_data[1] = gpwm;
+	color_data[2] = bpwm;
+	color_data[3] = 0x00;
 
-	microp_i2c_write(MICROP_I2C_WCMD_JOGBALL_LED_PWM_SET, data, 4);
+	switch (brightness) {
+	case 0:
+		brightness_data[0] = 0;
+		break;
+	case 3:
+		brightness_data[0] = 1;
+		brightness_data[1] = brightness_data[2] = 0xFF;
+		break;
+	case 7:
+		brightness_data[0] = 2;
+		brightness_data[1] = 0;
+		brightness_data[2] = 60;
+		break;
+	default:
+			DEBUG((EFI_D_ERROR,"unknown brightness value"));
+		break;
+	}
 
+	period_data[0] = 0x00;
+	period_data[1] = period;
+
+	microp_i2c_write(MICROP_I2C_WCMD_JOGBALL_LED_PWM_SET, color_data, 4);
+	microp_i2c_write(MICROP_I2C_WCMD_JOGBALL_LED_PERIOD_SET, period_data, 2);
+	microp_i2c_write(MICROP_I2C_WCMD_JOGBALL_LED_MODE, brightness_data, 3);
 }
 
 #endif

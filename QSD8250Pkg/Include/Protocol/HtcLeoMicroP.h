@@ -19,7 +19,7 @@ typedef VOID(*microp_led_set_mode_t)(UINT8 mode);
 typedef VOID(*microp_kp_led_set_brightness_t)(UINT8 brightness);
 #endif
 #if DEVICETYPE == 4
-typedef VOID(*trackball_led_set_mode_t)(int rpwm, int gpwm, int bpwm);
+typedef VOID(*trackball_led_set_mode_t)(int rpwm, int gpwm, int bpwm, int brightness, int period);
 #endif
 
 struct _HTCLEO_MICROP_PROTOCOL {
