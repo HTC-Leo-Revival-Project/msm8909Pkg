@@ -54,6 +54,8 @@ function _build(){
 	shift
 	source "../edk2/edksetup.sh"
 
+	NUM_CPUS=$((`getconf _NPROCESSORS_ONLN` + 2))
+
 	# Clean artifacts if needed
 	_clean
 	echo "Artifacts removed"
@@ -63,14 +65,14 @@ if [ $DEVICE == 'All' ]; then
 	do
 		if [ $PlatformName != 'All' ]; then
 			# Build
-			GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc
+			build -n $NUM_CPUS -a ARM -t CLANGDWARF -p Platforms/Htc${PlatformName}/Htc${PlatformName}Pkg.dsc -b DEBUG
 			./build_boot_shim.sh
 			./build_boot_images.sh $PlatformName
 		fi
 	done
 else
     echo "Building uefi for $DEVICE"
-	GCC_ARM_PREFIX=arm-none-eabi- build -s -n 0 -a ARM -t GCC -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc
+	build -n $NUM_CPUS -a ARM -t CLANGDWARF -p Platforms/Htc${DEVICE}/Htc${DEVICE}Pkg.dsc -b DEBUG
 
 	./build_boot_shim.sh
 	./build_boot_images.sh $DEVICE

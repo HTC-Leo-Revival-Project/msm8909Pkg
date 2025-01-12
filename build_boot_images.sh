@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $1 == 'Leo' ]; then
-    cat BootShim/BootShim.bin workspace/Build/HtcLeo/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/Leo/bootpayload.bin
+    cat BootShim/BootShim.bin workspace/Build/HtcLeo/DEBUG_CLANGDWARF/FV/QSD8250_UEFI.fd >>ImageResources/Leo/bootpayload.bin
 
     mkbootimg --kernel ImageResources/Leo/bootpayload.bin --base 0x11800000 --kernel_offset 0x00008000 -o ImageResources/Leo/uefi.img
 
@@ -18,7 +18,7 @@ if [ $1 == 'Leo' ]; then
     ./yang -F LEOIMG.nbh -f logo.nb,os.nb -t 0x600,0x400 -s 64 -d PB8110000 -c 11111111 -v EDK2 -l WWE
     cd ../../
 elif [ $1 == 'Schubert' ]; then
-    cat BootShim/BootShim.bin workspace/Build/HtcSchubert/DEBUG_GCC/FV/QSD8250_UEFI.fd >>ImageResources/$1/bootpayload.bin
+    cat BootShim/BootShim.bin workspace/Build/HtcSchubert/DEBUG_CLANGDWARF/FV/QSD8250_UEFI.fd >>ImageResources/$1/bootpayload.bin
 
     mkbootimg --kernel ImageResources/$1/bootpayload.bin --base 0x20000000 --kernel_offset 0x00008000 -o ImageResources/$1/uefi.img
 else
