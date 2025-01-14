@@ -1,75 +1,74 @@
-/** @file
-*
-*  i.MX Platform specific defines for constructing ACPI tables
-*
-*  Copyright (c) 2018 Microsoft Corporation. All rights reserved.
-*
-*  This program and the accompanying materials
-*  are licensed and made available under the terms and conditions of the BSD License
-*  which accompanies this distribution.  The full text of the license may be found at
-*  http://opensource.org/licenses/bsd-license.php
-*
-*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
-*
-**/
+//
+//  QSD8250 Platform specific defines for constructing ACPI tables
+//
 
-#ifndef _PLATFORM_IMX_H_
-#define _PLATFORM_IMX_H_
+#ifndef _Platform_H_INCLUDED_
+#define _Platform_H_INCLUDED_
 
 #include <IndustryStandard/Acpi50.h>
 
-//
-// Platform specific definition
-//
-#define EFI_ACPI_OEM_TABLE_ID                   SIGNATURE_64('I','M','X','6','E','D','K','2') // OEM table id 8 bytes long
-#define EFI_ACPI_OEM_REVISION                   0x01000105
-#define EFI_ACPI_CREATOR_ID                     SIGNATURE_32('I','M','X','6')
-#define EFI_ACPI_CREATOR_REVISION               0x00000001
+#define EFI_ACPI_OEM_ID           {'Q','C','8','2','5','0'}   // OEMID 6 bytes long
+#define EFI_ACPI_OEM_TABLE_ID     SIGNATURE_64('L','E','O','E','D','K','2',' ') // OEM table id 8 bytes long
+#define EFI_ACPI_OEM_REVISION     0x02000820
+#define EFI_ACPI_CREATOR_ID       SIGNATURE_32('L','E','O',' ')
+#define EFI_ACPI_CREATOR_REVISION 0x00000097
 
-#define EFI_ACPI_OEM_ID               {'M','C','R','S','F','T'} // OEMID 6 bytes
-#define EFI_ACPI_VENDOR_ID            SIGNATURE_32('N','X','P','I')
-#define EFI_ACPI_CSRT_REVISION        0x00000005
-#define EFI_ACPI_5_0_CSRT_REVISION    0x00000000
+#define EFI_ACPI_VENDOR_ID		SIGNATURE_32('Q','C','O','M')
+#define EFI_ACPI_CSRT_REVISION	0x00000005
+#define EFI_ACPI_CSRT_DEVICE_ID_DMA 0x00000009	// fixed id
+#define EFI_ACPI_CSRT_RESOURCE_ID_IN_DMA_GRP	0x0 // count up from 0
 
-// Resource Descriptor Types
-#define EFI_ACPI_CSRT_RD_TYPE_INTERRUPT 1
-#define EFI_ACPI_CSRT_RD_TYPE_TIMER 2
-#define EFI_ACPI_CSRT_RD_TYPE_DMA 3
-#define EFI_ACPI_CSRT_RD_TYPE_CACHE 4
+#define EFI_ACPI_5_0_CSRT_REVISION 0x00000000
 
-// Resource Descriptor Subtypes
-#define EFI_ACPI_CSRT_RD_SUBTYPE_INTERRUPT_LINES 0
-#define EFI_ACPI_CSRT_RD_SUBTYPE_INTERRUPT_CONTROLLER 1
-#define EFI_ACPI_CSRT_RD_SUBTYPE_TIMER 0
-#define EFI_ACPI_CSRT_RD_SUBTYPE_DMA_CHANNEL 0
-#define EFI_ACPI_CSRT_RD_SUBTYPE_DMA_CONTROLLER 1
-#define EFI_ACPI_CSRT_RD_SUBTYPE_CACHE 0
+typedef enum 
+{
+	EFI_ACPI_CSRT_RESOURCE_TYPE_RESERVED,		// 0
+	EFI_ACPI_CSRT_RESOURCE_TYPE_INTERRUPT,		// 1
+	EFI_ACPI_CSRT_RESOURCE_TYPE_TIMER,			// 2
+	EFI_ACPI_CSRT_RESOURCE_TYPE_DMA,			// 3
+	EFI_ACPI_CSRT_RESOURCE_TYPE_CACHE,			// 4
+}
+CSRT_RESOURCE_TYPE;
 
-#pragma pack(push, 1)
+typedef enum 
+{
+	EFI_ACPI_CSRT_RESOURCE_SUBTYPE_DMA_CHANNEL,			// 0
+	EFI_ACPI_CSRT_RESOURCE_SUBTYPE_DMA_CONTROLLER		// 1
+}
+CSRT_DMA_SUBTYPE;
+
 //------------------------------------------------------------------------
 // CSRT Resource Group header 24 bytes long
 //------------------------------------------------------------------------
-typedef struct {
-  UINT32 Length;
-  UINT32 VendorID;
-  UINT32 SubVendorId;
-  UINT16 DeviceId;
-  UINT16 SubdeviceId;
-  UINT16 Revision;
-  UINT16 Reserved;
-  UINT32 SharedInfoLength;
+typedef struct
+{
+	UINT32 Length;			// Length
+	UINT32 VendorID;		// was UINT8 VendorID[4]; 		// 4 bytes
+	UINT32 SubVendorId;		// 4 bytes
+	UINT16 DeviceId;		// 2 bytes
+	UINT16 SubdeviceId;		// 2 bytes
+	UINT16 Revision;		// 2 bytes
+	UINT16 Reserved;		// 2 bytes
+	UINT32 SharedInfoLength;	// 4 bytes
 } EFI_ACPI_5_0_CSRT_RESOURCE_GROUP_HEADER;
 
 //------------------------------------------------------------------------
 // CSRT Resource Descriptor 12 bytes total
 //------------------------------------------------------------------------
-typedef struct {
-  UINT32 Length;
-  UINT16 ResourceType;
-  UINT16 ResourceSubType;
-  UINT32 UID;
+typedef struct
+{
+	UINT32 Length;			// 4 bytes
+	UINT16 ResourceType;	// 2 bytes
+	UINT16 ResourceSubType;	// 2 bytes
+	UINT32 UID;				// 4 bytes    
 } EFI_ACPI_5_0_CSRT_RESOURCE_DESCRIPTOR_HEADER;
-#pragma pack (pop)
 
-#endif // !_PLATFORM_IMX_H_
+//------------------------------------------------------------------------
+// DBG2 definitions
+//------------------------------------------------------------------------
+#define USB_NAME_SPACE_STRING_LENGTH  sizeof("\\_SB.UFN1")
+#define KD_USB_BASE_ADDR              0xA0800000
+#define KD_USB_ADDR_SIZE              0x000001AF
+#define KD_USB_ACPI_PATH              "\\_SB.UFN1"
+
+#endif // of _Platform_H_INCLUDED_

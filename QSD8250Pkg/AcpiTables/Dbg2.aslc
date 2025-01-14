@@ -13,7 +13,6 @@
 **/
 
 #include "Platform.h"
-#include <Device/imx6_ull.h>
 
 // DBG2 Definitions
 #pragma pack (1)
@@ -25,28 +24,9 @@ typedef enum {
   DBG2_TYPE_NET
 } DBG2_PORT_TYPE;
 
-#define EFI_ACPI_DEBUG_PORT_2_TABLE_REVISION 0x00000000
-#define UART_NAME_SPACE_STRING_LENGTH               sizeof("\\_SB.UAR1")
-#define UART_IMX6_UART_ADDRESS_SIZE       0x000000BC
+#define DBG_PORT_SUBTYPE_EHCI 0x0001
 
-#if FixedPcdGet32(PcdKdUartInstance) == 1
-#define KD_UART_BASE_ADDR CSP_BASE_REG_PA_UART1
-#define KD_UART_ACPI_PATH "\\_SB.UAR1"
-#elif FixedPcdGet32(PcdKdUartInstance) == 2
-#define KD_UART_BASE_ADDR CSP_BASE_REG_PA_UART2
-#define KD_UART_ACPI_PATH "\\_SB.UAR2"
-#elif FixedPcdGet32(PcdKdUartInstance) == 3
-#define KD_UART_BASE_ADDR CSP_BASE_REG_PA_UART3
-#define KD_UART_ACPI_PATH "\\_SB.UAR3"
-#elif FixedPcdGet32(PcdKdUartInstance) == 4
-#define KD_UART_BASE_ADDR CSP_BASE_REG_PA_UART4
-#define KD_UART_ACPI_PATH "\\_SB.UAR4"
-#elif FixedPcdGet32(PcdKdUartInstance) == 5
-#define KD_UART_BASE_ADDR CSP_BASE_REG_PA_UART5
-#define KD_UART_ACPI_PATH "\\_SB.UAR5"
-#else
-#error "Invalid PcdKdUartInstance. Must be 1, 2, 3, 4, or 5"
-#endif
+#define EFI_ACPI_DEBUG_PORT_2_TABLE_REVISION 0x00000000
 
 // ACPI 5.0 DBG2 structure
 typedef struct {
@@ -74,12 +54,12 @@ typedef struct {
   DEBUG_DEVICE_INFO DeviceInfo;
   EFI_ACPI_5_0_GENERIC_ADDRESS_STRUCTURE BaseAddressRegister;
   UINT32 AddressSize;
-  char NameSpaceString[UART_NAME_SPACE_STRING_LENGTH];
-} DEBUG_DEVICE_INFO_UART;
+  char NameSpaceString[USB_NAME_SPACE_STRING_LENGTH];
+} DEBUG_DEVICE_INFO_USB;
 
 typedef struct {
   EFI_ACPI_5_0_DEBUG_PORT_2_TABLE_HEADER Header;
-  DEBUG_DEVICE_INFO_UART Uart;
+  DEBUG_DEVICE_INFO_USB Usb;
 } EFI_ACPI_5_0_DEBUG_PORT_2_TABLE;
 
 #pragma pack ()
@@ -103,21 +83,21 @@ STATIC EFI_ACPI_5_0_DEBUG_PORT_2_TABLE Dbg2 = {
     1,                                               // NumberDbgDeviceInfo
   },
   {
-    // Uart
+    // Usb
     {
       // DeviceInfo
       EFI_ACPI_RESERVED_BYTE,                                 // Revision
-      sizeof (DEBUG_DEVICE_INFO_UART),                        // Length
+      sizeof (DEBUG_DEVICE_INFO_USB),                         // Length
       1,                                                      // NumberofGenericAddressRegisters
-      UART_NAME_SPACE_STRING_LENGTH,                          // NameSpaceStringLength
-      OFFSET_OF (DEBUG_DEVICE_INFO_UART, NameSpaceString),    // NameSpaceStringOffset
+      USB_NAME_SPACE_STRING_LENGTH,                           // NameSpaceStringLength
+      OFFSET_OF (DEBUG_DEVICE_INFO_USB, NameSpaceString),     // NameSpaceStringOffset
       0,                                                      // OemDataLength
       EFI_ACPI_RESERVED_WORD,                                 // OemDataOffset
-      DBG2_TYPE_SERIAL,                                       // PortType
-      DBG_PORT_SUBTYPE_IMX6,                                  // PortSubtype 000Ch
+      DBG2_TYPE_USB,                                          // PortType
+      DBG_PORT_SUBTYPE_EHCI,                                  // PortSubtype 0x0001
       EFI_ACPI_RESERVED_WORD,                                 // Reserved
-      OFFSET_OF (DEBUG_DEVICE_INFO_UART, BaseAddressRegister), // BaseAddressRegisterOffset
-      OFFSET_OF (DEBUG_DEVICE_INFO_UART, AddressSize),        // AddressSizeOffset
+      OFFSET_OF (DEBUG_DEVICE_INFO_USB, BaseAddressRegister), // BaseAddressRegisterOffset
+      OFFSET_OF (DEBUG_DEVICE_INFO_USB, AddressSize),         // AddressSizeOffset
     },
     {
       // BaseAddressRegister
@@ -125,10 +105,10 @@ STATIC EFI_ACPI_5_0_DEBUG_PORT_2_TABLE Dbg2 = {
       0x20,                                                   // RegisterBitWidth = 32
       0,                                                      // RegisterBitOffset = 0
       0x20,                                                   // AccessSize = 32
-      KD_UART_BASE_ADDR,                                      // Address
+      KD_USB_BASE_ADDR,                                       // Address
     },
-    UART_IMX6_UART_ADDRESS_SIZE,                                // AddressSize
-    KD_UART_ACPI_PATH,                                          // NameSpaceString
+    KD_USB_ADDR_SIZE,                                          // AddressSize
+    KD_USB_ACPI_PATH,                                          // NameSpaceString
   },
 };
 

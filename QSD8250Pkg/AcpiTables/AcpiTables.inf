@@ -27,9 +27,11 @@
   Csrt.aslc
   Dbg2.aslc
   Fadt.aslc
-  Madt.asl
+  # Madt.asl probably not needed, we have no GIC anyway
   Facs.asl
-  Gtdt.aslc
+
+[BuildOptions.ARM]
+  GCC:*_*_*_CC_FLAGS = -Wno-missing-braces
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -41,11 +43,3 @@
 
 [FixedPcd]
   gArmPlatformTokenSpaceGuid.PcdCoreCount
-  gArmTokenSpaceGuid.PcdGicDistributorBase
-  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase
-  gQSD8250PkgTokenSpaceGuid.PcdKdUartInstance
-
-  gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum
-  gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum
-  gArmTokenSpaceGuid.PcdArmArchTimerSecIntrNum
-  gArmTokenSpaceGuid.PcdArmArchTimerIntrNum
