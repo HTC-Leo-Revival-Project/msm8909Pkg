@@ -11,13 +11,13 @@ void
 FillMenu()
 {
   UINTN Index = 0;
-  MenuOptions[Index++] = (MenuEntry){Index, L"Boot default", TRUE, &BootDefault};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Play Tetris", TRUE, &StartTetris};
-  MenuOptions[Index++] = (MenuEntry){Index, L"EFI Shell", TRUE, &StartShell},
-  MenuOptions[Index++] = (MenuEntry){Index, L"Dump DMESG to sdcard", TRUE, &DumpDmesg},
-  MenuOptions[Index++] = (MenuEntry){Index, L"Dump Memory to sdcard", TRUE, &DumpMemory2Sdcard},
-  MenuOptions[Index++] = (MenuEntry){Index, L"Reboot Menu", TRUE, &RebootMenu};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Exit", TRUE, &ExitMenu};
+  MenuOptions[Index++] = (MenuEntry){L"Boot default", TRUE, &BootDefault};
+  MenuOptions[Index++] = (MenuEntry){L"Play Tetris", TRUE, &StartTetris};
+  MenuOptions[Index++] = (MenuEntry){L"EFI Shell", TRUE, &StartShell},
+  MenuOptions[Index++] = (MenuEntry){L"Dump DMESG to sdcard", TRUE, &DumpDmesg},
+  MenuOptions[Index++] = (MenuEntry){L"Dump Memory to sdcard", TRUE, &DumpMemory2Sdcard},
+  MenuOptions[Index++] = (MenuEntry){L"Reboot Menu", TRUE, &RebootMenu};
+  MenuOptions[Index++] = (MenuEntry){L"Exit", TRUE, &ExitMenu};
 }
 
 void PrepareConsole(
@@ -96,7 +96,7 @@ void DrawMenu()
       gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
     }
 
-    Print(L"%d. %s ", MenuOptions[i].Index, MenuOptions[i].Name);
+    Print(L"%d. %s ", i+1, MenuOptions[i].Name);
   }
 }
 
@@ -213,12 +213,12 @@ void RebootMenu(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   
   Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
   ASSERT_EFI_ERROR(Status);
-  MenuOptions[Index++] = (MenuEntry){Index, L"Reboot to CLK", TRUE, &NullFunction};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Reboot", TRUE, &ResetCold};
-  MenuOptions[Index++] = (MenuEntry){Index, L"Shutdown", TRUE, &ResetShutdown};
+  MenuOptions[Index++] = (MenuEntry){L"Reboot to CLK", TRUE, &NullFunction};
+  MenuOptions[Index++] = (MenuEntry){L"Reboot", TRUE, &ResetCold};
+  MenuOptions[Index++] = (MenuEntry){L"Shutdown", TRUE, &ResetShutdown};
   // Fill disabled options
   do {
-    MenuOptions[Index++] = (MenuEntry){Index, L"", FALSE, &NullFunction};
+    MenuOptions[Index++] = (MenuEntry){L"", FALSE, &NullFunction};
   }while(Index < MAX_OPTIONS_COUNT);
 }
 
