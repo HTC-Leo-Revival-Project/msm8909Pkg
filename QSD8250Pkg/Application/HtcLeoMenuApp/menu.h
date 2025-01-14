@@ -26,7 +26,6 @@
 #define _MAIN_MENU_H_
 
 typedef struct {
-  UINT8   Index;
   CHAR16 *Name;
   BOOLEAN IsActive;
   void (*Function)();
