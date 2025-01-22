@@ -187,7 +187,6 @@
   KeypadDeviceImplLib|QSD8250Pkg/Library/KeypadDeviceImplLib/KeypadDeviceImplLib.inf
 
 [LibraryClasses.common.SEC]
-  ArmGicArchLib|ArmPkg/Library/ArmGicArchSecLib/ArmGicArchSecLib.inf
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
 
@@ -309,8 +308,6 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdTurnOffUsbLegacySupport|TRUE
 
   gEfiMdeModulePkgTokenSpaceGuid.PcdInstallAcpiSdtProtocol|TRUE
-
-  gArmTokenSpaceGuid.PcdArmGicV3WithV2Legacy|FALSE
 
 [PcdsFixedAtBuild.common]
   #
@@ -532,7 +529,7 @@
   QSD8250Pkg/Drivers/KeypadDxe/KeypadDxe.inf
   QSD8250Pkg/GPLDrivers/I2CDxe/I2CDxe.inf
   QSD8250Pkg/Drivers/MicroPDxe/MicroPDxe.inf
-
+  
   #
   # Virtual Keyboard
   #
