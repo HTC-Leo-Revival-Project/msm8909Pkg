@@ -23,6 +23,7 @@
 #include <Resources/FbColor.h>
 #include <Chipset/timer.h>
 #include <Library/PrintLib.h>
+#include <Protocol/WatchdogTimer.h>
 
 typedef struct {
   UINT8   Index;
@@ -61,5 +62,8 @@ void DumpMemory2SdcardHelper(UINTN* hexval, CHAR16** hexstring, UINTN* length, I
 void DumpDmesg(void);
 EFI_STATUS ReadMemoryAndWriteToFile(UINTN* MemoryAddress,UINTN Length, CHAR16 *FilePath);
 CHAR16* GetHexInput(EFI_SYSTEM_TABLE *SystemTable, CHAR16* message);
+VOID
+EFIAPI
+FeedWatchdogCallback (IN EFI_EVENT Event,IN VOID      *Context);
 
 #endif
