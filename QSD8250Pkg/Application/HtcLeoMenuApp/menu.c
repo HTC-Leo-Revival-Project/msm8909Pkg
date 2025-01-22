@@ -6,6 +6,9 @@ MenuEntry MenuOptions[MAX_OPTIONS_COUNT] = {0};
 UINTN MenuOptionCount = 0;
 UINTN SelectedIndex = 0;
 EFI_SIMPLE_TEXT_OUTPUT_MODE InitialMode;
+EFI_WATCHDOG_TIMER_ARCH_PROTOCOL *WatchdogTimer;
+UINT64 TimerPeriod = 120 * 10 * 1000 * 1000;
+UINT64 FeedInterval = 60 * 1000 * 1000;
 
 void
 FillMenu()
@@ -249,12 +252,67 @@ void BootDefault(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
   }
 }
 
+
+/**
+  Periodic timer callback function to feed the watchdog.
+
+  @param Event   The event that triggered the callback.
+  @param Context Optional context parameter, not used here.
+**/
+VOID
+EFIAPI
+FeedWatchdogCallback (
+  IN EFI_EVENT Event,
+  IN VOID      *Context
+  )
+{
+    EFI_STATUS Status;
+
+    Status = WatchdogTimer->SetTimerPeriod(WatchdogTimer, TimerPeriod);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to feed the watchdog: %r\n", Status));
+    }
+}
+
 EFI_STATUS EFIAPI
 ShellAppMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
   EFI_STATUS Status;
   EFI_INPUT_KEY key;
   UINT32 Timeout = 400; //TODO: Get from pcd
+  EFI_EVENT TimerEvent;
+
+    Status = gBS->LocateProtocol(&gEfiWatchdogTimerArchProtocolGuid, NULL, (VOID **)&WatchdogTimer);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to locate Watchdog Timer protocol: %r\n", Status));
+        return Status;
+    }
+
+    Status = WatchdogTimer->SetTimerPeriod(WatchdogTimer, TimerPeriod);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to set initial watchdog timer period: %r\n", Status));
+        return Status;
+    }
+
+
+    Status = gBS->CreateEvent(
+                    EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                    TPL_CALLBACK,
+                    FeedWatchdogCallback,
+                    NULL,
+                    &TimerEvent
+                 );
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to create periodic timer event: %r\n", Status));
+        return Status;
+    }
+
+    Status = gBS->SetTimer(TimerEvent, TimerPeriodic, 60 * 10 * 1000 * 1000);
+    if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Failed to set periodic timer: %r\n", Status));
+        gBS->CloseEvent(TimerEvent);
+        return Status;
+    }
 
   Status = SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
   ASSERT_EFI_ERROR(Status);
